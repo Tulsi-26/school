@@ -3,11 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Trophy } from 'lucide-react';
+import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck } from 'lucide-react';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
-import { GamificationPanel, useGamification } from '@/components/physics-lab/GamificationPanel';
+import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
 
 const experiments = [
     {

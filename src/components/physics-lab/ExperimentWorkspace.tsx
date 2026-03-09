@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
-import { usePhysicsLab, Instrument as InstrumentType } from '@/context/PhysicsLabContext';
+import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
 import { WireCanvas } from '@/components/physics-lab/WireCanvas';
 import { calculateOhmLaw } from '@/lib/physics/experiments/ohmlaw';
 import { calculateWheatstoneBridge } from '@/lib/physics/experiments/wheatstone';
-import { calculateOpticsSimulation } from '@/lib/physics/experiments/optics_proto';
 import { calculateMechanicsSimulation } from '@/lib/physics/experiments/mechanics_proto';
 import { RayCanvas } from '@/components/physics-lab/RayCanvas';
 import { VectorCanvas } from '@/components/physics-lab/VectorCanvas';
