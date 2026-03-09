@@ -1,7 +1,9 @@
 "use client";
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import { Battery } from './Battery';
+import { Ammeter } from './Ammeter';
+import { Voltmeter } from './Voltmeter';
 
 interface InstrumentVisualsProps {
     type: string;
@@ -21,52 +23,13 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
 
     switch (type) {
         case 'battery':
-            return (
-                <div className={`relative w-24 h-40 bg-slate-800 rounded-xl border-2 border-slate-700 p-2 overflow-hidden ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M13 3l-1.99 4.01L15 7l-5 9 2 1-3 4v-9l-2.01 .01L13 3z" />
-                        </svg>
-                    </div>
-                    <div className="flex flex-col h-full justify-between items-center py-4">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Power Supply</div>
-                        <div className="text-xl font-bold font-mono text-blue-400">{properties.voltage}V</div>
-                        <div className="w-12 h-1 bg-slate-700/50 rounded-full"></div>
-                        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Standard DC</div>
-                    </div>
-                </div>
-            );
+            return <Battery voltage={properties.voltage} isHovered={isHovered} />;
 
         case 'ammeter':
+            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} isHovered={isHovered} />;
+
         case 'voltmeter':
-            const isAmmeter = type === 'ammeter';
-            return (
-                <div className={`relative w-32 h-32 bg-slate-800 rounded-2xl border-2 border-slate-700 p-3 ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="flex flex-col h-full items-center justify-center gap-1">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{isAmmeter ? 'Ammeter' : 'Voltmeter'}</div>
-                        <div className="relative w-20 h-20 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center overflow-hidden">
-                            <div className="text-xl font-mono font-bold text-white z-10">{properties.reading || 0}</div>
-                            <div className="text-[8px] font-mono text-slate-500 z-10">{isAmmeter ? 'mA' : 'V'}</div>
-                            {/* Radial Progress */}
-                            <svg className="absolute inset-0 w-full h-full -rotate-90">
-                                <circle
-                                    cx="40" cy="40" r="34"
-                                    fill="none" stroke="currentColor" strokeWidth="2"
-                                    className="text-slate-800"
-                                />
-                                <motion.circle
-                                    cx="40" cy="40" r="34"
-                                    fill="none" stroke="currentColor" strokeWidth="2"
-                                    strokeDasharray="213"
-                                    initial={{ strokeDashoffset: 213 }}
-                                    animate={{ strokeDashoffset: 213 - (213 * (properties.reading || 0) / (properties.scale || 100)) }}
-                                    className="text-blue-500"
-                                />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            );
+            return <Voltmeter reading={properties.reading || 0} scale={properties.scale || 20} isHovered={isHovered} />;
 
         case 'resistor':
             return (
