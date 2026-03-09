@@ -49,10 +49,23 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {activeTab === 'theory' && (experimentId === 'ohm-law' ? <OhmTheory /> : <WheatstoneTheory />)}
-                {activeTab === 'procedure' && (experimentId === 'ohm-law' ? <OhmProcedure /> : <WheatstoneProcedure />)}
+                {activeTab === 'theory' && (
+                    experimentId === 'ohm-law' ? <OhmTheory /> :
+                        experimentId === 'wheatstone-bridge' ? <WheatstoneTheory /> :
+                            experimentId === 'reflection-refraction' ? <OpticsTheory /> :
+                                <MechanicsTheory />
+                )}
+                {activeTab === 'procedure' && (
+                    experimentId === 'ohm-law' ? <OhmProcedure /> :
+                        experimentId === 'wheatstone-bridge' ? <WheatstoneProcedure /> :
+                            experimentId === 'reflection-refraction' ? <OpticsProcedure /> :
+                                <MechanicsProcedure />
+                )}
                 {activeTab === 'observation' && <Observation experimentId={experimentId} />}
-                {activeTab === 'graph' && (experimentId === 'ohm-law' ? <Graph experimentId={experimentId} /> : <div className="text-slate-500 text-xs italic">Graphing is specific to Ohm's Law in this version.</div>)}
+                {activeTab === 'graph' && (
+                    experimentId === 'ohm-law' ? <Graph experimentId={experimentId} /> :
+                        <div className="text-slate-500 text-xs italic">Graphing is specific to Ohm's Law in this version.</div>
+                )}
             </div>
         </div>
     );
@@ -150,6 +163,106 @@ const WheatstoneProcedure = () => (
                 "Close the switch and observe the Galvanometer deflection.",
                 "Adjust variable resistor R until the Galvanometer reading is 0 (Null Point).",
                 "Calculate S = (Q * R) / P."
+            ].map((step, i) => (
+                <li key={i} className="flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                        {i + 1}
+                    </div>
+                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                </li>
+            ))}
+        </ul>
+    </div>
+);
+
+const OpticsTheory = () => (
+    <div className="space-y-4 animate-in fade-in duration-500">
+        <section className="space-y-2">
+            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Reflection & Refraction
+            </h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+                Study the behavior of light rays as they interact with different optical media and surfaces.
+            </p>
+        </section>
+
+        <section className="space-y-2">
+            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                Lens Formula
+            </h3>
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
+                <p className="text-slate-300 text-sm italic">
+                    "The relationship between object distance (u), image distance (v), and focal length (f) of a lens."
+                </p>
+                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                    <code className="text-blue-400 font-bold text-lg">1/f = 1/v - 1/u</code>
+                </div>
+            </div>
+        </section>
+    </div>
+);
+
+const OpticsProcedure = () => (
+    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+        <ul className="space-y-3">
+            {[
+                "Place a Light Source (Object) on the left side of the workspace.",
+                "Place a Convex or Concave lens at the center.",
+                "Adjust the object position and observe the ray paths.",
+                "Measure the image distance (v) for various object distances (u).",
+                "Verify the lens formula using the measured values."
+            ].map((step, i) => (
+                <li key={i} className="flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                        {i + 1}
+                    </div>
+                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                </li>
+            ))}
+        </ul>
+    </div>
+);
+
+const MechanicsTheory = () => (
+    <div className="space-y-4 animate-in fade-in duration-500">
+        <section className="space-y-2">
+            <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                Newton's Second Law
+            </h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+                Study the relationship between an object's mass, its acceleration, and the applied force.
+            </p>
+        </section>
+
+        <section className="space-y-2">
+            <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                Force Equation
+            </h3>
+            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
+                <p className="text-slate-300 text-sm italic">
+                    "The acceleration of an object as produced by a net force is directly proportional to the magnitude of the net force and inversely proportional to the mass of the object."
+                </p>
+                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                    <code className="text-red-400 font-bold text-lg">F = m × a</code>
+                </div>
+            </div>
+        </section>
+    </div>
+);
+
+const MechanicsProcedure = () => (
+    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+        <ul className="space-y-3">
+            {[
+                "Setup a pulley at the edge or center of the workspace.",
+                "Connect two blocks (M1 and M2) to the pulley system.",
+                "Vary the masses of the blocks.",
+                "Observe the acceleration and tension in the system.",
+                "Analyze the results using Newton's laws of motion."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
                     <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">

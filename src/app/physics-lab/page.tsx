@@ -26,6 +26,24 @@ const experiments = [
         icon: Beaker,
         color: "purple",
         category: "Electricity"
+    },
+    {
+        id: 'reflection-refraction',
+        title: "Reflection & Refraction",
+        description: "Explore the laws of light as it interacts with mirrors and lenses.",
+        difficulty: "Intermediate",
+        icon: Search,
+        color: "blue",
+        category: "Optics"
+    },
+    {
+        id: 'newton-second-law',
+        title: "Newton's Second Law",
+        description: "Study force, mass, and acceleration using blocks and pulleys.",
+        difficulty: "Intermediate",
+        icon: TrendingUp,
+        color: "red",
+        category: "Mechanics"
     }
 ];
 

@@ -1,11 +1,17 @@
 "use client";
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { Settings, Eye, EyeOff } from 'lucide-react';
 import { usePhysicsLab, Instrument as InstrumentType } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
 import { WireCanvas } from '@/components/physics-lab/WireCanvas';
 import { calculateOhmLaw } from '@/lib/physics/experiments/ohmlaw';
 import { calculateWheatstoneBridge } from '@/lib/physics/experiments/wheatstone';
+import { calculateOpticsSimulation } from '@/lib/physics/experiments/optics_proto';
+import { calculateMechanicsSimulation } from '@/lib/physics/experiments/mechanics_proto';
+import { RayCanvas } from '@/components/physics-lab/RayCanvas';
+import { VectorCanvas } from '@/components/physics-lab/VectorCanvas';
+import { traceRayThroughComponents } from '@/lib/physics/core/optics';
 
 export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const {
@@ -18,6 +24,9 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         simulationResults,
         setSimulationResults
     } = usePhysicsLab();
+
+    const [showVisuals, setShowVisuals] = useState(true);
+    const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
 
     const workspaceRef = useRef<HTMLDivElement>(null);
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
@@ -35,6 +44,14 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const x = e.clientX - rect.left - 50; // Center offset
         const y = e.clientY - rect.top - 50;
 
+        // Optical Bench Snapping
+        let finalX = x;
+        let finalY = y;
+        if (experimentId === 'reflection-refraction') {
+            finalX = Math.round(x / 40) * 40;
+            finalY = Math.round(y / 40) * 40;
+        }
+
         // Define terminals based on instrument type
         const terminals = [
             { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: { x: 0, y: 40 } },
@@ -43,7 +60,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
         addInstrument({
             ...instData,
-            position: { x, y },
+            position: { x: finalX, y: finalY },
             terminals,
         });
     };
@@ -125,6 +142,65 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             if (galvanometer) {
                 updateInstrumentProperties(galvanometer.id, { reading: result.isClosed && result.isValid ? result.galvanometerReading : 0 });
             }
+        } else if (experimentId === 'reflection-refraction') {
+            const object = instruments.find(i => i.type === 'block');
+            const lenses = instruments
+                .filter(i => i.type === 'lens')
+                .map(l => ({
+                    position: l.position,
+                    focalLength: l.properties.focalLength,
+                    type: l.properties.type
+                }));
+
+            if (object && lenses.length > 0) {
+                const initialRay = { origin: { x: object.position.x + 50, y: 0 }, angle: 0 };
+                const path = traceRayThroughComponents(initialRay, lenses);
+                const firstLensY = lenses[0].position.y;
+                const rays = path.map((r, i) => ({
+                    ...r,
+                    origin: { x: r.origin.x, y: firstLensY + 100 + r.origin.y },
+                    length: i < path.length - 1 ? (path[i + 1].origin.x - r.origin.x) : 800
+                }));
+                setSimulationResults({ rays, isValid: true, isClosed: true });
+            }
+        } else if (experimentId === 'newton-second-law') {
+            const m1 = instruments.find(i => i.name.includes('M1'));
+            const m2 = instruments.find(i => i.name.includes('M2'));
+
+            if (m1 && m2) {
+                const result = calculateMechanicsSimulation(
+                    m1.properties.mass,
+                    m2.properties.mass,
+                    0 // static for now
+                );
+
+                // Generate vectors for visualization (Weight and Accel)
+                const vectors = [
+                    {
+                        origin: { x: m1.position.x + 50, y: m1.position.y + 50 },
+                        direction: { x: 0, y: 40 },
+                        label: 'W1',
+                        color: 'text-red-400'
+                    },
+                    {
+                        origin: { x: m2.position.x + 50, y: m2.position.y + 50 },
+                        direction: { x: 0, y: 40 },
+                        label: 'W2',
+                        color: 'text-red-400'
+                    }
+                ];
+
+                if (result.acceleration > 0) {
+                    vectors.push({
+                        origin: { x: (m1.position.x + m2.position.x) / 2 + 50, y: 50 },
+                        direction: { x: 0, y: -30 },
+                        label: 'a',
+                        color: 'text-emerald-400'
+                    });
+                }
+
+                setSimulationResults({ ...result, vectors, isValid: true, isClosed: true });
+            }
         }
     }, [instruments, connections, updateInstrumentProperties, setSimulationResults, experimentId]);
 
@@ -136,6 +212,35 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             onMouseMove={handleMouseMove}
             className="w-full h-full relative cursor-crosshair overflow-hidden"
         >
+            {/* Lab HUD */}
+            <div className="absolute top-4 left-4 z-50 flex gap-2">
+                <div className="bg-slate-900/80 border border-slate-700/50 backdrop-blur-md rounded-xl p-1 flex gap-1 shadow-2xl">
+                    <button
+                        onClick={() => setShowVisuals(!showVisuals)}
+                        className={`p-2 rounded-lg transition-all ${showVisuals ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}
+                        title={showVisuals ? "Hide Visualizations" : "Show Visualizations"}
+                    >
+                        {showVisuals ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                    <button className="p-2 text-slate-500 hover:text-slate-300 rounded-lg transition-all" title="Lab Settings">
+                        <Settings size={18} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Optical Bench Ruler */}
+            {experimentId === 'reflection-refraction' && (
+                <div className="absolute bottom-8 inset-x-12 h-10 border-t-2 border-slate-700/50 flex items-start pointer-events-none">
+                    {Array.from({ length: 21 }).map((_, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center">
+                            <div className="w-0.5 h-3 bg-slate-700/50"></div>
+                            <span className="text-[9px] font-mono text-slate-600 mt-1">{i * 5}cm</span>
+                        </div>
+                    ))}
+                    <div className="absolute top-[-2px] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+                </div>
+            )}
+
             {/* Table Visual */}
             <div className="absolute inset-x-8 bottom-0 h-4 bg-slate-800/50 rounded-t-2xl border-t border-slate-700"></div>
 
@@ -145,6 +250,16 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 instruments={instruments}
                 activeConnection={isConnecting ? { from: isConnecting.from, to: mousePos } : null}
             />
+
+            {/* Optics Visualization */}
+            {showVisuals && experimentId === 'reflection-refraction' && simulationResults.rays && (
+                <RayCanvas rays={simulationResults.rays} />
+            )}
+
+            {/* Mechanics Visualization */}
+            {showVisuals && experimentId === 'newton-second-law' && simulationResults.vectors && (
+                <VectorCanvas vectors={simulationResults.vectors} />
+            )}
 
             {/* Instruments */}
             {instruments.map((inst) => (
@@ -162,7 +277,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
                     <span className="text-sm font-bold uppercase tracking-wider">
-                        {experimentId === 'ohm-law' ? 'Ohmic conduction detected' : 'Bridge active: Galvanometer reading stable'}
+                        {experimentId === 'ohm-law' && 'Ohmic conduction detected'}
+                        {experimentId === 'wheatstone-bridge' && 'Bridge active: Galvanometer reading stable'}
+                        {experimentId === 'reflection-refraction' && 'Optical path established'}
+                        {experimentId === 'newton-second-law' && 'Mechanical equilibrium calculated'}
                     </span>
                 </div>
             )}

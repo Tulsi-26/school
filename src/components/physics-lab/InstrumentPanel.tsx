@@ -8,7 +8,10 @@ import {
     Maximize2,
     RotateCcw,
     MousePointer2,
-    Trash2
+    Trash2,
+    Search,
+    Target,
+    Box
 } from 'lucide-react';
 
 export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experimentId }) => {
@@ -33,6 +36,17 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
             { type: 'galvanometer', name: 'Galvanometer', properties: { reading: 0 } },
             { type: 'switch', name: 'Key K1', properties: { closed: false } },
             { type: 'switch', name: 'Key K2', properties: { closed: false } },
+        ],
+        'reflection-refraction': [
+            { type: 'block', name: 'Object (Source)', properties: { mass: 'Light Source' } },
+            { type: 'lens', name: 'Convex Lens', properties: { type: 'convex', focalLength: 20 } },
+            { type: 'lens', name: 'Concave Lens', properties: { type: 'concave', focalLength: 15 } },
+            { type: 'mirror', name: 'Plane Mirror', properties: { type: 'plane' } },
+        ],
+        'newton-second-law': [
+            { type: 'pulley', name: 'Fixed Pulley', properties: { friction: 0 } },
+            { type: 'block', name: 'Mass Block M1', properties: { mass: 5 } },
+            { type: 'block', name: 'Mass Block M2', properties: { mass: 10 } },
         ]
     };
 
@@ -60,6 +74,9 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
                             {inst.type === 'rheostat' && <Maximize2 size={24} />}
                             {inst.type === 'switch' && <RotateCcw size={24} />}
                             {inst.type === 'galvanometer' && <Activity size={24} />}
+                            {(inst.type === 'lens' || inst.type === 'mirror') && <Search size={24} />}
+                            {inst.type === 'pulley' && <Target size={24} />}
+                            {inst.type === 'block' && <Box size={24} />}
                         </div>
                         <span className="text-xs font-medium text-slate-400 group-hover:text-slate-200">{inst.name}</span>
                     </div>

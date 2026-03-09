@@ -136,6 +136,97 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                 </div>
             );
 
+        case 'lens':
+            const isConvex = properties.type === 'convex';
+            return (
+                <div className={`relative w-16 h-48 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="absolute inset-0 bg-blue-400/10 blur-xl opacity-20"></div>
+                    <svg width="40" height="160" viewBox="0 0 40 160" className="drop-shadow-[0_0_15px_rgba(147,197,253,0.5)]">
+                        <path
+                            d={isConvex
+                                ? "M20 0 Q40 80 20 160 Q0 80 20 0"
+                                : "M0 0 Q20 80 0 160 L40 160 Q20 80 40 0 Z"}
+                            fill="url(#lensGradient)"
+                            stroke="rgba(255,255,255,0.3)"
+                            strokeWidth="1"
+                        />
+                        <defs>
+                            <linearGradient id="lensGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.4" />
+                                <stop offset="50%" stopColor="#dbeafe" stopOpacity="0.6" />
+                                <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.4" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div className="absolute bottom-0 text-[8px] font-mono text-slate-500 uppercase tracking-widest text-center w-max">
+                        f = {properties.focalLength}cm
+                    </div>
+                    {isHovered && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-blue-600 text-white rounded-lg shadow-xl text-[10px] font-bold whitespace-nowrap z-50 flex items-center gap-2"
+                        >
+                            <div className="w-2 h-2 rounded-full bg-blue-200 animate-pulse"></div>
+                            {isConvex ? 'Real Image' : 'Virtual Image'} Magnification
+                        </motion.div>
+                    )}
+                </div>
+            );
+
+        case 'mirror':
+            return (
+                <div className={`relative w-8 h-48 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="w-1.5 h-40 bg-slate-700 rounded-full relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-200 opacity-50"></div>
+                        <div className="absolute inset-y-0 left-0 w-0.5 bg-slate-800/50"></div>
+                    </div>
+                    <div className="absolute -right-4 h-40 flex flex-col justify-around">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="w-3 h-0.5 bg-slate-700 -rotate-45"></div>
+                        ))}
+                    </div>
+                    <div className="absolute bottom-0 text-[8px] font-mono text-slate-500 uppercase tracking-widest text-center w-max">
+                        Reflective
+                    </div>
+                </div>
+            );
+
+        case 'pulley':
+            return (
+                <div className={`relative w-24 h-24 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="w-20 h-20 rounded-full border-4 border-slate-700 bg-slate-800 flex items-center justify-center shadow-inner relative">
+                        <div className="w-14 h-14 rounded-full border-2 border-slate-700/50 flex items-center justify-center">
+                            <div className="w-4 h-4 rounded-full bg-slate-600"></div>
+                        </div>
+                        {/* Spokes */}
+                        {[0, 45, 90, 135].map(angle => (
+                            <div
+                                key={angle}
+                                className="absolute w-16 h-0.5 bg-slate-700/30"
+                                style={{ transform: `rotate(${angle}deg)` }}
+                            ></div>
+                        ))}
+                    </div>
+                    <div className="absolute -top-2 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded text-[8px] font-mono text-slate-400">
+                        μ = {properties.friction || '0'}
+                    </div>
+                </div>
+            );
+
+        case 'block':
+            return (
+                <div className={`relative w-24 h-24 bg-slate-700 rounded-lg border-2 border-slate-600 flex flex-col items-center justify-center gap-1 ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="absolute top-1 left-1 opacity-20">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z" />
+                        </svg>
+                    </div>
+                    <div className="text-lg font-bold font-mono text-slate-200">{properties.mass}</div>
+                    <div className="text-[10px] font-mono font-medium text-slate-400 uppercase tracking-tighter">kg</div>
+                </div>
+            );
+
         default:
             return (
                 <div className="w-20 h-20 bg-slate-800 rounded-lg border-2 border-slate-700 flex items-center justify-center">
