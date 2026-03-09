@@ -10,36 +10,45 @@ import {
     ShieldCheck,
     TrendingUp,
     Download,
-    Trash2
+    Trash2,
+    ListChecks,
+    Trophy,
+    PlayCircle,
 } from 'lucide-react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
+import { ExperimentChecklist } from './ExperimentChecklist';
+import { YouTubeVideos } from './YouTubeVideos';
+import { GamificationPanel } from './GamificationPanel';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {
-    const [activeTab, setActiveTab] = useState<'theory' | 'procedure' | 'observation' | 'graph'>('theory');
+    const [activeTab, setActiveTab] = useState<'theory' | 'procedure' | 'observation' | 'graph' | 'checklist' | 'videos' | 'progress'>('theory');
     const { simulationResults } = usePhysicsLab();
 
     const tabs = [
         { id: 'theory', icon: BookOpen, label: 'Theory' },
-        { id: 'procedure', icon: ListOrdered, label: 'Procedure' },
-        { id: 'observation', icon: Table, label: 'Observation' },
+        { id: 'procedure', icon: ListOrdered, label: 'Steps' },
+        { id: 'checklist', icon: ListChecks, label: 'Checklist' },
+        { id: 'observation', icon: Table, label: 'Data' },
         { id: 'graph', icon: LineChart, label: 'Graph' },
+        { id: 'videos', icon: PlayCircle, label: 'Videos' },
+        { id: 'progress', icon: Trophy, label: 'XP' },
     ];
 
     return (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Tab Header */}
-            <div className="flex border-b border-slate-800 p-1 bg-slate-900/30">
+            <div className="flex border-b border-slate-800 p-1 bg-slate-900/30 overflow-x-auto no-scrollbar">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 flex flex-col items-center gap-1.5 py-3 transition-all relative ${activeTab === tab.id
+                        className={`flex-1 min-w-[3.5rem] flex flex-col items-center gap-1 py-2.5 transition-all relative ${activeTab === tab.id
                             ? 'text-blue-400'
                             : 'text-slate-500 hover:text-slate-300'
                             }`}
                     >
-                        <tab.icon size={18} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
+                        <tab.icon size={16} />
+                        <span className="text-[8px] font-bold uppercase tracking-widest">{tab.label}</span>
                         {activeTab === tab.id && (
                             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-full"></div>
                         )}
@@ -61,11 +70,14 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
                             experimentId === 'reflection-refraction' ? <OpticsProcedure /> :
                                 <MechanicsProcedure />
                 )}
+                {activeTab === 'checklist' && <ExperimentChecklist experimentId={experimentId} />}
                 {activeTab === 'observation' && <Observation experimentId={experimentId} />}
                 {activeTab === 'graph' && (
                     experimentId === 'ohm-law' ? <Graph experimentId={experimentId} /> :
-                        <div className="text-slate-500 text-xs italic">Graphing is specific to Ohm's Law in this version.</div>
+                        <div className="text-slate-500 text-xs italic">Graphing is specific to Ohm&apos;s Law in this version.</div>
                 )}
+                {activeTab === 'videos' && <YouTubeVideos experimentId={experimentId} />}
+                {activeTab === 'progress' && <GamificationPanel />}
             </div>
         </div>
     );

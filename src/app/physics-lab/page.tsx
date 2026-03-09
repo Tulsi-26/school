@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck } from 'lucide-react';
+import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Trophy } from 'lucide-react';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
+import { GamificationPanel, useGamification } from '@/components/physics-lab/GamificationPanel';
 
 const experiments = [
     {
@@ -98,6 +99,11 @@ export default function PhysicsLabDashboard() {
                             Master complex concepts through immersive, hands-on simulations. Build circuits, collect real-time data, and visualize the laws of nature.
                         </p>
                     </motion.div>
+                </div>
+
+                {/* Gamification Stats Banner */}
+                <div className="mb-16">
+                    <GamificationPanel compact />
                 </div>
 
                 {/* Recently Viewed */}
