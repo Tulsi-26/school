@@ -24,6 +24,7 @@ const signupSchema = z.object({
   name: nameField,
   email: z.string().email(),
   password: z.string().min(8).max(72),
+  role: z.enum(["STUDENT", "TEACHER"]).optional().default("STUDENT"),
 });
 
 export async function POST(request: Request) {
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
         email,
         name,
         passwordHash,
+        role: parsed.data.role,
       },
     });
 

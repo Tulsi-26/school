@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Poppins, JetBrains_Mono, Inter } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/sonner"
 
 import "./globals.css"
@@ -47,7 +48,9 @@ export default function RootLayout({
           enableSystem={false} // Force light mode default initially as per design vibes usually being light for SaaS landing, but support dark
           disableTransitionOnChange
         >
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>
