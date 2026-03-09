@@ -52,10 +52,20 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             finalY = Math.round(y / 40) * 40;
         }
 
-        // Define terminals based on instrument type
+        const terminalLayouts: Record<string, { x: number; y: number }[]> = {
+            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
+            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
+            rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
+            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
+            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+        };
+
+        const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
         const terminals = [
-            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: { x: 0, y: 40 } },
-            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: { x: 80, y: 40 } },
+            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: layout[0] },
+            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: layout[1] },
         ] as any[];
 
         addInstrument({
