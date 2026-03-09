@@ -42,7 +42,7 @@ const signupSchema = z.object({
     .optional(),
   email: z.string().email("Please enter a valid email."),
   password: z.string().min(8, "Passwords must be at least 8 characters."),
-  role: z.enum(["STUDENT", "TEACHER"]).default("STUDENT"),
+  role: z.enum(["STUDENT", "TEACHER"]),
 });
 
 type SignupValues = z.infer<typeof signupSchema>;

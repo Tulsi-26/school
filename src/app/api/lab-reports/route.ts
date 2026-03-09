@@ -69,7 +69,7 @@ const experimentCatalog: Record<
 
 const createReportSchema = z.object({
   experimentId: z.string(),
-  observations: z.array(z.record(z.any())),
+  observations: z.array(z.record(z.string(), z.unknown())),
   calculations: z.string().optional(),
   result: z.string().optional(),
   conclusion: z.string().optional(),
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
         aim: catalog.aim,
         apparatus: catalog.apparatus,
         theory: catalog.theory,
-        observations: parsed.data.observations,
+        observations: parsed.data.observations as any,
         calculations: parsed.data.calculations ?? null,
         result: autoResult,
         conclusion: autoConclusion,
