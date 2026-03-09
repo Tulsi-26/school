@@ -76,7 +76,7 @@ export default function TeacherDashboard() {
 
   // Add member state
   const [memberEmail, setMemberEmail] = useState("");
-  const [memberRole, setMemberRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
+  const [newMemberRole, setMemberRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
   const [addingMember, setAddingMember] = useState(false);
   const [memberMessage, setMemberMessage] = useState<string | null>(null);
 
@@ -140,14 +140,14 @@ export default function TeacherDashboard() {
       const res = await fetch("/api/organizations/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: memberEmail, role: memberRole }),
+        body: JSON.stringify({ email: memberEmail, role: newMemberRole }),
       });
       const d = await res.json();
       if (!res.ok) {
         setMemberMessage(d.error ?? "Failed to add member");
         return;
       }
-      setMemberMessage(`${memberEmail} added as ${memberRole.toLowerCase()}`);
+      setMemberMessage(`${memberEmail} added as ${newMemberRole.toLowerCase()}`);
       setMemberEmail("");
       fetchDashboard();
     } catch {
@@ -304,7 +304,7 @@ export default function TeacherDashboard() {
                     className="bg-slate-900/60 flex-1"
                   />
                   <Select
-                    value={memberRole}
+                    value={newMemberRole}
                     onValueChange={(v) => setMemberRole(v as "STUDENT" | "TEACHER")}
                   >
                     <SelectTrigger className="bg-slate-900/60 w-36">

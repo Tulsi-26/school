@@ -69,7 +69,9 @@ const experimentCatalog: Record<
 
 const createReportSchema = z.object({
   experimentId: z.string(),
-  observations: z.array(z.record(z.string(), z.unknown())),
+  observations: z.array(
+    z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+  ),
   calculations: z.string().optional(),
   result: z.string().optional(),
   conclusion: z.string().optional(),
@@ -175,7 +177,7 @@ export async function POST(request: Request) {
         aim: catalog.aim,
         apparatus: catalog.apparatus,
         theory: catalog.theory,
-        observations: parsed.data.observations as any,
+        observations: parsed.data.observations as unknown as import("@prisma/client").Prisma.InputJsonValue,
         calculations: parsed.data.calculations ?? null,
         result: autoResult,
         conclusion: autoConclusion,
