@@ -42,6 +42,16 @@
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
   }
+
+  @keyframes current-flow {
+    0% { stroke-dashoffset: 24; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(59,130,246,0.3)); }
+    50% { filter: drop-shadow(0 0 12px rgba(59,130,246,0.7)); }
+  }
 }
 
 :root {

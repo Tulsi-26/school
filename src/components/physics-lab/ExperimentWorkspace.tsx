@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Settings, Eye, EyeOff } from 'lucide-react';
-import { usePhysicsLab, Instrument as InstrumentType } from '@/context/PhysicsLabContext';
+import React, { useRef, useState, useEffect } from 'react';
+import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
+import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
 import { WireCanvas } from '@/components/physics-lab/WireCanvas';
 import { calculateOhmLaw } from '@/lib/physics/experiments/ohmlaw';
 import { calculateWheatstoneBridge } from '@/lib/physics/experiments/wheatstone';
-import { calculateOpticsSimulation } from '@/lib/physics/experiments/optics_proto';
 import { calculateMechanicsSimulation } from '@/lib/physics/experiments/mechanics_proto';
 import { RayCanvas } from '@/components/physics-lab/RayCanvas';
 import { VectorCanvas } from '@/components/physics-lab/VectorCanvas';
+import { CircuitFeedback } from '@/components/physics-lab/CircuitFeedback';
+import { validateOhmLawCircuit, validateWheatstoneBridge } from '@/lib/physics/core/circuitValidator';
 import { traceRayThroughComponents } from '@/lib/physics/core/optics';
+
+const SNAP_SIZE = 40;
 
 export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const {
@@ -26,11 +29,19 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     } = usePhysicsLab();
 
     const [showVisuals, setShowVisuals] = useState(true);
+    const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
+
+    // Circuit validation state
+    const [validationErrors, setValidationErrors] = useState<any[]>([]);
+    const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
+    const [circuitIsValid, setCircuitIsValid] = useState(false);
 
     const workspaceRef = useRef<HTMLDivElement>(null);
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
@@ -44,13 +55,9 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const x = e.clientX - rect.left - 50; // Center offset
         const y = e.clientY - rect.top - 50;
 
-        // Optical Bench Snapping
-        let finalX = x;
-        let finalY = y;
-        if (experimentId === 'reflection-refraction') {
-            finalX = Math.round(x / 40) * 40;
-            finalY = Math.round(y / 40) * 40;
-        }
+        // Snap to grid
+        const finalX = snapToGrid(x);
+        const finalY = snapToGrid(y);
 
         // Define terminals based on instrument type
         const terminals = [
@@ -89,6 +96,25 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             });
         }
     };
+
+    // Circuit validation
+    useEffect(() => {
+        if (experimentId === 'ohm-law') {
+            const validation = validateOhmLawCircuit(instruments, connections);
+            setValidationErrors(validation.errors);
+            setValidationSuggestions(validation.suggestions);
+            setCircuitIsValid(validation.isValid);
+        } else if (experimentId === 'wheatstone-bridge') {
+            const validation = validateWheatstoneBridge(instruments, connections);
+            setValidationErrors(validation.errors);
+            setValidationSuggestions(validation.suggestions);
+            setCircuitIsValid(validation.isValid);
+        } else {
+            setValidationErrors([]);
+            setValidationSuggestions([]);
+            setCircuitIsValid(true);
+        }
+    }, [instruments, connections, experimentId]);
 
     // Simulation integration
     useEffect(() => {
@@ -204,6 +230,8 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         }
     }, [instruments, connections, updateInstrumentProperties, setSimulationResults, experimentId]);
 
+    const isCurrentFlowing = simulationResults.isValid && simulationResults.isClosed;
+
     return (
         <div
             ref={workspaceRef}
@@ -222,11 +250,42 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                     >
                         {showVisuals ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
+                    <button
+                        onClick={() => setSnapEnabled(!snapEnabled)}
+                        className={`p-2 rounded-lg transition-all ${snapEnabled ? 'bg-purple-500/20 text-purple-400' : 'text-slate-500 hover:text-slate-300'}`}
+                        title={snapEnabled ? "Disable Snap to Grid" : "Enable Snap to Grid"}
+                    >
+                        <Grid3X3 size={18} />
+                    </button>
                     <button className="p-2 text-slate-500 hover:text-slate-300 rounded-lg transition-all" title="Lab Settings">
                         <Settings size={18} />
                     </button>
                 </div>
             </div>
+
+            {/* Snap Grid Overlay */}
+            {snapEnabled && (
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    {/* Grid dots at snap intersections */}
+                    <svg className="w-full h-full opacity-20">
+                        <defs>
+                            <pattern id="snapGrid" width={SNAP_SIZE} height={SNAP_SIZE} patternUnits="userSpaceOnUse">
+                                <circle cx={SNAP_SIZE / 2} cy={SNAP_SIZE / 2} r="1.5" fill="#475569" />
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#snapGrid)" />
+                    </svg>
+                </div>
+            )}
+
+            {/* Circuit Validation Feedback */}
+            {instruments.length > 0 && (experimentId === 'ohm-law' || experimentId === 'wheatstone-bridge') && (
+                <CircuitFeedback
+                    errors={validationErrors}
+                    suggestions={validationSuggestions}
+                    isValid={circuitIsValid}
+                />
+            )}
 
             {/* Optical Bench Ruler */}
             {experimentId === 'reflection-refraction' && (
@@ -244,11 +303,12 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             {/* Table Visual */}
             <div className="absolute inset-x-8 bottom-0 h-4 bg-slate-800/50 rounded-t-2xl border-t border-slate-700"></div>
 
-            {/* Wires */}
+            {/* Wires with current flow animation */}
             <WireCanvas
                 connections={connections}
                 instruments={instruments}
                 activeConnection={isConnecting ? { from: isConnecting.from, to: mousePos } : null}
+                showCurrentFlow={isCurrentFlowing}
             />
 
             {/* Optics Visualization */}
@@ -266,7 +326,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 <Instrument
                     key={inst.id}
                     instrument={inst}
-                    onPositionChange={(x: number, y: number) => updateInstrumentPosition(inst.id, x, y)}
+                    onPositionChange={(x: number, y: number) => {
+                        const snappedX = snapToGrid(x);
+                        const snappedY = snapToGrid(y);
+                        updateInstrumentPosition(inst.id, snappedX, snappedY);
+                    }}
                     onTerminalClick={handleTerminalClick}
                     updateProperties={updateInstrumentProperties}
                 />
