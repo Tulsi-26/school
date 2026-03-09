@@ -11,18 +11,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model Organization {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     User[]
+  labReports  LabReport[]
+}
+
 model User {
   id                   String                @id @default(cuid()) @map("_id")
   name                 String?
   email                String                @unique
   passwordHash         String
+  role                 UserRole              @default(STUDENT)
   emailVerified        DateTime?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  organizationId       String?
+  organization         Organization?         @relation(fields: [organizationId], references: [id])
   accounts             Account[]
   sessions             Session[]
   verificationTokens   EmailVerificationToken[]
   passwordResetTokens  PasswordResetToken[]
+  labReports           LabReport[]
+
+  @@index([organizationId])
+}
+
+model LabReport {
+  id               String       @id @default(cuid()) @map("_id")
+  title            String
+  experimentId     String
+  experimentTitle  String
+  aim              String
+  apparatus        String[]
+  theory           String
+  observations     Json
+  calculations     String?
+  result           String
+  conclusion       String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId   String?
+  organization     Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([experimentId])
 }
 
 model EmailVerificationToken {

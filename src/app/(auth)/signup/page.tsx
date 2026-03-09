@@ -26,6 +26,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const signupSchema = z.object({
   name: z
@@ -35,6 +42,7 @@ const signupSchema = z.object({
     .optional(),
   email: z.string().email("Please enter a valid email."),
   password: z.string().min(8, "Passwords must be at least 8 characters."),
+  role: z.enum(["STUDENT", "TEACHER"]).default("STUDENT"),
 });
 
 type SignupValues = z.infer<typeof signupSchema>;
@@ -50,6 +58,7 @@ export default function SignupPage() {
       name: undefined,
       email: "",
       password: "",
+      role: "STUDENT",
     },
   });
 
@@ -79,6 +88,7 @@ export default function SignupPage() {
         name: undefined,
         email: "",
         password: "",
+        role: "STUDENT",
       });
     } catch (error) {
       console.error(error);
@@ -125,6 +135,28 @@ export default function SignupPage() {
                         className="bg-slate-900/60"
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>I am a</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-slate-900/60">
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="STUDENT">Student</SelectItem>
+                        <SelectItem value="TEACHER">Teacher</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
