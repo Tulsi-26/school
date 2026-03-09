@@ -103,7 +103,8 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 resistor?.properties.resistance || 100,
                 rheostat?.properties.resistance || 50,
                 sw?.properties.closed || false,
-                connections
+                connections,
+                instruments
             );
 
             setSimulationResults(result);
@@ -281,6 +282,16 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                         {experimentId === 'wheatstone-bridge' && 'Bridge active: Galvanometer reading stable'}
                         {experimentId === 'reflection-refraction' && 'Optical path established'}
                         {experimentId === 'newton-second-law' && 'Mechanical equilibrium calculated'}
+                    </span>
+                </div>
+            )}
+
+            {/* Hint / Warning Notification */}
+            {!simulationResults.isValid && simulationResults.hint && (
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                    <span className="text-sm font-bold uppercase tracking-wider">
+                        {simulationResults.hint}
                     </span>
                 </div>
             )}

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck } from 'lucide-react';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
-import { usePhysicsLab } from '@/context/PhysicsLabContext';
+import { usePhysicsLab, PhysicsLabProvider } from '@/context/PhysicsLabContext';
 
 const experiments = [
     {
@@ -47,7 +47,7 @@ const experiments = [
     }
 ];
 
-export default function PhysicsLabDashboard() {
+function PhysicsLabDashboardContent() {
     const { masteredExperiments } = usePhysicsLab();
     const [activeCategory, setActiveCategory] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -226,5 +226,13 @@ export default function PhysicsLabDashboard() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function PhysicsLabDashboard() {
+    return (
+        <PhysicsLabProvider>
+            <PhysicsLabDashboardContent />
+        </PhysicsLabProvider>
     );
 }
