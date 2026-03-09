@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRight, Check, Play, Upload, Database, FileSpreadsheet, Lock, Zap } from "lucide-react"
+import { ArrowRight, Check, Play, Upload, Database, FileSpreadsheet, Lock, Zap, Beaker } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
@@ -56,14 +56,14 @@ export default function Home() {
                 From messy spreadsheets to perfect databases. AI-powered data transformation for modern enterprises.
               </motion.p>
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="/book-demo">
-                  <Button size="lg" variant="gradient" className="w-full sm:w-auto text-lg px-8 h-12">
-                    Book a Demo
+                <Link href="/physics-lab">
+                  <Button size="lg" variant="default" className="w-full sm:w-auto text-lg px-8 h-12 bg-blue-600 hover:bg-blue-700 gap-2">
+                    <Beaker className="w-5 h-5" /> Visit Virtual Lab
                   </Button>
                 </Link>
-                <Link href="/demo">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-12 gap-2">
-                    <Play className="w-4 h-4 ml-1 fill-current" /> Watch Demo
+                <Link href="/book-demo">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-12 text-gray-600">
+                    Book a Demo
                   </Button>
                 </Link>
               </motion.div>

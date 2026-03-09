@@ -29,6 +29,9 @@ export function Navbar() {
                             <Link href="/pricing" className="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
                                 Pricing
                             </Link>
+                            <Link href="/physics-lab" className="text-blue-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-bold transition-colors border border-blue-500/10 bg-blue-500/5">
+                                Virtual Lab
+                            </Link>
                         </div>
                     </div>
                     <div className="hidden md:flex items-center space-x-4">
@@ -72,6 +75,12 @@ export function Navbar() {
                             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
                         >
                             Pricing
+                        </Link>
+                        <Link
+                            href="/physics-lab"
+                            className="block px-3 py-2 rounded-md text-base font-bold text-blue-600 hover:bg-blue-50"
+                        >
+                            Virtual Lab
                         </Link>
                         <div className="pt-4 flex flex-col gap-2">
                             <Link href="/demo" className="w-full">
