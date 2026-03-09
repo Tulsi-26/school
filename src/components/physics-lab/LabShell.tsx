@@ -5,7 +5,7 @@ import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentPanel } from '@/components/physics-lab/InstrumentPanel';
 import { ExperimentWorkspace } from '@/components/physics-lab/ExperimentWorkspace';
 import { ExperimentGuide } from '@/components/physics-lab/ExperimentGuide';
-import { ChevronRight, Home, Beaker, RotateCcw, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Home, Beaker, RotateCcw, ShieldCheck, PanelLeft, BookOpen, X, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 
 interface LabShellProps {
@@ -16,6 +16,9 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery } = usePhysicsLab();
     const experimentName = experimentId === 'ohm-law' ? "Ohm's Law Verification" : "Wheatstone Bridge";
     const isMastered = masteredExperiments.includes(experimentId);
+    const [showInstruments, setShowInstruments] = React.useState(false);
+    const [showGuide, setShowGuide] = React.useState(false);
+    const [showRotateOverlay, setShowRotateOverlay] = React.useState(false);
 
     // Track visit and set active experiment
     React.useEffect(() => {
@@ -31,10 +34,34 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
         return () => setActiveExperimentId(null);
     }, [experimentId, setActiveExperimentId]);
 
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const media = window.matchMedia('(orientation: portrait)');
+        const sync = () => {
+            setShowRotateOverlay(window.innerWidth < 768 && media.matches);
+        };
+
+        sync();
+        media.addEventListener('change', sync);
+        window.addEventListener('resize', sync);
+        return () => {
+            media.removeEventListener('change', sync);
+            window.removeEventListener('resize', sync);
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (showRotateOverlay) {
+            setShowGuide(false);
+            setShowInstruments(false);
+        }
+    }, [showRotateOverlay]);
+
     return (
-        <div className="flex h-screen w-full bg-slate-950 text-slate-50 overflow-hidden font-sans">
+        <div className="flex h-[100dvh] w-full bg-slate-950 text-slate-50 overflow-hidden font-sans">
             {/* Left Sidebar - Instruments */}
-            <aside className="w-80 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl flex flex-col">
+            <aside className="hidden xl:flex w-80 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col">
                 <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                     <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
                     <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full uppercase font-medium tracking-wider">Physics Lab</span>
@@ -43,9 +70,16 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             </aside>
 
             {/* Center - Workspace */}
-            <main className="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 to-black flex flex-col">
+            <main className="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 to-black flex flex-col min-w-0">
                 {/* Breadcrumbs / Header */}
-                <div className="h-14 border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-sm flex items-center px-6 gap-3 z-30">
+                <div className="min-h-14 border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-sm flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3 z-30 flex-wrap py-2">
+                    <button
+                        onClick={() => setShowInstruments(true)}
+                        className="xl:hidden inline-flex items-center justify-center p-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200"
+                        title="Open Instruments"
+                    >
+                        <PanelLeft className="w-4 h-4" />
+                    </button>
                     <Link href="/physics-lab" className="text-slate-500 hover:text-white transition-colors flex items-center gap-1.5 text-sm">
                         <Home className="w-3.5 h-3.5" />
                         Labs
@@ -57,6 +91,15 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                     </div>
 
                     <div className="ml-auto flex items-center gap-4">
+                        <button
+                            onClick={() => setShowGuide(true)}
+                            className="xl:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 text-xs font-bold"
+                            title="Open Guide"
+                        >
+                            <BookOpen className="w-3.5 h-3.5" />
+                            Guide
+                        </button>
+
                         <button
                             onClick={() => toggleMastery(experimentId)}
                             className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-xs font-bold transition-all ${isMastered
@@ -90,12 +133,59 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             </main>
 
             {/* Right Sidebar - Guide */}
-            <aside className="w-96 border-l border-slate-800 bg-slate-900/50 backdrop-blur-xl flex flex-col">
+            <aside className="hidden xl:flex w-96 border-l border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col">
                 <div className="p-4 border-b border-slate-800">
                     <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
                 </div>
                 <ExperimentGuide experimentId={experimentId} />
             </aside>
+
+            {/* Tablet/Phone Drawer: Instruments */}
+            {showInstruments && (
+                <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px]">
+                    <aside className="h-full w-[min(24rem,88vw)] bg-slate-900 border-r border-slate-700 flex flex-col">
+                        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                            <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
+                            <button
+                                onClick={() => setShowInstruments(false)}
+                                className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <InstrumentPanel experimentId={experimentId} />
+                    </aside>
+                </div>
+            )}
+
+            {/* Tablet/Phone Drawer: Guide */}
+            {showGuide && (
+                <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px] flex justify-end">
+                    <aside className="h-full w-[min(30rem,92vw)] bg-slate-900 border-l border-slate-700 flex flex-col">
+                        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                            <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
+                            <button
+                                onClick={() => setShowGuide(false)}
+                                className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <ExperimentGuide experimentId={experimentId} />
+                    </aside>
+                </div>
+            )}
+
+            {/* Phone portrait lock */}
+            {showRotateOverlay && (
+                <div className="absolute inset-0 z-[80] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6">
+                    <div className="max-w-xs text-center border border-slate-700 rounded-2xl bg-slate-900/80 p-6">
+                        <Smartphone className="w-9 h-9 text-blue-400 mx-auto mb-3" />
+                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-100">Rotate Your Phone</h3>
+                        <p className="mt-2 text-xs text-slate-400">For the best lab experience on mobile, use landscape mode.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
