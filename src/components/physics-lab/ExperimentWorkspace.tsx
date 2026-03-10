@@ -60,13 +60,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const finalY = snapToGrid(y);
 
         const terminalLayouts: Record<string, { x: number; y: number }[]> = {
-            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
-            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
-            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
+            ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
+            voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
             resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
-            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
-            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
+            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
