@@ -373,8 +373,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             {instruments.map((inst) => (
                 <Instrument
                     key={inst.id}
-                    instrument={inst}
-                    onPositionChange={(x, y) => handlePositionChange(inst.id, x, y)}
+                    id={inst.id}
+                    type={inst.type}
+                    name={inst.name}
+                    position={inst.position}
+                    properties={inst.properties}
+                    terminals={inst.terminals}
+                    onPositionChange={handlePositionChange}
                     onTerminalClick={handleTerminalClick}
                     onTerminalDoubleClick={handleTerminalDoubleClick}
                     updateProperties={handlePropertyUpdate}

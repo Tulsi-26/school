@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Circle, ListChecks } from 'lucide-react';
 import { useGamification } from './GamificationPanel';
+import { usePhysicsLab } from '@/context/PhysicsLabContext';
 
 interface ChecklistItem {
   id: string;
@@ -54,43 +55,91 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
   const { addXP, completeExperiment } = useGamification();
   const completedRef = useRef(false);
 
+  // Extract necessary state from physics lab for auto-evaluation
+  const { instruments, connections, simulationResults, observations } = usePhysicsLab();
+
   // Persist to localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = JSON.parse(localStorage.getItem(`checklist-${experimentId}`) || '[]');
       setChecked(new Set(saved));
-      // If already completed, mark ref so we don't re-award
       if (saved.length === items.length && items.length > 0) {
         completedRef.current = true;
       }
     }
   }, [experimentId, items.length]);
 
-  const toggle = (id: string) => {
+  // Auto-evaluate conditions
+  useEffect(() => {
+    if (items.length === 0) return;
+
     setChecked(prev => {
       const next = new Set(prev);
-      const wasChecked = next.has(id);
-      if (wasChecked) {
-        next.delete(id);
-      } else {
-        next.add(id);
-        // Award XP for first checklist tick ever (reuses first-circuit-closed)
-        if (prev.size === 0) {
-          addXP('first-circuit-closed');
+      let changed = false;
+
+      // Helper to check instrument existence
+      const hasInst = (type: string) => instruments.some((i: any) => i.type === type);
+      const instCount = (type: string) => instruments.filter((i: any) => i.type === type).length;
+
+      items.forEach(item => {
+        if (next.has(item.id)) return; // Already checked
+
+        let isMet = false;
+        switch (item.id) {
+          // Ohm's Law
+          case 'place-battery': isMet = hasInst('battery'); break;
+          case 'place-resistor': isMet = hasInst('resistor'); break;
+          case 'place-ammeter': isMet = hasInst('ammeter'); break;
+          case 'place-voltmeter': isMet = hasInst('voltmeter'); break;
+          case 'place-rheostat': isMet = hasInst('rheostat'); break;
+          case 'place-switch': isMet = hasInst('switch'); break;
+          case 'connect-all': isMet = connections.length >= 5; break;
+          case 'close-switch': isMet = simulationResults?.isClosed === true; break;
+          case 'vary-rheostat': isMet = observations.length >= 2; break; // Approximated by taking multiple obs
+
+          // Wheatstone Bridge
+          case 'place-resistors': isMet = instCount('resistor') >= 4; break;
+          case 'place-galvanometer': isMet = hasInst('galvanometer'); break;
+          case 'place-switches': isMet = instCount('switch') >= 2; break;
+          case 'connect-bridge': isMet = connections.length >= 8; break;
+          case 'close-switches': isMet = simulationResults?.isClosed === true; break;
+          case 'balance-bridge': isMet = simulationResults?.isValid === true && simulationResults?.galvanometerReading === 0; break;
+
+          // Optics
+          case 'place-source': isMet = hasInst('block'); break; // Using block for source currently
+          case 'place-lens': isMet = hasInst('lens'); break;
+          case 'observe-rays': isMet = simulationResults?.isValid === true; break;
+          case 'vary-position': isMet = observations.length >= 2; break;
+
+          // Mechanics
+          case 'place-pulley': isMet = hasInst('pulley'); break;
+          case 'place-m1': isMet = instCount('block') >= 1; break;
+          case 'place-m2': isMet = instCount('block') >= 2; break;
+          case 'observe-vectors': isMet = simulationResults?.isValid === true; break;
+
+          // Shared
+          case 'record-reading': isMet = observations.length >= 1; break;
+        }
+
+        if (isMet) {
+          next.add(item.id);
+          changed = true;
+          if (prev.size === 0) addXP('first-circuit-closed'); // Award for first step
+        }
+      });
+
+      if (changed) {
+        localStorage.setItem(`checklist-${experimentId}`, JSON.stringify([...next]));
+        if (next.size === items.length && !completedRef.current) {
+          completedRef.current = true;
+          completeExperiment(experimentId);
+          addXP('checklist-complete');
         }
       }
-      localStorage.setItem(`checklist-${experimentId}`, JSON.stringify([...next]));
 
-      // If all items just got completed, award experiment completion XP
-      if (!wasChecked && next.size === items.length && !completedRef.current) {
-        completedRef.current = true;
-        completeExperiment(experimentId);
-        addXP('checklist-complete');
-      }
-
-      return next;
+      return changed ? next : prev;
     });
-  };
+  }, [items, instruments, connections, simulationResults, observations, experimentId, addXP, completeExperiment]);
 
   const progress = items.length > 0 ? Math.round((checked.size / items.length) * 100) : 0;
 
@@ -110,17 +159,16 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
         />
       </div>
 
-      {/* Items */}
+      {/* Items - Now non-interactive displays */}
       <div className="space-y-2">
         {items.map((item) => {
           const done = checked.has(item.id);
           return (
-            <button
+            <div
               key={item.id}
-              onClick={() => toggle(item.id)}
               className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all ${done
-                  ? 'bg-emerald-500/10 border border-emerald-500/30'
-                  : 'hover:opacity-90'
+                ? 'bg-emerald-500/10 border border-emerald-500/30'
+                : 'opacity-70'
                 }`}
               style={done ? {} : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}
             >
@@ -132,7 +180,7 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
               <span className={`text-xs leading-relaxed ${done ? 'text-emerald-600 dark:text-emerald-300 line-through opacity-70' : ''}`} style={done ? {} : { color: 'var(--lab-text-secondary)' }}>
                 {item.label}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>
