@@ -6,10 +6,11 @@ import { motion } from 'framer-motion';
 export interface GalvanometerProps {
     reading: number; // typically -30 to +30
     scale?: number; // default max sweep
+    unit?: string;
     isHovered?: boolean;
 }
 
-export const Galvanometer: React.FC<GalvanometerProps> = ({ reading, scale = 30, isHovered }) => {
+export const Galvanometer: React.FC<GalvanometerProps> = ({ reading, scale = 30, unit = "µA", isHovered }) => {
     // Calculate percentage based on reading vs scale (-scale to +scale)
     // For a galvanometer, 0 is center.
     // Full sweep is usually around 90-100 degrees.

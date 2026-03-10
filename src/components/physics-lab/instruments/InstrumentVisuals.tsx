@@ -140,65 +140,76 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'ammeter':
-            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} isHovered={isHovered} />;
+            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} unit={properties.unit || 'mA'} isHovered={isHovered} />;
 
         case 'voltmeter':
-            return <Voltmeter reading={properties.reading || 0} scale={properties.scale || 20} isHovered={isHovered} />;
+            return <Voltmeter reading={properties.reading || 0} scale={properties.scale || 5} unit={properties.unit || 'V'} isHovered={isHovered} />;
 
         case 'resistor':
             return (
-                <div className={`relative w-[160px] h-[60px] flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
-                    {/* Left Wire Lead */}
-                    <div className="absolute left-[8px] right-[50%] h-[4px] bg-gradient-to-b from-slate-200 via-slate-400 to-slate-500 rounded-l-full shadow-[0_2px_3px_rgba(0,0,0,0.4)] z-0"></div>
+                <div className={`relative w-[240px] h-[160px] ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* The White Acrylic Board */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.3),inset_0_2px_4px_rgba(255,255,255,0.8)] border border-[#cbd5e1] overflow-hidden">
 
-                    {/* Right Wire Lead */}
-                    <div className="absolute left-[50%] right-[8px] h-[4px] bg-gradient-to-b from-slate-200 via-slate-400 to-slate-500 rounded-r-full shadow-[0_2px_3px_rgba(0,0,0,0.4)] z-0"></div>
+                        {/* The Zig-Zag Nichrome Wire (SVG) */}
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-sm">
+                            <polyline
+                                points="30,120 60,30 90,100 120,30 150,100 180,30 210,120"
+                                fill="none"
+                                stroke="#94a3b8"
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                            />
+                            <polyline
+                                points="30,120 60,30 90,100 120,30 150,100 180,30 210,120"
+                                fill="none"
+                                stroke="#f1f5f9"
+                                strokeWidth="0.5"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
 
-                    {/* Resistor Main Body */}
-                    <div className="relative w-[100px] h-[36px] flex items-center justify-center z-10 drop-shadow-xl">
-
-                        {/* Base Beige Cylinder */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#f5dfc3] via-[#daae81] to-[#a4714e] rounded-[10px] shadow-[inset_0_-4px_8px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.6)]"></div>
-
-                        {/* Left Bulge */}
-                        <div className="absolute left-0 top-0 bottom-0 w-[18px] bg-gradient-to-b from-[#f5dfc3] via-[#d5a574] to-[#925f3c] rounded-l-[10px] shadow-[inset_2px_0_4px_rgba(255,255,255,0.3)]"></div>
-
-                        {/* Right Bulge */}
-                        <div className="absolute right-0 top-0 bottom-0 w-[18px] bg-gradient-to-b from-[#f5dfc3] via-[#d5a574] to-[#925f3c] rounded-r-[10px] shadow-[inset_-2px_0_4px_rgba(255,255,255,0.3)]"></div>
-
-                        {/* Specular Highlight along the top */}
-                        <div className="absolute top-[3px] left-[10px] right-[10px] h-[6px] bg-white/40 blur-[1px] rounded-full pointer-events-none z-20"></div>
-
-                        {/* Specular Highlight along the bottom (bounce light) */}
-                        <div className="absolute bottom-[2px] left-[15px] right-[15px] h-[4px] bg-white/20 blur-[2px] rounded-full pointer-events-none z-20"></div>
-
-                        {/* Color Bands */}
-                        <div className="absolute inset-y-0 left-[18px] right-[18px] flex justify-between items-center px-[4px] overflow-hidden drop-shadow-sm">
-                            {/* Band 1: Red */}
-                            <div className="w-[8px] h-full bg-gradient-to-b from-[#f87171] via-[#dc2626] to-[#7f1d1d] opacity-90 mix-blend-multiply relative">
-                                <div className="absolute top-[3px] inset-x-0 h-[6px] bg-white/30 rounded-full"></div>
+                        {/* Top Brass Pegs */}
+                        {[60, 120, 180].map((x, i) => (
+                            <div key={`top-${i}`} className="absolute top-[26px] w-[8px] h-[8px] rounded-full bg-gradient-to-br from-[#fde047] to-[#854d0e] border border-[#713f12] shadow-[0_2px_3px_rgba(0,0,0,0.5)]" style={{ left: `${x - 4}px` }}>
+                                <div className="absolute top-[1px] left-[1px] w-[3px] h-[3px] rounded-full bg-white/60"></div>
                             </div>
-                            {/* Band 2: Black */}
-                            <div className="w-[8px] h-full bg-gradient-to-b from-[#4b5563] via-[#111827] to-[#000000] opacity-90 mix-blend-multiply relative">
-                                <div className="absolute top-[3px] inset-x-0 h-[6px] bg-white/20 rounded-full"></div>
+                        ))}
+
+                        {/* Bottom Inner Brass Pegs */}
+                        {[90, 150].map((x, i) => (
+                            <div key={`bot-${i}`} className="absolute top-[96px] w-[8px] h-[8px] rounded-full bg-gradient-to-br from-[#fde047] to-[#854d0e] border border-[#713f12] shadow-[0_2px_3px_rgba(0,0,0,0.5)]" style={{ left: `${x - 4}px` }}>
+                                <div className="absolute top-[1px] left-[1px] w-[3px] h-[3px] rounded-full bg-white/60"></div>
                             </div>
-                            {/* Band 3: Green */}
-                            <div className="w-[8px] h-full bg-gradient-to-b from-[#4ade80] via-[#16a34a] to-[#14532d] opacity-90 mix-blend-multiply relative">
-                                <div className="absolute top-[3px] inset-x-0 h-[6px] bg-white/30 rounded-full"></div>
-                            </div>
-                            {/* Spacer */}
-                            <div className="flex-1"></div>
-                            {/* Band 4: Gold (Tolerance) */}
-                            <div className="w-[8px] h-full bg-gradient-to-b from-[#fde047] via-[#ca8a04] to-[#713f12] opacity-90 mix-blend-multiply relative">
-                                <div className="absolute top-[3px] inset-x-0 h-[6px] bg-white/40 rounded-full"></div>
+                        ))}
+
+                        {/* Left Terminal Post (Black/Metal) */}
+                        <div className="absolute top-[110px] left-[20px] w-[20px] h-[20px] flex items-center justify-center z-10 cursor-pointer">
+                            <div className="w-[16px] h-[16px] rounded-full bg-gradient-to-b from-slate-200 to-slate-500 border border-slate-600 shadow-[0_3px_5px_rgba(0,0,0,0.4)] flex items-center justify-center">
+                                <div className="w-[8px] h-[8px] rounded-full bg-gradient-to-t from-slate-400 to-slate-200 shadow-inner border border-slate-400 flex items-center justify-center">
+                                    <div className="w-[4px] h-[4px] rounded-full bg-black/80"></div>
+                                </div>
                             </div>
                         </div>
 
+                        {/* Right Terminal Post (Red) */}
+                        <div className="absolute top-[110px] left-[200px] w-[20px] h-[20px] flex items-center justify-center z-10 cursor-pointer">
+                            <div className="w-[16px] h-[16px] rounded-full bg-gradient-to-b from-red-400 to-red-700 border border-red-900 shadow-[0_3px_5px_rgba(0,0,0,0.4)] flex items-center justify-center">
+                                <div className="w-[8px] h-[8px] rounded-full bg-gradient-to-t from-red-600 to-red-400 shadow-inner border border-red-500 flex items-center justify-center">
+                                    <div className="w-[4px] h-[4px] rounded-full bg-black/80"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Center Embossed Label */}
+                        <div className="absolute bottom-[10px] left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-100 rounded shadow-[inset_0_1px_3px_rgba(0,0,0,0.2),0_1px_0_rgba(255,255,255,0.8)] flex items-center justify-center">
+                            <span className="text-[7px] font-bold text-slate-400 tracking-[0.2em] leading-none select-none">UNKNOWN RESISTANCE</span>
+                        </div>
                     </div>
 
                     {/* Value Badge (Appears on Hover) */}
                     {isHovered && (
-                        <div className="absolute -top-10 bg-slate-800 text-slate-200 text-xs font-mono font-bold px-2 py-1 rounded shadow-lg border border-slate-600 whitespace-nowrap z-50">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-xs font-mono font-bold px-2 py-1 rounded shadow-lg border border-slate-600 whitespace-nowrap z-50">
                             {properties.resistance} Ω
                         </div>
                     )}
@@ -405,7 +416,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'galvanometer':
-            return <Galvanometer reading={properties.reading || 0} scale={properties.scale || 30} isHovered={isHovered} />;
+            return <Galvanometer reading={properties.reading || 0} scale={properties.scale || 30} unit={properties.unit || 'µA'} isHovered={isHovered} />;
 
         case 'lens':
             const isConvex = properties.type === 'convex';

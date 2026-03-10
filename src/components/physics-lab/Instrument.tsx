@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Instrument as InstrumentType, usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trash2, Settings2, Check } from 'lucide-react';
 
 interface InstrumentProps {
     id: string;
@@ -32,14 +33,15 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
     const { connections, instruments, removeInstrument } = usePhysicsLab();
 
     const connectedState = useMemo(() => {
         if (!terminals) return { connectedTerminalIds: new Set<string>(), connectedNames: [], count: 0 };
-        const ownTerminalIds = new Set(terminals.map((t) => t.id));
+        const ownTerminalIds = new Set(terminals.filter(t => t).map((t) => t.id));
 
         const ownConnections = connections.filter(
-            (conn) => ownTerminalIds.has(conn.from) || ownTerminalIds.has(conn.to)
+            (conn) => conn && (ownTerminalIds.has(conn.from) || ownTerminalIds.has(conn.to))
         );
 
         const connectedTerminalIds = new Set<string>();
@@ -54,7 +56,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
 
         const getInstrumentByTerminal = (terminalId: string) => {
             for (const inst of instruments) {
-                if (inst.terminals.some((t) => t.id === terminalId)) {
+                if (inst?.terminals?.some((t) => t?.id === terminalId)) {
                     return inst;
                 }
             }
@@ -86,12 +88,34 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         if (type === 'switch') {
             updateProperties(id, { closed: !properties.closed });
         }
+        setContextMenu(null); // Close menu on regular click
     };
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        removeInstrument(id);
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY });
     };
+
+    // Close context menu when clicking elsewhere
+    useEffect(() => {
+        const handleClickOutside = () => setContextMenu(null);
+        if (contextMenu) {
+            window.addEventListener('click', handleClickOutside);
+            return () => window.removeEventListener('click', handleClickOutside);
+        }
+    }, [contextMenu]);
+
+    // Available scales by instrument type
+    const getScaleOptions = () => {
+        switch (type) {
+            case 'ammeter': return [{ label: "100 mA", unit: "mA", scale: 100 }, { label: "1 A", unit: "A", scale: 1 }, { label: "5 A", unit: "A", scale: 5 }];
+            case 'voltmeter': return [{ label: "5 V", unit: "V", scale: 5 }, { label: "20 V", unit: "V", scale: 20 }, { label: "100 V", unit: "V", scale: 100 }];
+            case 'galvanometer': return [{ label: "30 µA", unit: "µA", scale: 30 }, { label: "500 µA", unit: "µA", scale: 500 }];
+            default: return null;
+        }
+    };
+    const scaleOptions = getScaleOptions();
 
     return (
         <motion.div
@@ -160,15 +184,84 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                 ))}
 
                 {/* Label */}
-                <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
                     {name}
                 </div>
             </div>
+
+            {/* Context Menu Portal / Overlay */}
+            <AnimatePresence>
+                {contextMenu && (
+                    <div className="fixed inset-0 z-[9999]" style={{ pointerEvents: 'none' }}>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            style={{
+                                position: 'absolute',
+                                left: contextMenu.x,
+                                top: contextMenu.y,
+                                pointerEvents: 'auto'
+                            }}
+                            className="w-48 bg-slate-900 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-slate-700 overflow-hidden flex flex-col py-1"
+                            onClick={(e) => e.stopPropagation()} // Prevent closing immediately when clicking inside
+                        >
+                            {/* Title */}
+                            <div className="px-3 py-2 border-b border-slate-800">
+                                <span className="text-xs font-semibold text-slate-300">{name}</span>
+                            </div>
+
+                            {/* Scale Options (if applicable) */}
+                            {scaleOptions && (
+                                <div className="py-1">
+                                    <div className="px-3 py-1.5 flex items-center gap-2 text-slate-400">
+                                        <Settings2 className="w-3.5 h-3.5" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">Range / Scale</span>
+                                    </div>
+                                    {scaleOptions.map(opt => (
+                                        <button
+                                            key={opt.label}
+                                            onClick={() => {
+                                                updateProperties(id, { scale: opt.scale, unit: opt.unit });
+                                                setContextMenu(null);
+                                            }}
+                                            className="w-full px-3 py-1.5 text-left text-sm text-slate-300 hover:bg-blue-600/20 hover:text-blue-200 transition-colors flex items-center justify-between group"
+                                        >
+                                            <span>{opt.label}</span>
+                                            {properties.unit === opt.unit && properties.scale === opt.scale && (
+                                                <Check className="w-4 h-4 text-blue-400" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {scaleOptions && <div className="h-px bg-slate-800 my-1"></div>}
+
+                            {/* Remove Option */}
+                            <div className="py-1">
+                                <button
+                                    onClick={() => {
+                                        removeInstrument(id);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center gap-2"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>Remove Instrument</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
 
 export const Instrument = React.memo(InstrumentComponent, (prev, next) => {
+    if (!prev || !next) return false;
     return (
         prev.id === next.id &&
         prev.type === next.type &&

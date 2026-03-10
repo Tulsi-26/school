@@ -54,7 +54,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             battery: { w: 280, h: 160 },
             ammeter: { w: 200, h: 250 },
             voltmeter: { w: 200, h: 250 },
-            resistor: { w: 160, h: 60 },
+            resistor: { w: 240, h: 160 },
             rheostat: { w: 260, h: 120 },
             switch: { w: 180, h: 120 },
             galvanometer: { w: 288, h: 340 },
@@ -72,7 +72,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
             ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
             voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
-            resistor: [{ x: 8, y: 30 }, { x: 152, y: 30 }],
+            resistor: [{ x: 30, y: 120 }, { x: 210, y: 120 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
             switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
             galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
@@ -156,7 +156,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const r = instruments.find(i => i.id === 'r');
         const s = instruments.find(i => i.id === 's');
         const galvanometer = instruments.find(i => i.type === 'galvanometer');
-        const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({ id: i.id, type: i.type }));
+        const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({
+            id: i?.id,
+            type: i?.type,
+            unit: i?.properties?.unit || (i?.type === 'ammeter' ? 'mA' : 'V')
+        }));
         const object = instruments.find(i => i.type === 'block');
         const lenses = instruments.filter(i => i.type === 'lens').map(l => ({
             position: { x: l.position.x, y: l.position.y },
@@ -201,12 +205,14 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             setSimulationResults(result);
 
             // Update instrument readings only when values actually change
-            simInputs.meterIds.forEach(({ id, type }) => {
+            simInputs.meterIds.forEach(({ id, type, unit }) => {
                 let newReading: number | string = 0;
                 if (type === 'ammeter') {
-                    newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
+                    const currentMultiplier = unit === 'mA' ? 1000 : 1;
+                    newReading = (result.isValid && result.isClosed) ? (result.current * currentMultiplier).toFixed(2) : 0;
                 } else if (type === 'voltmeter') {
-                    newReading = (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0;
+                    const voltageMultiplier = unit === 'mV' ? 1000 : 1;
+                    newReading = (result.isValid && result.isClosed) ? (result.voltage * voltageMultiplier).toFixed(2) : 0;
                 }
                 const key = `${id}-reading`;
                 if (lastReadingsRef.current[key] !== Number(newReading)) {
