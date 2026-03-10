@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap, Unplug, Cable, ChevronRight, CircleDot } from 'lucide-react';
 import { Instrument, Connection } from '@/context/PhysicsLabContext';
 
+interface ConnectedTerminalInfo {
+    connectionId: string;
+    instrumentName: string;
+    instrumentType: string;
+    terminalType: 'positive' | 'negative' | 'ground' | 'input' | 'output';
+    terminalId: string;
+}
+
 interface WireConnectPanelProps {
     instrument: Instrument;
     allInstruments: Instrument[];
@@ -57,12 +65,12 @@ export const WireConnectPanel: React.FC<WireConnectPanelProps> = ({
                     }
                 }
                 return null;
-            }).filter(Boolean);
+            }).filter((x): x is ConnectedTerminalInfo => x !== null);
 
             return {
                 ...terminal,
                 isConnected: connectedTo.length > 0,
-                connectedTo,
+                connectedTo: connectedTo as ConnectedTerminalInfo[],
             };
         });
     }, [instrument.terminals, connections, allInstruments]);
@@ -185,7 +193,7 @@ export const WireConnectPanel: React.FC<WireConnectPanelProps> = ({
                                 </div>
                                 <div className="text-[10px] text-slate-500">
                                     {t.isConnected
-                                        ? `Connected to ${t.connectedTo.map((c: any) => c.instrumentName).join(', ')}`
+                                        ? `Connected to ${t.connectedTo.map((c) => c.instrumentName).join(', ')}`
                                         : 'Available'
                                     }
                                 </div>
@@ -214,7 +222,7 @@ export const WireConnectPanel: React.FC<WireConnectPanelProps> = ({
                                     className="overflow-hidden"
                                 >
                                     <div className="ml-4 pl-3 border-l-2 border-slate-700/50 space-y-1 py-1">
-                                        {t.connectedTo.map((conn: any) => (
+                                        {t.connectedTo.map((conn) => (
                                             <div
                                                 key={conn.connectionId}
                                                 className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-800/30 border border-slate-700/20"
