@@ -143,7 +143,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         const match = scaleOptions.find(opt => opt.unit === properties.unit && opt.scale === properties.scale);
         if (match) return match.label;
         // Fallback: construct from properties
-        if (properties.scale != null && properties.unit) return `${properties.scale} ${properties.unit}`;
+        if (properties.scale !== null && properties.scale !== undefined && properties.unit) return `${properties.scale} ${properties.unit}`;
         return null;
     }, [scaleOptions, properties.unit, properties.scale]);
 
@@ -153,14 +153,15 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     };
 
     const handleDuplicate = () => {
+        const now = Date.now();
         addInstrument({
             type,
             name,
             position: { x: position.x + 40, y: position.y + 40 },
             properties: { ...properties },
-            terminals: terminals.map(t => ({
+            terminals: terminals.map((t, idx) => ({
                 ...t,
-                id: `${type}-t-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                id: `${type}-t${idx}-${now}-${Math.random().toString(36).slice(2, 8)}`,
             })),
         });
         setContextMenu(null);
