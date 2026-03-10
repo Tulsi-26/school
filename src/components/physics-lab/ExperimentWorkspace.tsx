@@ -58,6 +58,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             rheostat: { w: 260, h: 120 },
             switch: { w: 180, h: 120 },
             galvanometer: { w: 288, h: 340 },
+            pulley: { w: 96, h: 96 },
+            block: { w: 96, h: 96 },
+            lens: { w: 32, h: 192 },
+            mirror: { w: 32, h: 192 },
+            screen: { w: 48, h: 192 },
+            stopwatch: { w: 96, h: 120 },
+            'meter-scale': { w: 240, h: 48 },
         };
         const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
 
@@ -75,14 +82,24 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             resistor: [{ x: 30, y: 120 }, { x: 210, y: 120 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
             switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
-            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
+            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
+            pulley: [{ x: 10, y: 48 }, { x: 86, y: 48 }],
+            block: [{ x: 48, y: 0 }],
+            lens: [{ x: 16, y: 48 }, { x: 16, y: 144 }],
+            mirror: [{ x: 16, y: 48 }, { x: 16, y: 144 }],
+            screen: [{ x: 24, y: 96 }],
+            stopwatch: [],
+            'meter-scale': [],
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
-        const terminals = [
-            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: layout[0] },
-            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: layout[1] },
-        ] as any[];
+        const isMechanical = ['pulley', 'block'].includes(instData.type);
+        const terminals = layout.map((pos, idx) => ({
+            id: `${instData.type}-t${idx + 1}-${Date.now()}`,
+            parentId: '',
+            type: isMechanical ? (idx === 0 ? 'input' : 'output') : (idx === 0 ? 'positive' : 'negative'),
+            position: pos,
+        })) as any[];
 
         addInstrument({
             ...instData,
@@ -100,11 +117,12 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
-                addConnection(isConnecting.from, terminalId);
+                const isMechanicsExp = experimentId === 'newton-second-law';
+                addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
             }
             setIsConnecting(null);
         }
-    }, [isConnecting, addConnection]);
+    }, [isConnecting, addConnection, experimentId]);
 
     const handleTerminalDoubleClick = useCallback((terminalId: string, type: string) => {
         setIsConnecting({ from: terminalId, type });
@@ -418,7 +436,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             {/* Connection Indicator */}
             {isConnecting && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold animate-pulse uppercase tracking-widest">
-                    Connecting {isConnecting.type} terminal...
+                    {experimentId === 'newton-second-law' ? 'Attaching rope...' : `Connecting ${isConnecting.type} terminal...`}
                 </div>
             )}
         </div>
