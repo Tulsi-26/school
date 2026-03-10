@@ -205,33 +205,40 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                 />
 
                 {/* Terminals */}
-                {terminals.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onTerminalClick(t.id, t.type);
-                        }}
-                        onDoubleClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            onTerminalDoubleClick(t.id, t.type);
-                        }}
-                        className={`absolute w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 z-20 ${t.type === 'positive'
-                            ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
-                            : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
-                            }`}
-                        style={{
-                            left: t.position.x,
-                            top: t.position.y,
-                            transform: 'translate(-50%, -50%)',
-                            boxShadow: connectedState.connectedTerminalIds.has(t.id)
-                                ? '0 0 0 2px rgba(59,130,246,0.85), 0 0 16px rgba(59,130,246,0.65)'
-                                : undefined
-                        }}
-                        title={`${t.type} terminal`}
-                    />
-                ))}
+                {terminals.map((t) => {
+                    const isMechanicalTerminal = t.type === 'input' || t.type === 'output';
+                    return (
+                        <button
+                            key={t.id}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onTerminalClick(t.id, t.type);
+                            }}
+                            onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onTerminalDoubleClick(t.id, t.type);
+                            }}
+                            className={`absolute w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 z-20 ${isMechanicalTerminal
+                                ? 'bg-amber-700 border-amber-600 shadow-[0_0_8px_rgba(180,130,80,0.4)]'
+                                : t.type === 'positive'
+                                    ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
+                                    : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
+                                }`}
+                            style={{
+                                left: t.position.x,
+                                top: t.position.y,
+                                transform: 'translate(-50%, -50%)',
+                                boxShadow: connectedState.connectedTerminalIds.has(t.id)
+                                    ? isMechanicalTerminal
+                                        ? '0 0 0 2px rgba(180,130,80,0.85), 0 0 16px rgba(180,130,80,0.65)'
+                                        : '0 0 0 2px rgba(59,130,246,0.85), 0 0 16px rgba(59,130,246,0.65)'
+                                    : undefined
+                            }}
+                            title={isMechanicalTerminal ? 'rope attachment point' : `${t.type} terminal`}
+                        />
+                    );
+                })}
 
                 {/* Label */}
                 <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>

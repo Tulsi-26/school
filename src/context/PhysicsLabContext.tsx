@@ -23,6 +23,7 @@ export interface Connection {
     from: string; // Terminal ID
     to: string;   // Terminal ID
     color: string;
+    connectionType: 'wire' | 'rope'; // Wire for electrical, rope for mechanics
 }
 
 interface PhysicsLabContextType {
@@ -32,7 +33,7 @@ interface PhysicsLabContextType {
     removeInstrument: (id: string) => void;
     updateInstrumentPosition: (id: string, x: number, y: number) => void;
     updateInstrumentProperties: (id: string, properties: Record<string, any>) => void;
-    addConnection: (from: string, to: string) => void;
+    addConnection: (from: string, to: string, connectionType?: 'wire' | 'rope') => void;
     removeConnection: (id: string) => void;
     resetLab: () => void;
     simulationResults: Record<string, any>;
@@ -116,9 +117,10 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         );
     }, []);
 
-    const addConnection = useCallback((from: string, to: string) => {
+    const addConnection = useCallback((from: string, to: string, connectionType: 'wire' | 'rope' = 'wire') => {
         const id = `conn-${Date.now()}`;
-        setConnections((prev) => [...prev, { id, from, to, color: '#3b82f6' }]);
+        const color = connectionType === 'rope' ? '#a8896c' : '#3b82f6';
+        setConnections((prev) => [...prev, { id, from, to, color, connectionType }]);
     }, []);
 
     const removeConnection = useCallback((id: string) => {

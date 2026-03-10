@@ -59,6 +59,45 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
         );
     };
 
+    const drawRope = (start: { x: number, y: number }, end: { x: number, y: number }, color: string, key: string) => {
+        // Rope hangs with gravity — use a catenary-like curve (quadratic Bezier sagging downward)
+        const dx = end.x - start.x;
+        const dist = Math.sqrt(dx * dx + (end.y - start.y) ** 2);
+        const sag = Math.min(dist * 0.15, 40); // Proportional sag, capped
+        const midX = (start.x + end.x) / 2;
+        const midY = Math.max(start.y, end.y) + sag;
+
+        return (
+            <g key={key}>
+                {/* Rope shadow */}
+                <path
+                    d={`M ${start.x} ${start.y} Q ${midX} ${midY + 2} ${end.x} ${end.y}`}
+                    fill="none"
+                    stroke="rgba(0,0,0,0.2)"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                />
+                {/* Main rope */}
+                <path
+                    d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                />
+                {/* Rope texture highlight */}
+                <path
+                    d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.15)"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeDasharray="6 4"
+                />
+            </g>
+        );
+    };
+
     return (
         <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0">
             <defs>
@@ -73,6 +112,9 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
                 const start = getTerminalPos(conn.from);
                 const end = getTerminalPos(conn.to);
                 if (start && end) {
+                    if (conn.connectionType === 'rope') {
+                        return drawRope(start, end, conn.color, `rope-${conn.id}-${idx}`);
+                    }
                     return drawWire(start, end, conn.color, `wire-${conn.id}-${idx}`, true);
                 }
                 return null;

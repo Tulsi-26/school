@@ -33,11 +33,14 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
             { type: 'lens', name: 'Convex Lens', properties: { type: 'convex', focalLength: 20 } },
             { type: 'lens', name: 'Concave Lens', properties: { type: 'concave', focalLength: 15 } },
             { type: 'mirror', name: 'Plane Mirror', properties: { type: 'plane' } },
+            { type: 'screen', name: 'Screen', properties: {} },
         ],
         'newton-second-law': [
             { type: 'pulley', name: 'Fixed Pulley', properties: { friction: 0 } },
             { type: 'block', name: 'Mass Block M1', properties: { mass: 5 } },
             { type: 'block', name: 'Mass Block M2', properties: { mass: 10 } },
+            { type: 'stopwatch', name: 'Stopwatch', properties: { time: 0, running: false } },
+            { type: 'meter-scale', name: 'Meter Scale', properties: { length: 100 } },
         ]
     };
 
