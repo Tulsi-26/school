@@ -64,7 +64,7 @@ export const Instrument: React.FC<InstrumentProps> = ({
     }, [connections, instruments, instrument.id, instrument.terminals]);
 
     const handleDrag = (e: any, info: any) => {
-        onPositionChange(info.point.x, info.point.y);
+        onPositionChange(instrument.position.x + info.offset.x, instrument.position.y + info.offset.y);
     };
 
     const handleInstrumentClick = () => {

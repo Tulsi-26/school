@@ -44,6 +44,10 @@ interface PhysicsLabContextType {
     setActiveExperimentId: (id: string | null) => void;
     masteredExperiments: string[];
     toggleMastery: (experimentId: string) => void;
+    validationErrors: any[];
+    validationSuggestions: string[];
+    circuitIsValid: boolean;
+    setValidationState: (errors: any[], suggestions: string[], isValid: boolean) => void;
 }
 
 const PhysicsLabContext = createContext<PhysicsLabContextType | undefined>(undefined);
@@ -55,6 +59,15 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [observations, setObservations] = useState<any[]>([]);
     const [masteredExperiments, setMasteredExperiments] = useState<string[]>([]);
     const [activeExperimentId, setActiveExperimentId] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<any[]>([]);
+    const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
+    const [circuitIsValid, setCircuitIsValid] = useState(false);
+
+    const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
+        setValidationErrors(errors);
+        setValidationSuggestions(suggestions);
+        setCircuitIsValid(isValid);
+    }, []);
 
     // Persistence logic
     React.useEffect(() => {
@@ -154,7 +167,11 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         activeExperimentId,
         setActiveExperimentId,
         masteredExperiments,
-        toggleMastery
+        toggleMastery,
+        validationErrors,
+        validationSuggestions,
+        circuitIsValid,
+        setValidationState
     }), [
         instruments,
         connections,
@@ -171,7 +188,11 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         clearObservations,
         activeExperimentId,
         masteredExperiments,
-        toggleMastery
+        toggleMastery,
+        validationErrors,
+        validationSuggestions,
+        circuitIsValid,
+        setValidationState
     ]);
 
     return (
