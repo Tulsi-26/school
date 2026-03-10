@@ -95,20 +95,30 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
-        if (!isConnecting) {
-            setIsConnecting({ from: terminalId, type });
-        }
-    };
 
-    const handleTerminalClick = (terminalId: string, type: string) => {
+
+    const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
                 addConnection(isConnecting.from, terminalId);
             }
             setIsConnecting(null);
         }
-    };
+    }, [isConnecting, addConnection]);
+
+    const handleTerminalDoubleClick = useCallback((terminalId: string, type: string) => {
+        setIsConnecting({ from: terminalId, type });
+    }, []);
+
+    const handlePositionChange = useCallback((id: string, x: number, y: number) => {
+        const snappedX = snapToGrid(x);
+        const snappedY = snapToGrid(y);
+        updateInstrumentPosition(id, snappedX, snappedY);
+    }, [snapToGrid, updateInstrumentPosition]);
+
+    const handlePropertyUpdate = useCallback((id: string, props: any) => {
+        updateInstrumentProperties(id, props);
+    }, [updateInstrumentProperties]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (isConnecting && workspaceRef.current) {
@@ -148,9 +158,15 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const galvanometer = instruments.find(i => i.type === 'galvanometer');
         const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({ id: i.id, type: i.type }));
         const object = instruments.find(i => i.type === 'block');
-        const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));
+        const lenses = instruments.filter(i => i.type === 'lens').map(l => ({
+            position: { x: l.position.x, y: l.position.y },
+            focalLength: l.properties.focalLength,
+            type: l.properties.type
+        }));
         const m1 = instruments.find(i => i.name?.includes('M1'));
         const m2 = instruments.find(i => i.name?.includes('M2'));
+
+        const isOpticsOrMech = experimentId === 'reflection-refraction' || experimentId === 'newton-second-law';
 
         return {
             voltage: battery?.properties.voltage || 9,
@@ -163,12 +179,12 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             sR: s?.properties.resistance || 100,
             galvanometerId: galvanometer?.id || null,
             meterIds,
-            object: object ? { posX: object.position.x, posY: object.position.y } : null,
-            lenses,
-            m1: m1 ? { posX: m1.position.x, posY: m1.position.y, mass: m1.properties.mass } : null,
-            m2: m2 ? { posX: m2.position.x, posY: m2.position.y, mass: m2.properties.mass } : null,
+            object: (isOpticsOrMech && object) ? { posX: object.position.x, posY: object.position.y } : (object ? { posX: 0, posY: 0 } : null),
+            lenses: isOpticsOrMech ? lenses : [],
+            m1: (isOpticsOrMech && m1) ? { posX: m1.position.x, posY: m1.position.y, mass: m1.properties.mass } : null,
+            m2: (isOpticsOrMech && m2) ? { posX: m2.position.x, posY: m2.position.y, mass: m2.properties.mass } : null,
         };
-    }, [instruments]);
+    }, [instruments, experimentId]);
 
     // Simulation integration — uses extracted primitive values to avoid dependency on instruments object
     useEffect(() => {
@@ -358,14 +374,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 <Instrument
                     key={inst.id}
                     instrument={inst}
-                    onPositionChange={(x: number, y: number) => {
-                        const snappedX = snapToGrid(x);
-                        const snappedY = snapToGrid(y);
-                        updateInstrumentPosition(inst.id, snappedX, snappedY);
-                    }}
+                    onPositionChange={(x, y) => handlePositionChange(inst.id, x, y)}
                     onTerminalClick={handleTerminalClick}
                     onTerminalDoubleClick={handleTerminalDoubleClick}
-                    updateProperties={updateInstrumentProperties}
+                    updateProperties={handlePropertyUpdate}
                 />
             ))}
 

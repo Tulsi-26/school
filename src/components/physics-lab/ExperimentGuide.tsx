@@ -18,7 +18,7 @@ import {
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';
-import { GamificationPanel } from './GamificationPanel';
+import { GamificationPanel, useGamification } from './GamificationPanel';
 import { CircuitFeedback } from './CircuitFeedback';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {

@@ -21,6 +21,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     updateProperties
 }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const { connections, instruments, removeInstrument } = usePhysicsLab();
 
     const connectedState = useMemo(() => {
@@ -84,9 +85,13 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         <motion.div
             drag
             dragMomentum={false}
-            onDragEnd={handleDrag}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={(e, info) => {
+                setIsDragging(false);
+                handleDrag(e, info);
+            }}
             initial={{ x: instrument.position.x, y: instrument.position.y }}
-            animate={{ x: instrument.position.x, y: instrument.position.y }}
+            animate={isDragging ? undefined : { x: instrument.position.x, y: instrument.position.y }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onContextMenu={handleContextMenu}
