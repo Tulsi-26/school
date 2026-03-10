@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Instrument as InstrumentType, usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
+import { WireConnectPanel } from './WireConnectPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Settings2, Check } from 'lucide-react';
 
@@ -17,6 +18,11 @@ interface InstrumentProps {
     onTerminalClick: (id: string, type: string) => void;
     onTerminalDoubleClick: (id: string, type: string) => void;
     updateProperties: (id: string, props: any) => void;
+    onInstrumentDoubleClick?: (instrumentId: string) => void;
+    showWirePanel?: boolean;
+    onWirePanelClose?: () => void;
+    onWireConnect?: (fromTerminalId: string, toTerminalId: string) => void;
+    onWireDisconnect?: (connectionId: string) => void;
 }
 
 const InstrumentComponent: React.FC<InstrumentProps> = ({
@@ -29,7 +35,12 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     onPositionChange,
     onTerminalClick,
     onTerminalDoubleClick,
-    updateProperties
+    updateProperties,
+    onInstrumentDoubleClick,
+    showWirePanel,
+    onWirePanelClose,
+    onWireConnect,
+    onWireDisconnect,
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -91,6 +102,14 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         setContextMenu(null); // Close menu on regular click
     };
 
+    const handleInstrumentDoubleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (onInstrumentDoubleClick) {
+            onInstrumentDoubleClick(id);
+        }
+    };
+
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -142,7 +161,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
             className="absolute cursor-grab active:cursor-grabbing"
             style={{ touchAction: 'none' } as any}
         >
-            <div className="relative group" onClick={handleInstrumentClick}>
+            <div className="relative group" onClick={handleInstrumentClick} onDoubleClick={handleInstrumentDoubleClick}>
                 {/* Drag Handle Indicator */}
                 <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-slate-700/30 rounded-full opacity-0 group-hover:opacity-100 transition-all ${isDragging ? 'opacity-0 scale-50' : 'scale-100'}`} />
 
@@ -256,6 +275,19 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                     </div>
                 )}
             </AnimatePresence>
+            {/* Wire Connect Panel (shown on double-click) */}
+            <AnimatePresence>
+                {showWirePanel && onWirePanelClose && onWireConnect && onWireDisconnect && (
+                    <WireConnectPanel
+                        instrument={{ id, type, name, position, properties, terminals }}
+                        allInstruments={instruments}
+                        connections={connections}
+                        onConnect={onWireConnect}
+                        onDisconnect={onWireDisconnect}
+                        onClose={onWirePanelClose}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
@@ -269,6 +301,7 @@ export const Instrument = React.memo(InstrumentComponent, (prev, next) => {
         prev.position.x === next.position.x &&
         prev.position.y === next.position.y &&
         (prev.terminals || []).length === (next.terminals || []).length &&
-        JSON.stringify(prev.properties) === JSON.stringify(next.properties)
+        JSON.stringify(prev.properties) === JSON.stringify(next.properties) &&
+        prev.showWirePanel === next.showWirePanel
     );
 });

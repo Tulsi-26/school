@@ -24,6 +24,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         updateInstrumentProperties,
         connections,
         addConnection,
+        removeConnection,
         simulationResults,
         setSimulationResults,
         setValidationState
@@ -32,6 +33,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
+    const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
 
     const workspaceRef = useRef<HTMLDivElement>(null);
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
@@ -110,6 +112,23 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         setIsConnecting({ from: terminalId, type });
     }, []);
 
+    const handleInstrumentDoubleClick = useCallback((instrumentId: string) => {
+        setWirePanelInstrumentId((prev) => prev === instrumentId ? null : instrumentId);
+        setIsConnecting(null); // Cancel any active terminal connection
+    }, []);
+
+    const handleWirePanelClose = useCallback(() => {
+        setWirePanelInstrumentId(null);
+    }, []);
+
+    const handleWireConnect = useCallback((fromTerminalId: string, toTerminalId: string) => {
+        addConnection(fromTerminalId, toTerminalId);
+    }, [addConnection]);
+
+    const handleWireDisconnect = useCallback((connectionId: string) => {
+        removeConnection(connectionId);
+    }, [removeConnection]);
+
     const handlePositionChange = useCallback((id: string, x: number, y: number) => {
         const snappedX = snapToGrid(x);
         const snappedY = snapToGrid(y);
@@ -119,6 +138,12 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const handlePropertyUpdate = useCallback((id: string, props: any) => {
         updateInstrumentProperties(id, props);
     }, [updateInstrumentProperties]);
+
+    const handleWorkspaceClick = useCallback(() => {
+        if (wirePanelInstrumentId) {
+            setWirePanelInstrumentId(null);
+        }
+    }, [wirePanelInstrumentId]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (isConnecting && workspaceRef.current) {
@@ -301,6 +326,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onMouseMove={handleMouseMove}
+            onClick={handleWorkspaceClick}
             className="w-full h-full relative cursor-crosshair overflow-hidden"
         >
             {/* Lab HUD */}
@@ -389,6 +415,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                     onTerminalClick={handleTerminalClick}
                     onTerminalDoubleClick={handleTerminalDoubleClick}
                     updateProperties={handlePropertyUpdate}
+                    onInstrumentDoubleClick={handleInstrumentDoubleClick}
+                    showWirePanel={wirePanelInstrumentId === inst.id}
+                    onWirePanelClose={handleWirePanelClose}
+                    onWireConnect={handleWireConnect}
+                    onWireDisconnect={handleWireDisconnect}
                 />
             ))}
 
