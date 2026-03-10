@@ -15,6 +15,8 @@ import { validateOhmLawCircuit, validateWheatstoneBridge } from '@/lib/physics/c
 import { traceRayThroughComponents } from '@/lib/physics/core/optics';
 
 const SNAP_SIZE = 40;
+const MECHANICAL_INSTRUMENT_TYPES = ['pulley', 'block'];
+const MECHANICS_EXPERIMENT_IDS = ['newton-second-law'];
 
 export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const {
@@ -93,7 +95,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
-        const isMechanical = ['pulley', 'block'].includes(instData.type);
+        const isMechanical = MECHANICAL_INSTRUMENT_TYPES.includes(instData.type);
         const terminals = layout.map((pos, idx) => ({
             id: `${instData.type}-t${idx + 1}-${Date.now()}`,
             parentId: '',
@@ -117,7 +119,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
-                const isMechanicsExp = experimentId === 'newton-second-law';
+                const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
                 addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
             }
             setIsConnecting(null);

@@ -499,7 +499,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                     {/* Right rope attachment indicator */}
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-700/60 border border-amber-600/40"></div>
                     <div className="absolute -top-5 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded text-[8px] font-mono text-slate-400">
-                        &#956; = {properties.friction || '0'}
+                        μ = {properties.friction || '0'}
                     </div>
                 </div>
             );
