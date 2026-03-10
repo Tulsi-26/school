@@ -9,13 +9,15 @@ interface InstrumentProps {
     instrument: InstrumentType;
     onPositionChange: (x: number, y: number) => void;
     onTerminalClick: (id: string, type: string) => void;
+    onTerminalDoubleClick: (id: string, type: string) => void;
     updateProperties: (id: string, props: any) => void;
 }
 
-export const Instrument: React.FC<InstrumentProps> = ({
+const InstrumentComponent: React.FC<InstrumentProps> = ({
     instrument,
     onPositionChange,
     onTerminalClick,
+    onTerminalDoubleClick,
     updateProperties
 }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -108,6 +110,12 @@ export const Instrument: React.FC<InstrumentProps> = ({
                             e.stopPropagation();
                             onTerminalClick(t.id, t.type);
                         }}
+                        onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            // Prevent text selection matching on double click
+                            e.preventDefault();
+                            onTerminalDoubleClick(t.id, t.type);
+                        }}
                         className={`absolute w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 z-20 ${t.type === 'positive'
                             ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
                             : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
@@ -132,3 +140,5 @@ export const Instrument: React.FC<InstrumentProps> = ({
         </motion.div>
     );
 };
+
+export const Instrument = React.memo(InstrumentComponent);

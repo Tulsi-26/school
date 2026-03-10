@@ -56,7 +56,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             resistor: { w: 160, h: 60 },
             rheostat: { w: 260, h: 120 },
             switch: { w: 180, h: 120 },
-            galvanometer: { w: 128, h: 128 },
+            galvanometer: { w: 288, h: 340 },
         };
         const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
 
@@ -94,10 +94,14 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalClick = (terminalId: string, type: string) => {
+    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
         if (!isConnecting) {
             setIsConnecting({ from: terminalId, type });
-        } else {
+        }
+    };
+
+    const handleTerminalClick = (terminalId: string, type: string) => {
+        if (isConnecting) {
             if (isConnecting.from !== terminalId) {
                 addConnection(isConnecting.from, terminalId);
             }
@@ -106,7 +110,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (workspaceRef.current) {
+        if (isConnecting && workspaceRef.current) {
             const rect = workspaceRef.current.getBoundingClientRect();
             setMousePos({
                 x: e.clientX - rect.left,
@@ -336,6 +340,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                         updateInstrumentPosition(inst.id, snappedX, snappedY);
                     }}
                     onTerminalClick={handleTerminalClick}
+                    onTerminalDoubleClick={handleTerminalDoubleClick}
                     updateProperties={updateInstrumentProperties}
                 />
             ))}
