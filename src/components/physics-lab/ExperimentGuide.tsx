@@ -18,7 +18,7 @@ import {
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';
-import { GamificationPanel } from './GamificationPanel';
+import { GamificationPanel, useGamification } from './GamificationPanel';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const [activeTab, setActiveTab] = useState<'theory' | 'procedure' | 'observation' | 'graph' | 'checklist' | 'videos' | 'progress'>('theory');
@@ -37,15 +37,16 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
     return (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Tab Header */}
-            <div className="flex border-b border-slate-800 p-1 bg-slate-900/30 overflow-x-auto no-scrollbar">
+            <div className="flex p-1 overflow-x-auto no-scrollbar" style={{ borderBottom: '1px solid var(--lab-border)', backgroundColor: 'var(--lab-header)' }}>
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex-1 min-w-[3.5rem] flex flex-col items-center gap-1 py-2.5 transition-all relative ${activeTab === tab.id
-                            ? 'text-blue-400'
-                            : 'text-slate-500 hover:text-slate-300'
+                            ? ''
+                            : 'hover:opacity-80'
                             }`}
+                        style={{ color: activeTab === tab.id ? 'var(--lab-tab-active)' : 'var(--lab-tab-inactive)' }}
                     >
                         <tab.icon size={16} />
                         <span className="text-[8px] font-bold uppercase tracking-widest">{tab.label}</span>
@@ -289,6 +290,12 @@ const MechanicsProcedure = () => (
 
 const Observation = ({ experimentId }: { experimentId: string }) => {
     const { observations, recordObservation, clearObservations } = usePhysicsLab();
+    const { recordObservationXP } = useGamification();
+
+    const handleRecord = () => {
+        recordObservation();
+        recordObservationXP();
+    };
 
     const handleExport = () => {
         if (observations.length === 0) return;
@@ -332,7 +339,7 @@ const Observation = ({ experimentId }: { experimentId: string }) => {
                         <Trash2 size={14} />
                     </button>
                     <button
-                        onClick={recordObservation}
+                        onClick={handleRecord}
                         className="px-3 py-1 bg-blue-500 text-white text-[10px] font-bold rounded-lg hover:bg-blue-600 transition-colors uppercase tracking-widest"
                     >
                         Record Reading

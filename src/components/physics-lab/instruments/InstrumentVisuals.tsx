@@ -124,10 +124,12 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         dragConstraints={{ left: 0, right: 162 }}
                         dragElastic={0}
                         dragMomentum={false}
-                        onDrag={(e, info) => {
+                        onDragEnd={(e, info) => {
                             if (onPropertyChange) {
                                 const maxR = properties.maxResistance || 100;
-                                const newR = Math.round((info.point.x / 162) * maxR);
+                                const currentX = (properties.resistance / maxR) * 162;
+                                const newX = Math.max(0, Math.min(162, currentX + info.offset.x));
+                                const newR = Math.round((newX / 162) * maxR);
                                 onPropertyChange({ resistance: Math.max(0, Math.min(maxR, newR)) });
                             }
                         }}

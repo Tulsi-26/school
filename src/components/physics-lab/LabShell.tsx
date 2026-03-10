@@ -52,9 +52,9 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     // Fullscreen API
     const toggleFullscreen = useCallback(() => {
         if (!document.fullscreenElement) {
-            containerRef.current?.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+            containerRef.current?.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => { });
         } else {
-            document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+            document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => { });
         }
     }, []);
 
@@ -95,11 +95,12 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     return (
         <div
             ref={containerRef}
-            className="flex h-[100dvh] w-full bg-slate-950 text-slate-50 overflow-hidden font-sans"
+            className="flex h-[100dvh] w-full overflow-hidden font-sans"
+            style={{ backgroundColor: 'var(--lab-bg)', color: 'var(--lab-text)' }}
         >
             {/* Left Sidebar - Instruments (desktop only) */}
-            <aside className="hidden xl:flex w-80 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col shrink-0">
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            <aside className="hidden xl:flex w-80 flex-col shrink-0" style={{ backgroundColor: 'var(--lab-sidebar)', borderRight: '1px solid var(--lab-border)' }}>
+                <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                     <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
                     <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full uppercase font-medium tracking-wider">
                         Physics Lab
@@ -109,15 +110,15 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             </aside>
 
             {/* Center - Workspace */}
-            <main className="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 to-black flex flex-col min-w-0">
+            <main className="flex-1 relative overflow-hidden flex flex-col min-w-0" style={{ background: 'var(--lab-workspace)' }}>
 
                 {/* Header / Breadcrumbs */}
-                <div className="min-h-14 border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-sm flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3 z-30 flex-wrap py-2">
+                <div className="min-h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3 z-30 flex-wrap py-2 backdrop-blur-sm" style={{ borderBottom: '1px solid var(--lab-border)', backgroundColor: 'var(--lab-header)' }}>
 
-                    {/* Open instruments drawer (tablet/mobile) */}
                     <button
                         onClick={() => setShowInstruments(true)}
-                        className="xl:hidden inline-flex items-center justify-center p-2 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200"
+                        className="xl:hidden inline-flex items-center justify-center p-2 rounded-lg transition-all"
+                        style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                         title="Open Instruments"
                     >
                         <PanelLeft className="w-4 h-4" />
@@ -125,12 +126,13 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
 
                     <Link
                         href="/physics-lab"
-                        className="text-slate-500 hover:text-white transition-colors flex items-center gap-1.5 text-sm"
+                        className="hover:text-blue-400 transition-colors flex items-center gap-1.5 text-sm"
+                        style={{ color: 'var(--lab-text-muted)' }}
                     >
                         <Home className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Labs</span>
                     </Link>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
+                    <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--lab-border)' }} />
                     <div className="flex items-center gap-2 text-sm font-bold text-blue-400 truncate">
                         <Beaker className="w-4 h-4 shrink-0" />
                         <span className="truncate">{experimentName}</span>
@@ -145,7 +147,8 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         {/* Theme toggle */}
                         <button
                             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all"
+                            className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                            style={{ color: 'var(--lab-text-secondary)' }}
                             title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                         >
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -154,7 +157,8 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         {/* Fullscreen toggle */}
                         <button
                             onClick={toggleFullscreen}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-all"
+                            className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                            style={{ color: 'var(--lab-text-secondary)' }}
                             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                         >
                             {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
@@ -163,7 +167,8 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         {/* Open guide drawer (tablet/mobile) */}
                         <button
                             onClick={() => setShowGuide(true)}
-                            className="xl:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800/70 border border-slate-700 text-slate-200 text-xs font-bold"
+                            className="xl:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                            style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                             title="Open Guide"
                         >
                             <BookOpen className="w-3.5 h-3.5" />
@@ -173,11 +178,11 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         {/* Mark as completed */}
                         <button
                             onClick={() => toggleMastery(experimentId)}
-                            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 border rounded-lg text-xs font-bold transition-all ${
-                                isMastered
-                                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-emerald-500/10 hover:text-emerald-400'
-                            }`}
+                            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isMastered
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'hover:bg-emerald-500/10 hover:text-emerald-400'
+                                }`}
+                            style={isMastered ? { border: '1px solid rgba(16,185,129,0.3)' } : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                         >
                             <RotateCcw className={`w-3.5 h-3.5 ${isMastered ? 'hidden' : ''}`} />
                             <ShieldCheck className={`w-3.5 h-3.5 ${!isMastered ? 'hidden' : ''}`} />
@@ -191,7 +196,8 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                                     resetLab();
                                 }
                             }}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 border border-slate-700 rounded-lg text-xs font-bold transition-all text-slate-400"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-red-500/20 hover:text-red-400"
+                            style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                         >
                             <RotateCcw className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">Reset Lab</span>
@@ -201,14 +207,14 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
 
                 {/* Experiment canvas */}
                 <div className="flex-1 relative">
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+                    <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, var(--lab-grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--lab-grid-line) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
                     <ExperimentWorkspace experimentId={experimentId} />
                 </div>
             </main>
 
             {/* Right Sidebar - Guide (desktop only) */}
-            <aside className="hidden xl:flex w-96 border-l border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col shrink-0">
-                <div className="p-4 border-b border-slate-800">
+            <aside className="hidden xl:flex w-96 flex-col shrink-0 backdrop-blur-xl" style={{ borderLeft: '1px solid var(--lab-border)', backgroundColor: 'var(--lab-sidebar)' }}>
+                <div className="p-4" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                     <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
                 </div>
                 <ExperimentGuide experimentId={experimentId} />
@@ -217,12 +223,12 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             {/* Mobile/Tablet Drawer: Instruments */}
             {showInstruments && (
                 <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px]">
-                    <aside className="h-full w-[min(24rem,88vw)] bg-slate-900 border-r border-slate-700 flex flex-col">
-                        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                    <aside className="h-full w-[min(24rem,88vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderRight: '1px solid var(--lab-border)' }}>
+                        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                             <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
                             <button
                                 onClick={() => setShowInstruments(false)}
-                                className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300"
+                                className="p-2 rounded-lg" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -235,12 +241,12 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             {/* Mobile/Tablet Drawer: Guide */}
             {showGuide && (
                 <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px] flex justify-end">
-                    <aside className="h-full w-[min(30rem,92vw)] bg-slate-900 border-l border-slate-700 flex flex-col">
-                        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                    <aside className="h-full w-[min(30rem,92vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderLeft: '1px solid var(--lab-border)' }}>
+                        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                             <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
                             <button
                                 onClick={() => setShowGuide(false)}
-                                className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300"
+                                className="p-2 rounded-lg" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -252,11 +258,11 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
 
             {/* Phone portrait lock overlay */}
             {showRotateOverlay && (
-                <div className="absolute inset-0 z-[80] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6">
-                    <div className="max-w-xs text-center border border-slate-700 rounded-2xl bg-slate-900/80 p-6">
+                <div className="absolute inset-0 z-[80] backdrop-blur-md flex items-center justify-center p-6" style={{ backgroundColor: 'var(--lab-overlay)' }}>
+                    <div className="max-w-xs text-center rounded-2xl p-6" style={{ backgroundColor: 'var(--lab-surface)', border: '1px solid var(--lab-border)' }}>
                         <Smartphone className="w-9 h-9 text-blue-400 mx-auto mb-3" />
-                        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-100">Rotate Your Phone</h3>
-                        <p className="mt-2 text-xs text-slate-400">
+                        <h3 className="text-sm font-bold uppercase tracking-wide">Rotate Your Phone</h3>
+                        <p className="mt-2 text-xs" style={{ color: 'var(--lab-text-muted)' }}>
                             For the best lab experience on mobile, use landscape mode.
                         </p>
                     </div>

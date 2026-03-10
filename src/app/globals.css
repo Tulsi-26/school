@@ -38,20 +38,22 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
+}
 
-  @keyframes current-flow {
-    0% { stroke-dashoffset: 24; }
-    100% { stroke-dashoffset: 0; }
-  }
+/* ========== Lab animations (must be outside @theme for Tailwind 4) ========== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
 
-  @keyframes pulse-glow {
-    0%, 100% { filter: drop-shadow(0 0 4px rgba(59,130,246,0.3)); }
-    50% { filter: drop-shadow(0 0 12px rgba(59,130,246,0.7)); }
-  }
+@keyframes current-flow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(59,130,246,0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(59,130,246,0.7)); }
 }
 
 :root {
@@ -92,6 +94,27 @@
 
   --font-sans: 'Poppins', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* ========== Physics Lab Theme Variables (Light) ========== */
+  --lab-bg: #f8fafc;
+  --lab-bg-secondary: #f1f5f9;
+  --lab-surface: #ffffff;
+  --lab-surface-hover: #f1f5f9;
+  --lab-border: #e2e8f0;
+  --lab-border-active: #93c5fd;
+  --lab-text: #0f172a;
+  --lab-text-secondary: #475569;
+  --lab-text-muted: #94a3b8;
+  --lab-sidebar: #f8fafc;
+  --lab-header: rgba(248,250,252,0.9);
+  --lab-workspace: radial-gradient(circle at center, #f1f5f9, #e2e8f0);
+  --lab-grid-dot: #94a3b8;
+  --lab-grid-line: rgba(148,163,184,0.12);
+  --lab-tab-active: #3b82f6;
+  --lab-tab-inactive: #64748b;
+  --lab-tab-hover: #334155;
+  --lab-card-bg: rgba(241,245,249,0.6);
+  --lab-overlay: rgba(248,250,252,0.95);
 }
 
 .dark {
@@ -100,7 +123,7 @@
   --foreground: #FAFAFA; /* Gray 50 */
 
   /* Primary */
-  --primary: #8B5CF6; /* Purple 500 slightly lighter for dark mode if needed, kept generic for now or adjusted */
+  --primary: #8B5CF6;
   --primary-foreground: #FFFFFF;
 
   /* Secondary */
@@ -123,6 +146,27 @@
   --border: #27272A; /* Gray 800 */
   --input: #27272A;
   --ring: #8B5CF6;
+
+  /* ========== Physics Lab Theme Variables (Dark) ========== */
+  --lab-bg: #020617;
+  --lab-bg-secondary: #0f172a;
+  --lab-surface: rgba(15,23,42,0.5);
+  --lab-surface-hover: #1e293b;
+  --lab-border: #1e293b;
+  --lab-border-active: rgba(59,130,246,0.5);
+  --lab-text: #f8fafc;
+  --lab-text-secondary: #94a3b8;
+  --lab-text-muted: #475569;
+  --lab-sidebar: rgba(15,23,42,0.5);
+  --lab-header: rgba(15,23,42,0.3);
+  --lab-workspace: radial-gradient(circle at center, #0f172a, #000000);
+  --lab-grid-dot: #475569;
+  --lab-grid-line: rgba(128,128,128,0.07);
+  --lab-tab-active: #60a5fa;
+  --lab-tab-inactive: #64748b;
+  --lab-tab-hover: #cbd5e1;
+  --lab-card-bg: rgba(30,41,59,0.4);
+  --lab-overlay: rgba(2,6,23,0.95);
 }
 
 @layer base {

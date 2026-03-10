@@ -103,20 +103,20 @@ export const GamificationPanel: React.FC<{ compact?: boolean }> = ({ compact }) 
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+      <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
         <div className="flex items-center gap-1.5">
-          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-          <span className="text-xs font-bold text-yellow-400">{stats.totalXP} XP</span>
+          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+          <span className="text-xs font-bold text-yellow-500">{stats.totalXP} XP</span>
         </div>
-        <div className="w-px h-4 bg-slate-700" />
+        <div className="w-px h-4" style={{ backgroundColor: 'var(--lab-border)' }} />
         <div className="flex items-center gap-1.5">
-          <Zap className="w-3.5 h-3.5 text-purple-400" />
-          <span className="text-xs font-bold text-purple-400">Lv.{level}</span>
+          <Zap className="w-3.5 h-3.5 text-purple-500" />
+          <span className="text-xs font-bold text-purple-500">Lv.{level}</span>
         </div>
-        <div className="w-px h-4 bg-slate-700" />
+        <div className="w-px h-4" style={{ backgroundColor: 'var(--lab-border)' }} />
         <div className="flex items-center gap-1.5">
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-xs font-bold text-amber-400">{earnedBadges.length}/{allBadges.length}</span>
+          <Trophy className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-xs font-bold text-amber-500">{earnedBadges.length}/{allBadges.length}</span>
         </div>
       </div>
     );
@@ -157,11 +157,10 @@ export const GamificationPanel: React.FC<{ compact?: boolean }> = ({ compact }) 
             return (
               <div
                 key={badge.id}
-                className={`p-3 rounded-lg border text-center transition-all ${
-                  earned
+                className={`p-3 rounded-lg border text-center transition-all ${earned
                     ? 'bg-amber-500/10 border-amber-500/20'
                     : 'bg-slate-800/30 border-slate-800 opacity-50'
-                }`}
+                  }`}
               >
                 <div className="text-2xl mb-1">{badge.icon}</div>
                 <div className={`text-[10px] font-bold ${earned ? 'text-amber-300' : 'text-slate-500'}`}>
