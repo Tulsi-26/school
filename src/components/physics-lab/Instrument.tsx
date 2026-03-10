@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Instrument as InstrumentType, usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Settings2, Check } from 'lucide-react';
+import { Trash2, Settings2, Check, RotateCcw, Copy, Info } from 'lucide-react';
 
 interface InstrumentProps {
     id: string;
@@ -34,7 +34,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     const [isHovered, setIsHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
-    const { connections, instruments, removeInstrument } = usePhysicsLab();
+    const { connections, instruments, removeInstrument, addInstrument } = usePhysicsLab();
 
     const connectedState = useMemo(() => {
         if (!terminals) return { connectedTerminalIds: new Set<string>(), connectedNames: [], count: 0 };
@@ -106,16 +106,65 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         }
     }, [contextMenu]);
 
-    // Available scales by instrument type
+    // Available scales by instrument type (realistic lab ranges)
     const getScaleOptions = () => {
         switch (type) {
-            case 'ammeter': return [{ label: "100 mA", unit: "mA", scale: 100 }, { label: "1 A", unit: "A", scale: 1 }, { label: "5 A", unit: "A", scale: 5 }];
-            case 'voltmeter': return [{ label: "5 V", unit: "V", scale: 5 }, { label: "20 V", unit: "V", scale: 20 }, { label: "100 V", unit: "V", scale: 100 }];
-            case 'galvanometer': return [{ label: "30 µA", unit: "µA", scale: 30 }, { label: "500 µA", unit: "µA", scale: 500 }];
+            case 'ammeter': return [
+                { label: "100 mA", unit: "mA", scale: 100 },
+                { label: "500 mA", unit: "mA", scale: 500 },
+                { label: "1 A", unit: "A", scale: 1 },
+                { label: "5 A", unit: "A", scale: 5 },
+                { label: "10 A", unit: "A", scale: 10 },
+            ];
+            case 'voltmeter': return [
+                { label: "3 V", unit: "V", scale: 3 },
+                { label: "5 V", unit: "V", scale: 5 },
+                { label: "15 V", unit: "V", scale: 15 },
+                { label: "20 V", unit: "V", scale: 20 },
+                { label: "100 V", unit: "V", scale: 100 },
+                { label: "300 V", unit: "V", scale: 300 },
+            ];
+            case 'galvanometer': return [
+                { label: "30 µA", unit: "µA", scale: 30 },
+                { label: "100 µA", unit: "µA", scale: 100 },
+                { label: "500 µA", unit: "µA", scale: 500 },
+            ];
             default: return null;
         }
     };
     const scaleOptions = getScaleOptions();
+
+    // Whether this instrument is a meter (has a reading that can be zeroed)
+    const isMeter = type === 'ammeter' || type === 'voltmeter' || type === 'galvanometer';
+
+    // Get a human-readable summary of the current scale/range
+    const currentScaleLabel = useMemo(() => {
+        if (!scaleOptions) return null;
+        const match = scaleOptions.find(opt => opt.unit === properties.unit && opt.scale === properties.scale);
+        if (match) return match.label;
+        // Fallback: construct from properties
+        if (properties.scale != null && properties.unit) return `${properties.scale} ${properties.unit}`;
+        return null;
+    }, [scaleOptions, properties.unit, properties.scale]);
+
+    const handleZeroReading = () => {
+        updateProperties(id, { reading: 0 });
+        setContextMenu(null);
+    };
+
+    const handleDuplicate = () => {
+        addInstrument({
+            type,
+            name,
+            position: { x: position.x + 40, y: position.y + 40 },
+            properties: { ...properties },
+            terminals: terminals.map(t => ({
+                ...t,
+                id: `${type}-t-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            })),
+        });
+        setContextMenu(null);
+    };
 
     return (
         <motion.div
@@ -187,6 +236,13 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                 <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
                     {name}
                 </div>
+
+                {/* Scale Indicator Badge (visible when not hovered, for meters only) */}
+                {currentScaleLabel && (
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-500/20 border border-blue-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-300 pointer-events-none select-none">
+                        {currentScaleLabel}
+                    </div>
+                )}
             </div>
 
             {/* Context Menu Portal / Overlay */}
@@ -204,20 +260,25 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                                 top: contextMenu.y,
                                 pointerEvents: 'auto'
                             }}
-                            className="w-48 bg-slate-900 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-slate-700 overflow-hidden flex flex-col py-1"
-                            onClick={(e) => e.stopPropagation()} // Prevent closing immediately when clicking inside
+                            className="w-52 bg-slate-900 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-slate-700 overflow-hidden flex flex-col py-1"
+                            onClick={(e) => e.stopPropagation()}
                         >
                             {/* Title */}
-                            <div className="px-3 py-2 border-b border-slate-800">
+                            <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
                                 <span className="text-xs font-semibold text-slate-300">{name}</span>
+                                {currentScaleLabel && (
+                                    <span className="text-[9px] font-medium text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                        {currentScaleLabel}
+                                    </span>
+                                )}
                             </div>
 
-                            {/* Scale Options (if applicable) */}
+                            {/* Scale Options (for meters) */}
                             {scaleOptions && (
                                 <div className="py-1">
                                     <div className="px-3 py-1.5 flex items-center gap-2 text-slate-400">
                                         <Settings2 className="w-3.5 h-3.5" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">Range / Scale</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider">Update Scaling</span>
                                     </div>
                                     {scaleOptions.map(opt => (
                                         <button
@@ -237,7 +298,45 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                                 </div>
                             )}
 
-                            {scaleOptions && <div className="h-px bg-slate-800 my-1"></div>}
+                            {scaleOptions && <div className="h-px bg-slate-800 my-1" />}
+
+                            {/* Zero / Calibrate (for meters) */}
+                            {isMeter && (
+                                <div className="py-1">
+                                    <button
+                                        onClick={handleZeroReading}
+                                        className="w-full px-3 py-1.5 text-left text-sm text-slate-300 hover:bg-emerald-600/20 hover:text-emerald-200 transition-colors flex items-center gap-2"
+                                    >
+                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        <span>Zero / Calibrate</span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Instrument Info */}
+                            {isMeter && properties.reading != null && (
+                                <div className="px-3 py-1.5 flex items-center gap-2 text-slate-500">
+                                    <Info className="w-3.5 h-3.5" />
+                                    <span className="text-[10px]">
+                                        Reading: {Number(properties.reading).toFixed(2)} {properties.unit || ''}
+                                    </span>
+                                </div>
+                            )}
+
+                            {isMeter && <div className="h-px bg-slate-800 my-1" />}
+
+                            {/* Duplicate */}
+                            <div className="py-1">
+                                <button
+                                    onClick={handleDuplicate}
+                                    className="w-full px-3 py-1.5 text-left text-sm text-slate-300 hover:bg-purple-600/20 hover:text-purple-200 transition-colors flex items-center gap-2"
+                                >
+                                    <Copy className="w-3.5 h-3.5" />
+                                    <span>Duplicate Instrument</span>
+                                </button>
+                            </div>
+
+                            <div className="h-px bg-slate-800 my-1" />
 
                             {/* Remove Option */}
                             <div className="py-1">
@@ -249,7 +348,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                                     className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center gap-2"
                                 >
                                     <Trash2 className="w-4 h-4" />
-                                    <span>Remove Instrument</span>
+                                    <span>Remove</span>
                                 </button>
                             </div>
                         </motion.div>

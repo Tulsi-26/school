@@ -13,8 +13,8 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
         'ohm-law': [
             { type: 'battery', name: 'Battery', properties: { voltage: 9 } },
             { type: 'resistor', name: 'Resistor', properties: { resistance: 100 } },
-            { type: 'ammeter', name: 'Ammeter', properties: { scale: 10, reading: 0 } },
-            { type: 'voltmeter', name: 'Voltmeter', properties: { scale: 20, reading: 0 } },
+            { type: 'ammeter', name: 'Ammeter', properties: { scale: 100, unit: 'mA', reading: 0 } },
+            { type: 'voltmeter', name: 'Voltmeter', properties: { scale: 20, unit: 'V', reading: 0 } },
             { type: 'rheostat', name: 'Rheostat', properties: { resistance: 50, maxResistance: 100, reading: 0 } },
             { type: 'switch', name: 'Plug Key', properties: { closed: false } },
         ],
