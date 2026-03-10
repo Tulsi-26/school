@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Circle, ListChecks } from 'lucide-react';
+import { useGamification } from './GamificationPanel';
 
 interface ChecklistItem {
   id: string;
@@ -50,21 +51,43 @@ const checklistsByExperiment: Record<string, ChecklistItem[]> = {
 export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experimentId }) => {
   const items = checklistsByExperiment[experimentId] || [];
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const { addXP, completeExperiment } = useGamification();
+  const completedRef = useRef(false);
 
   // Persist to localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = JSON.parse(localStorage.getItem(`checklist-${experimentId}`) || '[]');
       setChecked(new Set(saved));
+      // If already completed, mark ref so we don't re-award
+      if (saved.length === items.length && items.length > 0) {
+        completedRef.current = true;
+      }
     }
-  }, [experimentId]);
+  }, [experimentId, items.length]);
 
   const toggle = (id: string) => {
     setChecked(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const wasChecked = next.has(id);
+      if (wasChecked) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        // Award XP for first checklist tick ever (reuses first-circuit-closed)
+        if (prev.size === 0) {
+          addXP('first-circuit-closed');
+        }
+      }
       localStorage.setItem(`checklist-${experimentId}`, JSON.stringify([...next]));
+
+      // If all items just got completed, award experiment completion XP
+      if (!wasChecked && next.size === items.length && !completedRef.current) {
+        completedRef.current = true;
+        completeExperiment(experimentId);
+        addXP('checklist-complete');
+      }
+
       return next;
     });
   };
@@ -75,12 +98,12 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
     <div className="space-y-4 animate-in fade-in duration-500">
       {/* Progress */}
       <div className="flex items-center gap-3">
-        <ListChecks className="w-4 h-4 text-blue-400" />
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Guided Checklist</span>
-        <span className="ml-auto text-xs font-mono text-blue-400">{progress}%</span>
+        <ListChecks className="w-4 h-4" style={{ color: 'var(--lab-tab-active)' }} />
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--lab-text-secondary)' }}>Guided Checklist</span>
+        <span className="ml-auto text-xs font-mono" style={{ color: 'var(--lab-tab-active)' }}>{progress}%</span>
       </div>
 
-      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--lab-border)' }}>
         <div
           className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
@@ -95,18 +118,18 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
             <button
               key={item.id}
               onClick={() => toggle(item.id)}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all ${
-                done
-                  ? 'bg-emerald-500/5 border border-emerald-500/20'
-                  : 'bg-slate-800/30 border border-slate-800 hover:border-slate-700'
-              }`}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all ${done
+                  ? 'bg-emerald-500/10 border border-emerald-500/30'
+                  : 'hover:opacity-90'
+                }`}
+              style={done ? {} : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}
             >
               {done ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               ) : (
-                <Circle className="w-4 h-4 text-slate-600 shrink-0" />
+                <Circle className="w-4 h-4 shrink-0" style={{ color: 'var(--lab-text-muted)' }} />
               )}
-              <span className={`text-xs leading-relaxed ${done ? 'text-emerald-300 line-through opacity-70' : 'text-slate-300'}`}>
+              <span className={`text-xs leading-relaxed ${done ? 'text-emerald-600 dark:text-emerald-300 line-through opacity-70' : ''}`} style={done ? {} : { color: 'var(--lab-text-secondary)' }}>
                 {item.label}
               </span>
             </button>

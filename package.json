@@ -65,6 +65,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.181.0",
+    "baseline-browser-mapping": "^2.10.0",
     "prisma": "^5.19.1",
     "shadcn": "^3.5.0",
     "tailwindcss": "^4",
