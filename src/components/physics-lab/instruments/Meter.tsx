@@ -37,39 +37,47 @@ export const Meter: React.FC<MeterProps> = ({ type, reading, scale, unit, label,
                             {/* The Main Arc Line */}
                             <path d="M 20,80 A 100,100 0 0,1 180,80" fill="none" stroke="#111" strokeWidth="1.5" />
 
-                            {/* Tick Marks and Text. -45 to 45 deg arc centered at (100, 150) radius 70 */}
-                            {[0, 1, 2, 3, 4, 5, 6].map((step, i) => {
-                                // 6 major steps across 90 degrees = 15 degrees per step
-                                const val = (step / 6) * scale;
-                                const deg = -45 + (step / 6) * 90;
-                                const isIntegerStep = step % 2 === 0; // Just styling some as major/minor
+                            {/* Tick Marks and Text. Center of arc is (100, 140), Radius is 100.
+                                Arc spans from ~ -53 to +53 degrees. We'll draw 10 intervals over 100 degrees (-50 to +50). */}
+                            {Array.from({ length: 11 }).map((_, step) => {
+                                // 10 major steps across 100 degrees = 10 degrees per step
+                                const val = (step / 10) * scale;
+                                const deg = -50 + (step / 10) * 100;
 
                                 return (
-                                    <g key={step} transform={`translate(100, 150) rotate(${deg})`}>
-                                        {/* Major Tick */}
-                                        <line x1="0" y1="-70" x2="0" y2="-76" stroke="#111" strokeWidth="1.5" />
+                                    <g key={step} transform={`translate(100, 140) rotate(${deg})`}>
+                                        {/* Major Tick (extends outwards from the arc r=100 to r=108) */}
+                                        <line x1="0" y1="-100" x2="0" y2="-108" stroke="#111" strokeWidth="1.5" />
 
                                         {/* Minor ticks in between major steps */}
-                                        {step < 6 && [1, 2, 3, 4].map(minor => (
-                                            <line key={minor} x1="0" y1="-70" x2="0" y2="-73" stroke="#111" strokeWidth="1" transform={`rotate(${(minor / 5) * 15})`} />
+                                        {step < 10 && [1, 2, 3, 4].map(minor => (
+                                            <line
+                                                key={`minor-${step}-${minor}`}
+                                                x1="0" y1="-100" x2="0" y2="-105"
+                                                stroke="#111" strokeWidth="1"
+                                                transform={`rotate(${(minor / 5) * 10})`}
+                                            />
                                         ))}
 
-                                        {/* Text Label */}
-                                        <text
-                                            x="0"
-                                            y="-82"
-                                            fontSize="10"
-                                            fontWeight="600"
-                                            fill="#111"
-                                            textAnchor="middle"
-                                            fontFamily="sans-serif"
-                                            transform={`rotate(${-deg})`} // Keep text upright
-                                        >
-                                            {/* Custom formatting to match the "0, .5, 1, 1.5" look from the image if scale is small */}
-                                            {scale <= 10 ? val.toString().replace(/^0\./, '.') : Math.round(val)}
-                                        </text>
+                                        {/* Text Label - positioned outside/above the major ticks */}
+                                        <g transform="translate(0, -118)">
+                                            <text
+                                                x="0"
+                                                y="0"
+                                                fontSize="10"
+                                                fontWeight="700"
+                                                fill="#111"
+                                                textAnchor="middle"
+                                                dominantBaseline="middle"
+                                                fontFamily="sans-serif, monospace"
+                                                transform={`rotate(${-deg})`} // Keep text upright
+                                            >
+                                                {/* For scales <= 10, show 1 decimal point if not integer */}
+                                                {scale <= 10 && !Number.isInteger(val) ? val.toFixed(1).replace('0.', '.') : Math.round(val)}
+                                            </text>
+                                        </g>
                                     </g>
-                                )
+                                );
                             })}
                         </svg>
                     </div>

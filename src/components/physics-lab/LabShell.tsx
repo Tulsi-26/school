@@ -33,7 +33,32 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const [showInstruments, setShowInstruments] = useState(false);
     const [showGuide, setShowGuide] = useState(false);
     const [showRotateOverlay, setShowRotateOverlay] = useState(false);
+    const [guideWidth, setGuideWidth] = useState(384);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const startRightResize = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startWidth = guideWidth;
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const maxW = window.innerWidth * 0.6;
+            const newWidth = startWidth - (moveEvent.clientX - startX);
+            setGuideWidth(Math.max(250, Math.min(newWidth, maxW)));
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.style.cursor = 'default';
+            document.body.classList.remove('select-none');
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.classList.add('select-none');
+    }, [guideWidth]);
 
     // Track visit and set active experiment
     useEffect(() => {
@@ -213,8 +238,17 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             </main>
 
             {/* Right Sidebar - Guide (desktop only) */}
-            <aside className="hidden xl:flex w-96 flex-col shrink-0 backdrop-blur-xl" style={{ borderLeft: '1px solid var(--lab-border)', backgroundColor: 'var(--lab-sidebar)' }}>
-                <div className="p-4" style={{ borderBottom: '1px solid var(--lab-border)' }}>
+            <aside
+                className="hidden xl:flex border-l border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col shrink-0 relative z-40"
+                style={{ width: guideWidth }}
+            >
+                {/* Resizer Handle */}
+                <div
+                    className="absolute left-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
+                    onMouseDown={startRightResize}
+                />
+
+                <div className="p-4 border-b border-slate-800">
                     <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
                 </div>
                 <ExperimentGuide experimentId={experimentId} />

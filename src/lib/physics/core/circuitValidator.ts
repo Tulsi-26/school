@@ -29,15 +29,35 @@ function buildAdjacencyList(
 ): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>();
 
+  const ensureNode = (id: string) => {
+    if (!adj.has(id)) adj.set(id, new Set());
+  };
+
   for (const inst of instruments) {
     for (const t of inst.terminals) {
-      if (!adj.has(t.id)) adj.set(t.id, new Set());
+      ensureNode(t.id);
+    }
+
+    // Add internal paths for components that conduct
+    if (['resistor', 'rheostat', 'ammeter', 'switch', 'battery'].includes(inst.type)) {
+      if (inst.terminals.length >= 2) {
+        const t1 = inst.terminals[0].id;
+        const t2 = inst.terminals[1].id;
+        ensureNode(t1);
+        ensureNode(t2);
+
+        // Switches only conduct when closed
+        if (inst.type !== 'switch' || inst.properties.closed) {
+          adj.get(t1)!.add(t2);
+          adj.get(t2)!.add(t1);
+        }
+      }
     }
   }
 
   for (const conn of connections) {
-    if (!adj.has(conn.from)) adj.set(conn.from, new Set());
-    if (!adj.has(conn.to)) adj.set(conn.to, new Set());
+    ensureNode(conn.from);
+    ensureNode(conn.to);
     adj.get(conn.from)!.add(conn.to);
     adj.get(conn.to)!.add(conn.from);
   }

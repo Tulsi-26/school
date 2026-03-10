@@ -25,17 +25,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         connections,
         addConnection,
         simulationResults,
-        setSimulationResults
+        setSimulationResults,
+        setValidationState
     } = usePhysicsLab();
 
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
-
-    // Circuit validation state
-    const [validationErrors, setValidationErrors] = useState<any[]>([]);
-    const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
-    const [circuitIsValid, setCircuitIsValid] = useState(false);
 
     const workspaceRef = useRef<HTMLDivElement>(null);
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
@@ -53,21 +49,33 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
         const instData = JSON.parse(data);
         const rect = workspaceRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left - 50; // Center offset
-        const y = e.clientY - rect.top - 50;
+
+        const typeDimensions: Record<string, { w: number, h: number }> = {
+            battery: { w: 280, h: 160 },
+            ammeter: { w: 200, h: 250 },
+            voltmeter: { w: 200, h: 250 },
+            resistor: { w: 160, h: 60 },
+            rheostat: { w: 260, h: 120 },
+            switch: { w: 180, h: 120 },
+            galvanometer: { w: 128, h: 128 },
+        };
+        const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
+
+        const x = e.clientX - rect.left - (dim.w / 2); // Dynamic Center offset
+        const y = e.clientY - rect.top - (dim.h / 2);
 
         // Snap to grid
         const finalX = snapToGrid(x);
         const finalY = snapToGrid(y);
 
         const terminalLayouts: Record<string, { x: number; y: number }[]> = {
-            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
-            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
-            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
-            resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
+            battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
+            ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
+            voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
+            resistor: [{ x: 8, y: 30 }, { x: 152, y: 30 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
-            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
-            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
+            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
@@ -112,20 +120,14 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     useEffect(() => {
         if (experimentId === 'ohm-law') {
             const validation = validateOhmLawCircuit(instruments, connections);
-            setValidationErrors(validation.errors);
-            setValidationSuggestions(validation.suggestions);
-            setCircuitIsValid(validation.isValid);
+            setValidationState(validation.errors, validation.suggestions, validation.isValid);
         } else if (experimentId === 'wheatstone-bridge') {
             const validation = validateWheatstoneBridge(instruments, connections);
-            setValidationErrors(validation.errors);
-            setValidationSuggestions(validation.suggestions);
-            setCircuitIsValid(validation.isValid);
+            setValidationState(validation.errors, validation.suggestions, validation.isValid);
         } else {
-            setValidationErrors([]);
-            setValidationSuggestions([]);
-            setCircuitIsValid(true);
+            setValidationState([], [], true);
         }
-    }, [instruments, connections, experimentId]);
+    }, [instruments, connections, experimentId, setValidationState]);
 
     // Extract simulation-relevant values as primitives to avoid infinite loops.
     // The old code had instruments in the dependency array AND called updateInstrumentProperties
@@ -311,15 +313,6 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                         <rect width="100%" height="100%" fill="url(#snapGrid)" />
                     </svg>
                 </div>
-            )}
-
-            {/* Circuit Validation Feedback */}
-            {instruments.length > 0 && (experimentId === 'ohm-law' || experimentId === 'wheatstone-bridge') && (
-                <CircuitFeedback
-                    errors={validationErrors}
-                    suggestions={validationSuggestions}
-                    isValid={circuitIsValid}
-                />
             )}
 
             {/* Optical Bench Ruler */}

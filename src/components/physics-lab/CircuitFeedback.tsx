@@ -17,14 +17,13 @@ export const CircuitFeedback: React.FC<CircuitFeedbackProps> = ({ errors, sugges
   const visibleSuggestions = suggestions.slice(0, 2);
 
   return (
-    <div className="absolute top-16 right-4 z-40 w-72 space-y-2 animate-in slide-in-from-right-4 duration-300">
+    <div className="w-full space-y-2 animate-in slide-in-from-bottom-4 duration-300 shrink-0">
       {/* Validation Status */}
       {errors.length > 0 && (
-        <div className={`rounded-xl border backdrop-blur-md p-3 space-y-2 ${
-          isValid
+        <div className={`rounded-xl border backdrop-blur-md p-3 space-y-2 ${isValid
             ? 'bg-emerald-500/10 border-emerald-500/20'
             : 'bg-slate-900/80 border-slate-700/50'
-        }`}>
+          }`}>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             {isValid ? (
               <>
@@ -47,8 +46,8 @@ export const CircuitFeedback: React.FC<CircuitFeedbackProps> = ({ errors, sugges
                 {err.type === 'info' && <Info className="w-3 h-3 text-blue-400 mt-0.5 shrink-0" />}
                 <span className={
                   err.type === 'error' ? 'text-red-300' :
-                  err.type === 'warning' ? 'text-amber-300' :
-                  'text-blue-300'
+                    err.type === 'warning' ? 'text-amber-300' :
+                      'text-blue-300'
                 }>
                   {err.message}
                 </span>

@@ -18,11 +18,12 @@ import {
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';
-import { GamificationPanel, useGamification } from './GamificationPanel';
+import { GamificationPanel } from './GamificationPanel';
+import { CircuitFeedback } from './CircuitFeedback';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const [activeTab, setActiveTab] = useState<'theory' | 'procedure' | 'observation' | 'graph' | 'checklist' | 'videos' | 'progress'>('theory');
-    const { simulationResults } = usePhysicsLab();
+    const { simulationResults, validationErrors, validationSuggestions, circuitIsValid, instruments } = usePhysicsLab();
 
     const tabs = [
         { id: 'theory', icon: BookOpen, label: 'Theory' },
@@ -80,6 +81,17 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
                 {activeTab === 'videos' && <YouTubeVideos experimentId={experimentId} />}
                 {activeTab === 'progress' && <GamificationPanel />}
             </div>
+
+            {/* Sticky bottom Circuit Feedback */}
+            {instruments.length > 0 && (experimentId === 'ohm-law' || experimentId === 'wheatstone-bridge') && (validationErrors.length > 0 || validationSuggestions.length > 0) && (
+                <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md shrink-0">
+                    <CircuitFeedback
+                        errors={validationErrors}
+                        suggestions={validationSuggestions}
+                        isValid={circuitIsValid}
+                    />
+                </div>
+            )}
         </div>
     );
 };
