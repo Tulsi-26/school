@@ -8,6 +8,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
+import {  PhysicsLabProvider } from '@/context/PhysicsLabContext';
 
 const experiments = [
     {
@@ -48,7 +49,7 @@ const experiments = [
     }
 ];
 
-export default function PhysicsLabDashboard() {
+function PhysicsLabDashboardContent() {
     const { masteredExperiments } = usePhysicsLab();
     const [activeCategory, setActiveCategory] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -232,5 +233,13 @@ export default function PhysicsLabDashboard() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function PhysicsLabDashboard() {
+    return (
+        <PhysicsLabProvider>
+            <PhysicsLabDashboardContent />
+        </PhysicsLabProvider>
     );
 }

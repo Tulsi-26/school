@@ -1,7 +1,9 @@
-"use client";
+﻿"use client";
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import { Battery } from './Battery';
+import { Ammeter } from './Ammeter';
+import { Voltmeter } from './Voltmeter';
 
 interface InstrumentVisualsProps {
     type: string;
@@ -22,22 +24,43 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
     switch (type) {
         case 'battery':
             return (
-                <div className={`relative w-24 h-40 bg-slate-800 rounded-xl border-2 border-slate-700 p-2 overflow-hidden ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M13 3l-1.99 4.01L15 7l-5 9 2 1-3 4v-9l-2.01 .01L13 3z" />
-                        </svg>
+                <div className={`relative w-[220px] h-[130px] ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="absolute inset-0 rounded-sm bg-gradient-to-b from-stone-100 to-slate-200 border border-slate-400 shadow-[0_10px_24px_rgba(2,6,23,0.35)]"></div>
+                    <div className="absolute inset-x-3 top-3 h-9 rounded bg-stone-200 border border-stone-300"></div>
+
+                    <div className="absolute left-[16px] top-[54px] w-[36px] h-[36px] rounded-full bg-gradient-to-b from-slate-300 to-slate-500 border border-slate-600 shadow-inner flex items-center justify-center">
+                        <div className="w-[18px] h-[18px] rounded-full border border-slate-600 bg-slate-200"></div>
                     </div>
-                    <div className="flex flex-col h-full justify-between items-center py-4">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Power Supply</div>
-                        <div className="text-xl font-bold font-mono text-blue-400">{properties.voltage}V</div>
-                        <div className="w-12 h-1 bg-slate-700/50 rounded-full"></div>
-                        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Standard DC</div>
+
+                    <div className="absolute left-[87px] top-[71px] w-[18px] h-[18px] rounded-full bg-gradient-to-b from-red-700 to-red-900 border border-red-950 shadow-[0_0_8px_rgba(127,29,29,0.55)]"></div>
+                    <div className="absolute left-[90px] top-[74px] w-[12px] h-[12px] rounded-full bg-red-500"></div>
+
+                    <div className="absolute left-[78px] top-[98px] w-[20px] h-[22px] rounded-sm bg-gradient-to-b from-red-400 to-red-700 border border-red-900"></div>
+                    <div className="absolute left-[118px] top-[98px] w-[20px] h-[22px] rounded-sm bg-gradient-to-b from-slate-500 to-slate-800 border border-slate-900"></div>
+
+                    <div className="absolute right-[16px] top-[54px] w-[34px] h-[34px] rounded-full bg-gradient-to-b from-red-400 to-red-700 border border-red-900 shadow-inner"></div>
+
+                    <div className="absolute left-[84px] top-[60px] text-[10px] font-semibold text-slate-700 tracking-wide">INDICATOR</div>
+                    <div className="absolute left-[75px] top-[90px] text-[7px] font-semibold text-slate-600 tracking-tight">OUTPUT</div>
+                    <div className="absolute left-[152px] top-[62px] text-[9px] font-bold text-slate-600">MFD. BY</div>
+
+                    <div className="absolute right-[33px] top-[75px] text-[16px] font-black italic text-red-700">TII</div>
+                    <div className="absolute left-[8px] bottom-[6px] right-[8px] text-[8px] font-medium text-slate-600 tracking-tight text-center">
+                        REGULATED DC POWER SUPPLY
+                    </div>
+
+                    <div className="absolute left-[84px] top-[102px] text-[8px] font-bold text-white">+</div>
+                    <div className="absolute left-[125px] top-[102px] text-[8px] font-bold text-slate-200">-</div>
+
+                    <div className="absolute left-2 top-2 bg-slate-900/70 text-[9px] font-mono text-blue-200 px-2 py-0.5 rounded">
+                        {properties.voltage}V DC
                     </div>
                 </div>
             );
 
         case 'ammeter':
+            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} isHovered={isHovered} />;
+
         case 'voltmeter':
             const isAmmeter = type === 'ammeter';
             return (
@@ -47,7 +70,6 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         <div className="relative w-20 h-20 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center overflow-hidden">
                             <div className="text-xl font-mono font-bold text-white z-10">{properties.reading || 0}</div>
                             <div className="text-[8px] font-mono text-slate-500 z-10">{isAmmeter ? 'mA' : 'V'}</div>
-                            {/* Radial Progress */}
                             <svg className="absolute inset-0 w-full h-full -rotate-90">
                                 <circle
                                     cx="40" cy="40" r="34"
@@ -78,44 +100,77 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         <div className="w-1.5 h-full bg-yellow-400"></div>
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-200 bg-slate-900/50 px-1 rounded">{properties.resistance} Ω</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-200 bg-slate-900/50 px-1 rounded">{properties.resistance} ohm</span>
                     </div>
                 </div>
             );
 
         case 'rheostat':
             return (
-                <div className={`relative w-40 h-24 bg-slate-800 border-2 border-slate-700 rounded-lg p-2 ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="text-[8px] font-mono text-slate-500 uppercase tracking-widest text-center">Variable Resistor</div>
-                    <div className="mt-2 h-8 w-full bg-slate-900/50 border border-slate-700 rounded relative overflow-hidden">
-                        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-600 -translate-y-1/2"></div>
-                        <motion.div
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 120 }}
-                            dragElastic={0}
-                            dragMomentum={false}
-                            onDrag={(e, info) => {
-                                if (onPropertyChange) {
-                                    const maxR = properties.maxResistance || 100;
-                                    const newR = Math.round((info.point.x / 120) * maxR);
-                                    onPropertyChange({ resistance: Math.max(0, Math.min(maxR, newR)) });
-                                }
-                            }}
-                            className="absolute left-0 h-full w-2 bg-blue-500 border-x border-blue-400 cursor-ew-resize z-30"
-                            style={{ x: (properties.resistance / (properties.maxResistance || 100)) * 120 } as any}
-                        ></motion.div>
+                <div className={`relative w-[260px] h-[120px] ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="absolute inset-x-2 bottom-1 h-[14px] bg-gradient-to-b from-slate-900 to-black rounded-sm border border-slate-700"></div>
+
+                    <div className="absolute left-1 top-[22px] w-[28px] h-[82px] bg-gradient-to-b from-slate-700 to-slate-900 rounded-sm border border-slate-600"></div>
+                    <div className="absolute right-1 top-[22px] w-[28px] h-[82px] bg-gradient-to-b from-slate-700 to-slate-900 rounded-sm border border-slate-600"></div>
+
+                    <div className="absolute left-[25px] right-[25px] top-[28px] h-[10px] rounded bg-gradient-to-b from-slate-200 to-slate-500 border border-slate-500"></div>
+
+                    <div className="absolute left-[28px] right-[28px] top-[45px] h-[32px] rounded-full bg-gradient-to-b from-slate-500 to-slate-800 border border-slate-700 overflow-hidden">
+                        <div className="absolute inset-0 opacity-45 bg-[repeating-linear-gradient(90deg,rgba(226,232,240,0.25)_0px,rgba(226,232,240,0.25)_1px,transparent_2px,transparent_4px)]"></div>
                     </div>
-                    <div className="mt-2 text-[10px] font-mono text-center text-slate-400">{properties.resistance} Ω</div>
+
+                    <motion.div
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 162 }}
+                        dragElastic={0}
+                        dragMomentum={false}
+                        onDrag={(e, info) => {
+                            if (onPropertyChange) {
+                                const maxR = properties.maxResistance || 100;
+                                const newR = Math.round((info.point.x / 162) * maxR);
+                                onPropertyChange({ resistance: Math.max(0, Math.min(maxR, newR)) });
+                            }
+                        }}
+                        className="absolute left-[49px] top-[28px] w-[22px] h-[46px] cursor-ew-resize"
+                        style={{ x: (properties.resistance / (properties.maxResistance || 100)) * 162 } as any}
+                    >
+                        <div className="w-full h-full bg-gradient-to-b from-slate-700 to-slate-900 border border-slate-600 rounded-sm shadow-lg"></div>
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 bg-red-900/70 rounded"></div>
+                    </motion.div>
+
+                    <div className="absolute left-[8px] top-[72px] w-[10px] h-[10px] rounded-full bg-gradient-to-b from-slate-300 to-slate-600 border border-slate-600"></div>
+                    <div className="absolute right-[8px] top-[72px] w-[10px] h-[10px] rounded-full bg-gradient-to-b from-red-400 to-red-700 border border-red-900"></div>
+
+                    <div className="absolute left-2 top-2 bg-slate-950/75 text-[9px] font-mono text-blue-200 px-2 py-0.5 rounded">
+                        Rheostat
+                    </div>
+                    <div className="absolute right-2 top-2 bg-slate-950/75 text-[9px] font-mono text-slate-200 px-2 py-0.5 rounded">
+                        {properties.resistance} ohm
+                    </div>
                 </div>
             );
 
         case 'switch':
             return (
-                <div className={`relative w-20 h-20 bg-slate-800 rounded-xl border-2 border-slate-700 flex items-center justify-center p-3 transition-colors ${properties.closed ? 'bg-emerald-500/10 border-emerald-500/30' : ''} ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className={`w-12 h-12 rounded-full border-2 border-slate-700 flex items-center justify-center transition-all ${properties.closed ? 'border-emerald-500' : ''}`}>
-                        <div className={`w-8 h-2 bg-slate-500 origin-left transition-transform duration-300 ${properties.closed ? 'rotate-[30deg] bg-emerald-400' : '-rotate-45'}`}></div>
+                <div className={`relative w-[140px] h-[95px] ${isHovered ? activeGlow : glowShadow}`}>
+                    <div className="absolute inset-x-2 bottom-2 h-[54px] rounded bg-gradient-to-b from-slate-900 to-black border border-slate-700"></div>
+
+                    <div className="absolute left-[26px] top-[37px] w-[36px] h-[22px] rounded-sm bg-gradient-to-b from-yellow-300 to-yellow-500 border border-yellow-700"></div>
+                    <div className="absolute right-[26px] top-[37px] w-[36px] h-[22px] rounded-sm bg-gradient-to-b from-yellow-300 to-yellow-500 border border-yellow-700"></div>
+
+                    <div className="absolute left-[34px] top-[31px] w-[16px] h-[12px] rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500"></div>
+                    <div className="absolute right-[34px] top-[31px] w-[16px] h-[12px] rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500"></div>
+
+                    <div className="absolute left-1/2 -translate-x-1/2 top-[22px] w-[20px] h-[24px] rounded bg-gradient-to-b from-slate-700 to-slate-900 border border-slate-600"></div>
+                    <motion.div
+                        animate={{ rotate: properties.closed ? 0 : -25 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 14 }}
+                        className="absolute left-1/2 top-[42px] -translate-x-1/2 origin-top w-[5px] h-[24px] rounded bg-gradient-to-b from-amber-100 to-amber-400 border border-amber-500"
+                    ></motion.div>
+
+                    <div className="absolute left-[58px] top-[66px] text-[8px] font-bold text-emerald-400">
+                        {properties.closed ? 'ON' : 'OFF'}
                     </div>
-                    <div className="absolute -top-1 right-2 w-2 h-2 rounded-full bg-slate-700 transition-colors" style={{ backgroundColor: properties.closed ? '#10b981' : '#334155' }}></div>
                 </div>
             );
 
@@ -199,7 +254,6 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         <div className="w-14 h-14 rounded-full border-2 border-slate-700/50 flex items-center justify-center">
                             <div className="w-4 h-4 rounded-full bg-slate-600"></div>
                         </div>
-                        {/* Spokes */}
                         {[0, 45, 90, 135].map(angle => (
                             <div
                                 key={angle}
@@ -209,7 +263,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         ))}
                     </div>
                     <div className="absolute -top-2 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded text-[8px] font-mono text-slate-400">
-                        μ = {properties.friction || '0'}
+                        mu = {properties.friction || '0'}
                     </div>
                 </div>
             );

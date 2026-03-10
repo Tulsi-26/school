@@ -59,10 +59,20 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const finalX = snapToGrid(x);
         const finalY = snapToGrid(y);
 
-        // Define terminals based on instrument type
+        const terminalLayouts: Record<string, { x: number; y: number }[]> = {
+            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
+            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
+            rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
+            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
+            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+        };
+
+        const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
         const terminals = [
-            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: { x: 0, y: 40 } },
-            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: { x: 80, y: 40 } },
+            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: layout[0] },
+            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: layout[1] },
         ] as any[];
 
         addInstrument({
@@ -129,7 +139,8 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 resistor?.properties.resistance || 100,
                 rheostat?.properties.resistance || 50,
                 sw?.properties.closed || false,
-                connections
+                connections,
+                instruments
             );
 
             setSimulationResults(result);
@@ -345,6 +356,16 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                         {experimentId === 'wheatstone-bridge' && 'Bridge active: Galvanometer reading stable'}
                         {experimentId === 'reflection-refraction' && 'Optical path established'}
                         {experimentId === 'newton-second-law' && 'Mechanical equilibrium calculated'}
+                    </span>
+                </div>
+            )}
+
+            {/* Hint / Warning Notification */}
+            {!simulationResults.isValid && simulationResults.hint && (
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                    <span className="text-sm font-bold uppercase tracking-wider">
+                        {simulationResults.hint}
                     </span>
                 </div>
             )}

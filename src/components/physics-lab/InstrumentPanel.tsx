@@ -2,17 +2,8 @@
 
 import React from 'react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
-import {
-    Zap,
-    Activity,
-    Maximize2,
-    RotateCcw,
-    MousePointer2,
-    Trash2,
-    Search,
-    Target,
-    Box
-} from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { InstrumentVisuals } from './instruments/InstrumentVisuals';
 
 export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const { addInstrument, resetLab } = usePhysicsLab();
@@ -61,22 +52,17 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
             <div className="grid grid-cols-2 gap-3">
                 {instruments.map((inst) => (
                     <div
-                        key={inst.type}
+                        key={`${inst.type}-${inst.name}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, inst)}
-                        className="group p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-blue-500/50 transition-all cursor-grab active:cursor-grabbing flex flex-col items-center justify-center gap-2"
+                        className="group p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-blue-500/50 transition-all cursor-grab active:cursor-grabbing flex flex-col items-center justify-center gap-2 overflow-hidden"
                     >
-                        <div className="w-12 h-12 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-blue-500/10 group-hover:text-blue-400 transition-colors">
-                            {inst.type === 'battery' && <Zap size={24} />}
-                            {inst.type === 'resistor' && <Activity size={24} />}
-                            {inst.type === 'ammeter' && <Activity size={24} />}
-                            {inst.type === 'voltmeter' && <Activity size={24} />}
-                            {inst.type === 'rheostat' && <Maximize2 size={24} />}
-                            {inst.type === 'switch' && <RotateCcw size={24} />}
-                            {inst.type === 'galvanometer' && <Activity size={24} />}
-                            {(inst.type === 'lens' || inst.type === 'mirror') && <Search size={24} />}
-                            {inst.type === 'pulley' && <Target size={24} />}
-                            {inst.type === 'block' && <Box size={24} />}
+                        <div className="w-full flex items-center justify-center scale-[0.36] origin-center -my-8 pointer-events-none">
+                            <InstrumentVisuals
+                                type={inst.type}
+                                properties={inst.properties}
+                                isHovered={false}
+                            />
                         </div>
                         <span className="text-xs font-medium text-slate-400 group-hover:text-slate-200">{inst.name}</span>
                     </div>
