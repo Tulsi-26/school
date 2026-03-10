@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -14,11 +15,28 @@ const experimentNames: Record<string, string> = {
 
 const saveSessionSchema = z.object({
   experimentId: z.string(),
-  instruments: z.array(z.any()),
-  connections: z.array(z.any()),
-  observations: z.array(z.any()),
+  instruments: z.array(z.object({
+    id: z.string(),
+    type: z.string(),
+    name: z.string(),
+    position: z.object({ x: z.number(), y: z.number() }),
+    properties: z.record(z.string(), z.unknown()),
+    terminals: z.array(z.object({
+      id: z.string(),
+      parentId: z.string(),
+      type: z.string(),
+      position: z.object({ x: z.number(), y: z.number() }),
+    })),
+  })),
+  connections: z.array(z.object({
+    id: z.string(),
+    from: z.string(),
+    to: z.string(),
+    color: z.string(),
+  })),
+  observations: z.array(z.record(z.string(), z.unknown())),
   checklist: z.array(z.string()),
-  simulationResults: z.record(z.string(), z.any()),
+  simulationResults: z.record(z.string(), z.unknown()),
 });
 
 // GET /api/experiment-sessions — list saved sessions for the current user
@@ -82,17 +100,19 @@ export async function POST(request: Request) {
       orderBy: { updatedAt: "desc" },
     });
 
-    type JsonValue = Parameters<typeof prisma.experimentSession.create>[0]["data"]["instruments"];
+    const jsonData = {
+      instruments: parsed.data.instruments as unknown as Prisma.InputJsonValue,
+      connections: parsed.data.connections as unknown as Prisma.InputJsonValue,
+      observations: parsed.data.observations as unknown as Prisma.InputJsonValue,
+      checklist: parsed.data.checklist as unknown as Prisma.InputJsonValue,
+      simulationResults: parsed.data.simulationResults as unknown as Prisma.InputJsonValue,
+    };
 
     if (existing) {
       const updated = await prisma.experimentSession.update({
         where: { id: existing.id },
         data: {
-          instruments: parsed.data.instruments as unknown as JsonValue,
-          connections: parsed.data.connections as unknown as JsonValue,
-          observations: parsed.data.observations as unknown as JsonValue,
-          checklist: parsed.data.checklist as unknown as JsonValue,
-          simulationResults: parsed.data.simulationResults as unknown as JsonValue,
+          ...jsonData,
           experimentTitle,
         },
       });
@@ -103,11 +123,7 @@ export async function POST(request: Request) {
       data: {
         experimentId: parsed.data.experimentId,
         experimentTitle,
-        instruments: parsed.data.instruments as unknown as JsonValue,
-        connections: parsed.data.connections as unknown as JsonValue,
-        observations: parsed.data.observations as unknown as JsonValue,
-        checklist: parsed.data.checklist as unknown as JsonValue,
-        simulationResults: parsed.data.simulationResults as unknown as JsonValue,
+        ...jsonData,
         userId: session.user.id,
       },
     });
