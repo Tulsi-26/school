@@ -33,42 +33,48 @@ export const Voltmeter: React.FC<VoltmeterProps> = ({ reading, scale = 5, isHove
                             {/* Main Arc Line (Radius 100 at center 120, 120) */}
                             <path d="M 35,90 A 110,110 0 0,1 205,90" fill="none" stroke="#222" strokeWidth="2" />
 
-                            {/* Tick Marks: 100 deg sweep. Let's do 5 major divisions (0, 1, 2, 3, 4, 5 if scale=5) */}
-                            {/* We will divide into 10 major ticks and minor subdivisions to look realistic */}
-                            {[...Array(11)].map((_, step) => {
+                            {/* Tick Marks: 100 deg sweep. Divide into 10 major ticks and minor subdivisions */}
+                            {Array.from({ length: 11 }).map((_, step) => {
                                 const fraction = step / 10;
                                 const val = fraction * scale;
                                 const deg = -50 + fraction * 100;
-                                const isMajor = step % 2 === 0;
+                                // Draw major text every 2 integer steps, or every step for small scales
+                                const isMajor = scale <= 10 ? true : step % 2 === 0;
 
                                 return (
                                     <g key={step} transform={`translate(120, 140) rotate(${deg})`}>
-                                        {/* Tick mark */}
-                                        <line x1="0" y1="-110" x2="0" y2={isMajor ? "-120" : "-115"} stroke="#222" strokeWidth={isMajor ? "2" : "1.5"} />
+                                        {/* Major Tick (pointing outwards from r=110 to r=118) */}
+                                        <line x1="0" y1="-110" x2="0" y2="-118" stroke="#222" strokeWidth={isMajor ? "2" : "1.5"} />
 
-                                        {/* Minor sub-ticks between steps */}
+                                        {/* Minor sub-ticks between steps (every 2 degrees) */}
                                         {step < 10 && [1, 2, 3, 4].map(minor => {
-                                            const minorStepAngle = 100 / 10 / 5; // 2 degrees per minor tick
                                             return (
-                                                <line key={minor} x1="0" y1="-110" x2="0" y2="-113" stroke="#222" strokeWidth="1" transform={`rotate(${minor * minorStepAngle})`} />
+                                                <line
+                                                    key={minor}
+                                                    x1="0" y1="-110" x2="0" y2="-114"
+                                                    stroke="#222" strokeWidth="1"
+                                                    transform={`rotate(${minor * 2})`}
+                                                />
                                             )
                                         })}
 
-                                        {/* Text Label (Only on major ticks) */}
+                                        {/* Text Label (Only on major ticks, positioned outside/above the arc) */}
                                         {isMajor && (
-                                            <text
-                                                x="0"
-                                                y="-128"
-                                                fontSize="14"
-                                                fontWeight="bold"
-                                                fill="#222"
-                                                textAnchor="middle"
-                                                fontFamily="Arial, sans-serif"
-                                                transform={`rotate(${-deg})`} // keeping upright
-                                            >
-                                                {/* Format nicely */}
-                                                {scale <= 10 ? val : Math.round(val)}
-                                            </text>
+                                            <g transform="translate(0, -132)">
+                                                <text
+                                                    x="0"
+                                                    y="0"
+                                                    fontSize="12"
+                                                    fontWeight="bold"
+                                                    fill="#222"
+                                                    textAnchor="middle"
+                                                    dominantBaseline="middle"
+                                                    fontFamily="Arial, sans-serif"
+                                                    transform={`rotate(${-deg})`} // keeping upright
+                                                >
+                                                    {scale <= 10 && !Number.isInteger(val) ? val.toFixed(1).replace('0.', '.') : Math.round(val)}
+                                                </text>
+                                            </g>
                                         )}
                                     </g>
                                 )

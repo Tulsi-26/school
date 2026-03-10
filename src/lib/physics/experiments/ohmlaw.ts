@@ -28,10 +28,14 @@ export const calculateOhmLaw = (
     // Graph Construction
     const adjList = new Map<string, string[]>(); // terminalId -> connected terminalIds
 
+    const ensureNode = (id: string) => {
+        if (!adjList.has(id)) adjList.set(id, []);
+    };
+
     // Add edges for explicit wire connections
     connections.forEach(conn => {
-        if (!adjList.has(conn.from)) adjList.set(conn.from, []);
-        if (!adjList.has(conn.to)) adjList.set(conn.to, []);
+        ensureNode(conn.from);
+        ensureNode(conn.to);
         adjList.get(conn.from)!.push(conn.to);
         adjList.get(conn.to)!.push(conn.from);
     });
@@ -40,14 +44,21 @@ export const calculateOhmLaw = (
     const instrumentMap = new Map<string, any>();
     instruments.forEach(inst => {
         instrumentMap.set(inst.id, inst);
-        if (inst.terminals && inst.terminals.length >= 2) {
-            const t1 = inst.terminals[0].id;
-            const t2 = inst.terminals[1].id;
-            if (!adjList.has(t1)) adjList.set(t1, []);
-            if (!adjList.has(t2)) adjList.set(t2, []);
-            // Internal path (only if closed for switches, but we already handled open switches)
-            adjList.get(t1)!.push(t2);
-            adjList.get(t2)!.push(t1);
+
+        // Only components that allow current to flow through them should have internal edges
+        if (['resistor', 'rheostat', 'ammeter', 'switch', 'battery'].includes(inst.type)) {
+            if (inst.terminals && inst.terminals.length >= 2) {
+                const t1 = inst.terminals[0].id;
+                const t2 = inst.terminals[1].id;
+                ensureNode(t1);
+                ensureNode(t2);
+
+                // For switches, only allow internal path if closed
+                if (inst.type !== 'switch' || inst.properties.closed) {
+                    adjList.get(t1)!.push(t2);
+                    adjList.get(t2)!.push(t1);
+                }
+            }
         }
     });
 
@@ -55,8 +66,8 @@ export const calculateOhmLaw = (
     const battery = instruments.find(i => i.type === 'battery');
     if (!battery) return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Battery is missing." };
 
-    const batPositive = battery.terminals.find((t: any) => t.type === 'positive')?.id;
-    const batNegative = battery.terminals.find((t: any) => t.type === 'negative')?.id;
+    const batPositive = battery.terminals.find((t: any) => t.type === 'positive')?.id || battery.terminals[0]?.id;
+    const batNegative = battery.terminals.find((t: any) => t.type === 'negative')?.id || battery.terminals[1]?.id;
 
     if (!batPositive || !batNegative || !adjList.has(batPositive)) {
         return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Battery not connected properly." };
@@ -92,7 +103,7 @@ export const calculateOhmLaw = (
         return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Circuit is completely broken. No path back to the battery." };
     }
 
-    // Analyze components in the path
+    // Analyze components in the path (excluding voltmeter, which should be parallel)
     const componentsInPath = new Set<string>();
     foundPath.forEach(termId => {
         instruments.forEach(inst => {
@@ -120,17 +131,21 @@ export const calculateOhmLaw = (
     let isVoltmeterCorrect = false;
 
     if (voltmeter && resistor) {
-        // A simple check: Voltmeter terminals should be directly connected to the Resistor's terminals
         const vmT1 = voltmeter.terminals[0]?.id;
         const vmT2 = voltmeter.terminals[1]?.id;
         const resT1 = resistor.terminals[0]?.id;
         const resT2 = resistor.terminals[1]?.id;
 
-        const vmT1Neighbors = adjList.get(vmT1) || [];
-        const vmT2Neighbors = adjList.get(vmT2) || [];
+        // Check if there is a direct wire connection between VM terminals and Resistor terminals
+        const checkConnection = (tA: string, tB: string) => {
+            return connections.some(c =>
+                (c.from === tA && c.to === tB) ||
+                (c.from === tB && c.to === tA)
+            );
+        };
 
-        if ((vmT1Neighbors.includes(resT1) || vmT1Neighbors.includes(resT2)) &&
-            (vmT2Neighbors.includes(resT1) || vmT2Neighbors.includes(resT2))) {
+        if ((checkConnection(vmT1, resT1) || checkConnection(vmT1, resT2)) &&
+            (checkConnection(vmT2, resT1) || checkConnection(vmT2, resT2))) {
             isVoltmeterCorrect = true;
         }
     }
