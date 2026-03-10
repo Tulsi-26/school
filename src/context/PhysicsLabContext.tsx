@@ -25,6 +25,19 @@ export interface Connection {
     color: string;
 }
 
+export interface SavedSession {
+    id: string;
+    experimentId: string;
+    experimentTitle: string;
+    instruments: Instrument[];
+    connections: Connection[];
+    observations: any[];
+    checklist: string[];
+    simulationResults: Record<string, any>;
+    createdAt: string;
+    updatedAt: string;
+}
+
 interface PhysicsLabContextType {
     instruments: Instrument[];
     connections: Connection[];
@@ -48,6 +61,10 @@ interface PhysicsLabContextType {
     validationSuggestions: string[];
     circuitIsValid: boolean;
     setValidationState: (errors: any[], suggestions: string[], isValid: boolean) => void;
+    saveExperiment: () => Promise<void>;
+    loadExperiment: (sessionId: string) => Promise<void>;
+    isSaving: boolean;
+    lastSavedAt: Date | null;
 }
 
 const PhysicsLabContext = createContext<PhysicsLabContextType | undefined>(undefined);
@@ -62,6 +79,8 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [validationErrors, setValidationErrors] = useState<any[]>([]);
     const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
     const [circuitIsValid, setCircuitIsValid] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
     const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
         setValidationErrors(errors);
@@ -142,6 +161,70 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [activeExperimentId]);
 
+    const saveExperiment = useCallback(async () => {
+        if (!activeExperimentId) return;
+        setIsSaving(true);
+        try {
+            const checklist: string[] = typeof window !== 'undefined'
+                ? JSON.parse(localStorage.getItem(`checklist-${activeExperimentId}`) || '[]')
+                : [];
+
+            const res = await fetch('/api/experiment-sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    experimentId: activeExperimentId,
+                    instruments,
+                    connections,
+                    observations,
+                    checklist,
+                    simulationResults,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to save experiment session');
+            }
+
+            setLastSavedAt(new Date());
+        } catch (error) {
+            console.error('Failed to save experiment:', error);
+            throw error;
+        } finally {
+            setIsSaving(false);
+        }
+    }, [activeExperimentId, instruments, connections, observations, simulationResults]);
+
+    const loadExperiment = useCallback(async (sessionId: string) => {
+        try {
+            const res = await fetch(`/api/experiment-sessions/${encodeURIComponent(sessionId)}`);
+            if (!res.ok) {
+                throw new Error('Failed to load experiment session');
+            }
+
+            const data = await res.json();
+            const saved = data.session;
+
+            setInstruments(saved.instruments || []);
+            setConnections(saved.connections || []);
+            setObservations(saved.observations || []);
+            setSimulationResults(saved.simulationResults || {});
+
+            // Restore checklist to localStorage
+            if (saved.checklist && saved.experimentId && typeof window !== 'undefined') {
+                localStorage.setItem(
+                    `checklist-${saved.experimentId}`,
+                    JSON.stringify(saved.checklist)
+                );
+            }
+
+            setLastSavedAt(new Date(saved.updatedAt));
+        } catch (error) {
+            console.error('Failed to load experiment:', error);
+            throw error;
+        }
+    }, []);
+
     const resetLab = useCallback(() => {
         setInstruments([]);
         setConnections([]);
@@ -171,7 +254,11 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         validationErrors,
         validationSuggestions,
         circuitIsValid,
-        setValidationState
+        setValidationState,
+        saveExperiment,
+        loadExperiment,
+        isSaving,
+        lastSavedAt
     }), [
         instruments,
         connections,
@@ -192,7 +279,11 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         validationErrors,
         validationSuggestions,
         circuitIsValid,
-        setValidationState
+        setValidationState,
+        saveExperiment,
+        loadExperiment,
+        isSaving,
+        lastSavedAt
     ]);
 
     return (

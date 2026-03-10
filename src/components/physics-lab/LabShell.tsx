@@ -8,7 +8,7 @@ import { ExperimentGuide } from '@/components/physics-lab/ExperimentGuide';
 import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
 import {
     ChevronRight, Home, Beaker, RotateCcw, ShieldCheck,
-    Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone
+    Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone, Save, Loader2, Check
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ interface LabShellProps {
 }
 
 export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
-    const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery } = usePhysicsLab();
+    const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery, saveExperiment, isSaving, lastSavedAt } = usePhysicsLab();
     const experimentName = experimentNames[experimentId] || experimentId;
     const isMastered = masteredExperiments.includes(experimentId);
     const { theme, setTheme } = useTheme();
@@ -34,6 +34,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const [showGuide, setShowGuide] = useState(false);
     const [showRotateOverlay, setShowRotateOverlay] = useState(false);
     const [guideWidth, setGuideWidth] = useState(384);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const startRightResize = useCallback((e: React.MouseEvent) => {
@@ -82,6 +83,16 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => { });
         }
     }, []);
+
+    const handleSave = useCallback(async () => {
+        try {
+            await saveExperiment();
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 2000);
+        } catch {
+            // Error already logged in context
+        }
+    }, [saveExperiment]);
 
     useEffect(() => {
         const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -212,6 +223,29 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                             <RotateCcw className={`w-3.5 h-3.5 ${isMastered ? 'hidden' : ''}`} />
                             <ShieldCheck className={`w-3.5 h-3.5 ${!isMastered ? 'hidden' : ''}`} />
                             {isMastered ? 'Completed' : 'Mark as Completed'}
+                        </button>
+
+                        {/* Save experiment to database */}
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${saveSuccess
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'hover:bg-blue-500/20 hover:text-blue-400'
+                                }`}
+                            style={saveSuccess ? { border: '1px solid rgba(16,185,129,0.3)' } : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
+                            title={lastSavedAt ? `Last saved: ${lastSavedAt.toLocaleTimeString()}` : 'Save experiment progress to database'}
+                        >
+                            {isSaving ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : saveSuccess ? (
+                                <Check className="w-3.5 h-3.5" />
+                            ) : (
+                                <Save className="w-3.5 h-3.5" />
+                            )}
+                            <span className="hidden sm:inline">
+                                {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save'}
+                            </span>
                         </button>
 
                         {/* Reset lab */}

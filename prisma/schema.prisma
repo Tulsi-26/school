@@ -44,6 +44,7 @@ model User {
   verificationTokens   EmailVerificationToken[]
   passwordResetTokens  PasswordResetToken[]
   labReports           LabReport[]
+  experimentSessions   ExperimentSession[]
 
   @@index([organizationId])
 }
@@ -70,6 +71,25 @@ model LabReport {
   @@index([userId])
   @@index([organizationId])
   @@index([experimentId])
+}
+
+model ExperimentSession {
+  id               String   @id @default(cuid()) @map("_id")
+  experimentId     String
+  experimentTitle  String
+  instruments      Json
+  connections      Json
+  observations     Json
+  checklist        Json
+  simulationResults Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([experimentId])
+  @@index([userId, experimentId])
 }
 
 model EmailVerificationToken {
