@@ -7,7 +7,11 @@ import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
 import { Card } from "@/components/ui/card"
 import { motion, Variants } from "framer-motion"
-import { Hero3D } from "@/components/hero-3d"
+import dynamic from "next/dynamic"
+const Hero3D = dynamic(() => import("@/components/hero-3d").then((mod) => mod.Hero3D), { 
+  ssr: false,
+  loading: () => <div className="absolute inset-0 -z-10 bg-slate-50/50" />
+})
 
 export default function Home() {
   const containerVariants: Variants = {
@@ -31,20 +35,33 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* --- HERO SECTION --- */}
-        <section className="relative min-h-[90vh] flex items-center pt-20 pb-32 overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white to-white -z-20" />
-          <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none -z-10" 
-               style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {/* --- HERO SECTION: TEXT AREA WITH BACKGROUND --- */}
+        <section className="relative pt-32 pb-24 flex items-center min-h-[85vh] overflow-hidden">
+          {/* Background Image for Text Area */}
+          <div className="absolute inset-0 -z-30">
+            <motion.img 
+              initial={{ scale: 1.1, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.7 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              src="/physics_hero_bg_new.png" 
+              alt="Physics Background" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-white" />
+            
+            {/* Decorative Grid Overlay */}
+            <div className="absolute top-0 left-0 w-full h-full opacity-[0.12] pointer-events-none" 
+                 style={{ backgroundImage: 'radial-gradient(#3b82f6 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
+          </div>
           
           <Hero3D />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
             <motion.div
-              className="text-center max-w-4xl mx-auto"
               initial="hidden"
               animate="visible"
               variants={containerVariants}
+              className="max-w-4xl mx-auto"
             >
               <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/50 backdrop-blur-sm px-4 py-1.5 text-xs font-bold text-blue-600 mb-8 uppercase tracking-widest shadow-sm">
                 <span className="relative flex h-2 w-2">
@@ -53,22 +70,23 @@ export default function Home() {
                 </span>
                 The Future of STEM Education
               </motion.div>
-              
+
               <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]">
                 Master Physics <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 animate-gradient-x">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 animate-gradient-x drop-shadow-sm">
                   Through Discovery.
                 </span>
               </motion.h1>
-              
+
               <motion.p variants={itemVariants} className="mt-4 text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
                 Step into an interactive virtual laboratory. Build circuits, trace rays, and explore the laws of nature with precision simulations.
               </motion.p>
-              
+
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-center gap-6">
                 <Link href="/physics-lab">
-                  <Button size="lg" className="w-full sm:w-auto text-lg px-10 h-16 bg-blue-600 hover:bg-blue-700 shadow-2xl shadow-blue-500/30 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group">
-                    <Beaker className="w-6 h-6 group-hover:rotate-12 transition-transform" /> 
+                  <Button size="lg" className="w-full sm:w-auto text-lg px-10 h-16 bg-blue-600 hover:bg-blue-700 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)] rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                    <Beaker className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                     Enter Virtual Lab
                   </Button>
                 </Link>
@@ -79,22 +97,37 @@ export default function Home() {
                 </Link>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* Floating Visual Elements */}
+        {/* --- VIDEO PREVIEW SECTION --- */}
+        <section className="pb-40 pt-10 bg-white relative overflow-hidden">
+          {/* Section decorative background */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
+               style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+               
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8, duration: 1 }}
-              className="mt-24 relative mx-auto max-w-5xl rounded-[2.5rem] border border-white bg-white/40 backdrop-blur-md p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5 overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="relative mx-auto max-w-5xl rounded-[3rem] border border-slate-200/60 bg-white p-5 shadow-[0_40px_100px_-20px_rgba(37,99,235,0.15)] overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 pointer-events-none" />
-              <div className="aspect-[16/10] rounded-[2rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-inner">
-                 <img src="/physics_lab_hero_bg_1773209928983.png" alt="Physics Lab Preview" className="w-full h-full object-cover opacity-80" />
-                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="p-4 rounded-full bg-blue-600/20 backdrop-blur-xl border border-white/30 animate-pulse cursor-pointer hover:scale-110 transition-transform">
-                      <Play className="w-12 h-12 text-white fill-white ml-1" />
-                    </div>
-                 </div>
+              <div className="relative aspect-[16/10] min-h-[400px] md:min-h-[500px] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group">
+                <img 
+                  src="/physics_lab_preview_bg_new.png" 
+                  alt="Physics Lab Preview" 
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-blue-600/5 mix-blend-overlay group-hover:bg-blue-600/0 transition-colors duration-700" />
+                
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="p-6 rounded-full bg-white/30 backdrop-blur-2xl border border-white/40 shadow-2xl cursor-pointer hover:scale-110 hover:bg-white/40 transition-all duration-300 group/play">
+                    <Play className="w-16 h-16 text-white fill-white ml-2 transition-transform group-hover/play:scale-110" />
+                    <div className="absolute inset-0 rounded-full bg-white/20 animate-ping -z-10 group-hover/play:animate-none" />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -110,7 +143,7 @@ export default function Home() {
                 { val: "Real-time", label: "Simulation Engine", icon: Zap },
                 { val: "24/7", label: "Accessible Anywhere", icon: Clock }
               ].map((stat, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -196,11 +229,11 @@ export default function Home() {
         <section className="py-32 bg-slate-900 overflow-hidden relative">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
-          
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div>
-                <motion.h2 
+                <motion.h2
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight"
@@ -225,8 +258,8 @@ export default function Home() {
                       icon: PenTool
                     }
                   ].map((feat, i) => (
-                    <motion.div 
-                      key={i} 
+                    <motion.div
+                      key={i}
                       className="flex gap-6"
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -251,39 +284,39 @@ export default function Home() {
                 <div className="relative rounded-[2rem] bg-slate-800/50 border border-slate-700 p-8 shadow-3xl backdrop-blur-xl">
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3">
-                       <Zap className="w-8 h-8 text-amber-500 animate-pulse" />
-                       <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Live Calculation</span>
-                       <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            whileInView={{ width: "95%" }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="h-full bg-amber-500" 
-                          />
-                       </div>
+                      <Zap className="w-8 h-8 text-amber-500 animate-pulse" />
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Live Calculation</span>
+                      <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: "95%" }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="h-full bg-amber-500"
+                        />
+                      </div>
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 translate-y-8">
-                       <Beaker className="w-8 h-8 text-blue-500" />
-                       <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Experiment State</span>
-                       <div className="flex gap-1">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" />
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                       </div>
+                      <Beaker className="w-8 h-8 text-blue-500" />
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Experiment State</span>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" />
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      </div>
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 -translate-y-4">
-                       < Microscope className="w-8 h-8 text-emerald-500" />
-                       <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Circuit Valid</span>
-                       <Check className="w-6 h-6 text-emerald-500" />
+                      < Microscope className="w-8 h-8 text-emerald-500" />
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Circuit Valid</span>
+                      <Check className="w-6 h-6 text-emerald-500" />
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 translate-y-4">
-                       <Lightbulb className="w-8 h-8 text-purple-500" />
-                       <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Ray Tracing</span>
-                       <div className="w-full flex justify-center py-1">
-                          <div className="w-12 h-12 bg-white/5 rounded-full border border-white/10 flex items-center justify-center">
-                            <div className="w-px h-8 bg-blue-400 rotate-45" />
-                          </div>
-                       </div>
+                      <Lightbulb className="w-8 h-8 text-purple-500" />
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Ray Tracing</span>
+                      <div className="w-full flex justify-center py-1">
+                        <div className="w-12 h-12 bg-white/5 rounded-full border border-white/10 flex items-center justify-center">
+                          <div className="w-px h-8 bg-blue-400 rotate-45" />
+                        </div>
+                      </div>
                     </Card>
                   </div>
                 </div>
@@ -333,33 +366,39 @@ export default function Home() {
         {/* --- CTA SECTION --- */}
         <section className="py-24 relative overflow-hidden bg-white">
           <div className="max-w-5xl mx-auto px-4">
-            <div className="relative rounded-[3rem] bg-gradient-to-r from-blue-600 to-indigo-700 p-12 md:p-20 text-center overflow-hidden shadow-[0_40px_80px_-20px_rgba(59,130,246,0.5)]">
-               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
-               <motion.div
-                 initial={{ opacity: 0, scale: 0.9 }}
-                 whileInView={{ opacity: 1, scale: 1 }}
-                 viewport={{ once: true }}
-                 className="relative z-10"
-               >
-                 <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">
-                    Start Your Virtual <br /> Experiment Today
-                 </h2>
-                 <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto font-medium">
-                    No equipment? No Problem. Access the full laboratory experience from any browser, at any time.
-                 </p>
-                 <div className="flex flex-col sm:flex-row justify-center gap-6">
-                    <Link href="/physics-lab">
-                      <Button size="lg" className="h-16 px-12 text-lg font-bold bg-white text-blue-700 hover:bg-blue-50 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95">
-                        Get Started Free
-                      </Button>
-                    </Link>
-                    <Link href="/docs">
-                      <Button size="lg" variant="outline" className="h-16 px-12 text-lg font-bold text-white border-white/30 hover:bg-white/10 rounded-2xl transition-all hover:scale-105 active:scale-95">
-                        Read the Guide
-                      </Button>
-                    </Link>
-                 </div>
-               </motion.div>
+            <div className="relative rounded-[3rem] bg-gradient-to-r from-blue-600 to-indigo-700 p-12 md:p-20 text-center overflow-hidden shadow-[0_40px_80px_-20px_rgba(59,130,246,0.5)] group">
+              <div className="absolute inset-0 -z-0">
+                <img 
+                  src="/physics_bg.png" 
+                  alt="" 
+                  className="w-full h-full object-cover opacity-10 mix-blend-overlay group-hover:scale-110 transition-transform duration-700" 
+                />
+              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="relative z-10"
+              >
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">
+                  Start Your Virtual <br /> Experiment Today
+                </h2>
+                <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto font-medium">
+                  No equipment? No Problem. Access the full laboratory experience from any browser, at any time.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-6">
+                  <Link href="/physics-lab">
+                    <Button size="lg" className="h-16 px-12 text-lg font-bold bg-white text-blue-700 hover:bg-blue-50 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95">
+                      Get Started Free
+                    </Button>
+                  </Link>
+                  <Link href="/docs">
+                    <Button size="lg" variant="outline" className="h-16 px-12 text-lg font-bold text-white border-white/30 hover:bg-white/10 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                      Read the Guide
+                    </Button>
+                  </Link>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
