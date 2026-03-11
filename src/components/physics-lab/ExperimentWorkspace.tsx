@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
@@ -34,6 +34,8 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
+    const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
+    const lastReadingsRef = useRef<Record<string, number>>({});
 
     // Circuit validation state
     const [validationErrors, setValidationErrors] = useState<any[]>([]);
@@ -104,13 +106,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
-        if (!isConnecting) {
-            setIsConnecting({ from: terminalId, type });
-        }
-    };
-
-    const handleTerminalClick = (terminalId: string, type: string) => {
+    const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
                 const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
@@ -180,9 +176,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             setValidationSuggestions(validation.suggestions);
             setCircuitIsValid(validation.isValid);
         } else {
-            setValidationState([], [], true);
+            setValidationErrors([]);
+            setValidationSuggestions([]);
+            setCircuitIsValid(true);
         }
-    }, [instruments, connections, experimentId, setValidationState]);
+    }, [instruments, connections, experimentId]);
 
     // Extract simulation-relevant values as primitives to avoid infinite loops.
     // The old code had instruments in the dependency array AND called updateInstrumentProperties
@@ -225,10 +223,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     useEffect(() => {
         if (experimentId === 'ohm-law') {
             const result = calculateOhmLaw(
-                battery?.properties.voltage || 9,
-                resistor?.properties.resistance || 100,
-                rheostat?.properties.resistance || 50,
-                sw?.properties.closed || false,
+                simInputs.voltage,
+                simInputs.resistance,
+                simInputs.rheostatR,
+                simInputs.switchClosed,
                 connections,
                 instruments
             );
@@ -334,7 +332,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 setSimulationResults({ ...result, vectors, isValid: true, isClosed: true });
             }
         }
-    }, [instruments, connections, updateInstrumentProperties, setSimulationResults, experimentId]);
+    }, [simInputs, connections, instruments, updateInstrumentProperties, setSimulationResults, experimentId]);
 
     const isCurrentFlowing = simulationResults.isValid && simulationResults.isClosed;
 
@@ -441,6 +439,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                     onPositionChange={handlePositionChange}
                     onTerminalClick={handleTerminalClick}
                     onTerminalDoubleClick={handleTerminalDoubleClick}
+                    onInstrumentDoubleClick={handleInstrumentDoubleClick}
+                    showWirePanel={wirePanelInstrumentId === inst.id}
+                    onWirePanelClose={handleWirePanelClose}
+                    onWireConnect={handleWireConnect}
+                    onWireDisconnect={handleWireDisconnect}
                     updateProperties={updateInstrumentProperties}
                 />
             ))}

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Battery } from './Battery';
 import { Ammeter } from './Ammeter';
 import { Voltmeter } from './Voltmeter';
+import { Galvanometer } from './Galvanometer';
 
 interface InstrumentVisualsProps {
     type: string;
@@ -62,33 +63,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} unit={properties.unit || 'mA'} isHovered={isHovered} />;
 
         case 'voltmeter':
-            const isAmmeter = type === 'ammeter';
-            return (
-                <div className={`relative w-32 h-32 bg-slate-800 rounded-2xl border-2 border-slate-700 p-3 ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="flex flex-col h-full items-center justify-center gap-1">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{isAmmeter ? 'Ammeter' : 'Voltmeter'}</div>
-                        <div className="relative w-20 h-20 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center overflow-hidden">
-                            <div className="text-xl font-mono font-bold text-white z-10">{properties.reading || 0}</div>
-                            <div className="text-[8px] font-mono text-slate-500 z-10">{isAmmeter ? 'mA' : 'V'}</div>
-                            <svg className="absolute inset-0 w-full h-full -rotate-90">
-                                <circle
-                                    cx="40" cy="40" r="34"
-                                    fill="none" stroke="currentColor" strokeWidth="2"
-                                    className="text-slate-800"
-                                />
-                                <motion.circle
-                                    cx="40" cy="40" r="34"
-                                    fill="none" stroke="currentColor" strokeWidth="2"
-                                    strokeDasharray="213"
-                                    initial={{ strokeDashoffset: 213 }}
-                                    animate={{ strokeDashoffset: 213 - (213 * (properties.reading || 0) / (properties.scale || 100)) }}
-                                    className="text-blue-500"
-                                />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            );
+            return <Voltmeter reading={properties.reading || 0} scale={properties.scale || 100} unit={properties.unit || 'V'} isHovered={isHovered} />;
 
         case 'resistor':
             return (
@@ -179,21 +154,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'galvanometer':
-            return (
-                <div className={`relative w-32 h-32 bg-slate-800 rounded-2xl border-2 border-slate-700 p-3 ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="flex flex-col h-full items-center justify-center gap-1">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Galvanometer</div>
-                        <div className="relative w-20 h-20 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center overflow-hidden">
-                            <motion.div
-                                className="w-0.5 h-12 bg-red-500 origin-bottom"
-                                animate={{ rotate: properties.reading * 90 }}
-                                transition={{ type: 'spring', stiffness: 100 }}
-                            ></motion.div>
-                            <div className="absolute bottom-2 text-[8px] font-bold text-slate-500">G</div>
-                        </div>
-                    </div>
-                </div>
-            );
+            return <Galvanometer reading={properties.reading || 0} scale={properties.scale || 30} unit={properties.unit || 'µA'} isHovered={isHovered} />;
 
         case 'lens':
             const isConvex = properties.type === 'convex';
