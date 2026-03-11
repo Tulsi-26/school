@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Zap, Unplug, Cable, ChevronRight, CircleDot } from 'lucide-react';
+import { X, Zap, Unplug, Cable, ChevronRight, CircleDot } from '@/lib/icons';
 import { Instrument, Connection } from '@/context/PhysicsLabContext';
 
 interface ConnectedTerminalInfo {

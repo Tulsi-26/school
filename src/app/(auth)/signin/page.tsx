@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/lib/icons";
 import { FcGoogle } from "react-icons/fc";
 
 import { Button } from "@/components/ui/button";

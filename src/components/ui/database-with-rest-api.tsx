@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Folder, HeartHandshakeIcon, SparklesIcon } from "lucide-react";
+import { Folder, HeartHandshakeIcon, SparklesIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface DatabaseWithRestApiProps {

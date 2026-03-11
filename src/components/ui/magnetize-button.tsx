@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils";
 import { motion, useAnimation } from "framer-motion";
-import { Magnet } from "lucide-react";
+import { Magnet } from "@/lib/icons";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 

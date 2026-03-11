@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
-import { Users, Building2, Wallet, ShoppingBag, ArrowRight } from "lucide-react"
+import { Users, Building2, Wallet, ShoppingBag, ArrowRight } from "@/lib/icons"
 import { Card } from "@/components/ui/card"
 
 export default function SolutionsPage() {

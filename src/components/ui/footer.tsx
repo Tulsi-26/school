@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Atom } from "lucide-react"
+import { Atom } from "@/lib/icons"
 
 export function Footer() {
     return (

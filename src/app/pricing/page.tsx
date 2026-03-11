@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
-import { Check } from "lucide-react"
+import { Check } from "@/lib/icons"
 import Link from "next/link"
 
 export default function PricingPage() {

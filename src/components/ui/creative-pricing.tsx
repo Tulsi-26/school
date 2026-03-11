@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Check, Pencil, Star, Sparkles } from "lucide-react";
+import { Check, Pencil, Star, Sparkles } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 interface PricingTier {

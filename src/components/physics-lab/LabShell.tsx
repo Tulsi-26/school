@@ -9,7 +9,7 @@ import { GamificationPanel, useGamification } from '@/components/physics-lab/Gam
 import {
     ChevronRight, Home, Beaker, RotateCcw, ShieldCheck,
     Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone, Save, Loader2, Check
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 

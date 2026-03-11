@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MailCheck, MailWarning } from "lucide-react";
+import { Loader2, MailCheck, MailWarning } from "@/lib/icons";
 
 import { Button } from "@/components/ui/button";
 import {

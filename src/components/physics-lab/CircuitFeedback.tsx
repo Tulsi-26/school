@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Info, XCircle, Lightbulb } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, XCircle, Lightbulb } from '@/lib/icons';
 import type { ValidationError } from '@/lib/physics/core/circuitValidator';
 
 interface CircuitFeedbackProps {

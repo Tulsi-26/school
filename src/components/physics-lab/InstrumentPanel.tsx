@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from '@/lib/icons';
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
 
 export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experimentId }) => {

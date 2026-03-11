@@ -5,7 +5,7 @@ import { Instrument as InstrumentType, usePhysicsLab } from '@/context/PhysicsLa
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
 import { WireConnectPanel } from './WireConnectPanel';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Settings2, Check, RotateCcw, Copy, Info } from 'lucide-react';
+import { Trash2, Settings2, Check, RotateCcw, Copy, Info } from '@/lib/icons';
 
 interface InstrumentProps {
     id: string;

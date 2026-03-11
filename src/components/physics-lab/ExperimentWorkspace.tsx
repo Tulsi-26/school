@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
+import { Settings, Eye, EyeOff, Grid3X3 } from '@/lib/icons';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
 import { WireCanvas } from '@/components/physics-lab/WireCanvas';
