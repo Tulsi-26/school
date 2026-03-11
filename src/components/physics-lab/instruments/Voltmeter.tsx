@@ -6,10 +6,11 @@ import { motion } from 'framer-motion';
 export interface VoltmeterProps {
     reading: number;
     scale?: number;
+    unit?: string;
     isHovered?: boolean;
 }
 
-export const Voltmeter: React.FC<VoltmeterProps> = ({ reading, scale = 5, isHovered }) => {
+export const Voltmeter: React.FC<VoltmeterProps> = ({ reading, scale = 5, unit = "V", isHovered }) => {
     // Calculate percentage based on reading vs scale
     const percent = Math.min(100, Math.max(0, (reading / scale) * 100));
     // The arc in this specific YF-321 image is quite wide, roughly 100 degrees (-50 to +50)

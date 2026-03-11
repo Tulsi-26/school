@@ -13,8 +13,8 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
         'ohm-law': [
             { type: 'battery', name: 'Battery', properties: { voltage: 9 } },
             { type: 'resistor', name: 'Resistor', properties: { resistance: 100 } },
-            { type: 'ammeter', name: 'Ammeter', properties: { scale: 10, reading: 0 } },
-            { type: 'voltmeter', name: 'Voltmeter', properties: { scale: 20, reading: 0 } },
+            { type: 'ammeter', name: 'Ammeter', properties: { scale: 100, unit: 'mA', reading: 0 } },
+            { type: 'voltmeter', name: 'Voltmeter', properties: { scale: 20, unit: 'V', reading: 0 } },
             { type: 'rheostat', name: 'Rheostat', properties: { resistance: 50, maxResistance: 100, reading: 0 } },
             { type: 'switch', name: 'Plug Key', properties: { closed: false } },
         ],
@@ -33,11 +33,14 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
             { type: 'lens', name: 'Convex Lens', properties: { type: 'convex', focalLength: 20 } },
             { type: 'lens', name: 'Concave Lens', properties: { type: 'concave', focalLength: 15 } },
             { type: 'mirror', name: 'Plane Mirror', properties: { type: 'plane' } },
+            { type: 'screen', name: 'Screen', properties: {} },
         ],
         'newton-second-law': [
             { type: 'pulley', name: 'Fixed Pulley', properties: { friction: 0 } },
             { type: 'block', name: 'Mass Block M1', properties: { mass: 5 } },
             { type: 'block', name: 'Mass Block M2', properties: { mass: 10 } },
+            { type: 'stopwatch', name: 'Stopwatch', properties: { time: 0, running: false } },
+            { type: 'meter-scale', name: 'Meter Scale', properties: { length: 100 } },
         ]
     };
 

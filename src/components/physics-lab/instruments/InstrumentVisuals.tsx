@@ -59,7 +59,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'ammeter':
-            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} isHovered={isHovered} />;
+            return <Ammeter reading={properties.reading || 0} scale={properties.scale || 100} unit={properties.unit || 'mA'} isHovered={isHovered} />;
 
         case 'voltmeter':
             const isAmmeter = type === 'ammeter';
@@ -99,9 +99,13 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         <div className="w-1.5 h-full bg-red-400"></div>
                         <div className="w-1.5 h-full bg-yellow-400"></div>
                     </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-200 bg-slate-900/50 px-1 rounded">{properties.resistance} ohm</span>
-                    </div>
+
+                    {/* Value Badge (Appears on Hover) */}
+                    {isHovered && (
+                        <div className="absolute -top-10 bg-slate-800 text-slate-200 text-xs font-mono font-bold px-2 py-1 rounded shadow-lg border border-slate-600 whitespace-nowrap z-50">
+                            {properties.resistance} Ω
+                        </div>
+                    )}
                 </div>
             );
 
@@ -250,7 +254,12 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
         case 'pulley':
             return (
                 <div className={`relative w-24 h-24 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Mounting bracket at top */}
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-3 bg-slate-600 border border-slate-500 rounded-t-sm"></div>
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-2 bg-slate-500"></div>
                     <div className="w-20 h-20 rounded-full border-4 border-slate-700 bg-slate-800 flex items-center justify-center shadow-inner relative">
+                        {/* Groove for rope */}
+                        <div className="w-[72px] h-[72px] rounded-full border-2 border-dashed border-amber-800/40 absolute"></div>
                         <div className="w-14 h-14 rounded-full border-2 border-slate-700/50 flex items-center justify-center">
                             <div className="w-4 h-4 rounded-full bg-slate-600"></div>
                         </div>
@@ -262,8 +271,12 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                             ></div>
                         ))}
                     </div>
-                    <div className="absolute -top-2 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded text-[8px] font-mono text-slate-400">
-                        mu = {properties.friction || '0'}
+                    {/* Left rope attachment indicator */}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-700/60 border border-amber-600/40"></div>
+                    {/* Right rope attachment indicator */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-amber-700/60 border border-amber-600/40"></div>
+                    <div className="absolute -top-5 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded text-[8px] font-mono text-slate-400">
+                        μ = {properties.friction || '0'}
                     </div>
                 </div>
             );
@@ -271,6 +284,8 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
         case 'block':
             return (
                 <div className={`relative w-24 h-24 bg-slate-700 rounded-lg border-2 border-slate-600 flex flex-col items-center justify-center gap-1 ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Attachment hook at top for rope connection */}
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-slate-500 bg-slate-600"></div>
                     <div className="absolute top-1 left-1 opacity-20">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z" />
@@ -278,6 +293,63 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                     </div>
                     <div className="text-lg font-bold font-mono text-slate-200">{properties.mass}</div>
                     <div className="text-[10px] font-mono font-medium text-slate-400 uppercase tracking-tighter">kg</div>
+                </div>
+            );
+
+        case 'stopwatch':
+            return (
+                <div className={`relative w-24 h-[120px] flex flex-col items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Top button */}
+                    <div className="w-4 h-3 bg-slate-600 rounded-t-sm border border-slate-500 mb-[-1px] z-10"></div>
+                    {/* Watch body */}
+                    <div className="w-20 h-20 rounded-full border-4 border-slate-600 bg-slate-800 flex items-center justify-center relative">
+                        <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 flex flex-col items-center justify-center">
+                            <div className="text-sm font-bold font-mono text-emerald-400">
+                                {(properties.time || 0).toFixed(1)}
+                            </div>
+                            <div className="text-[8px] font-mono text-slate-500 uppercase">sec</div>
+                        </div>
+                        {/* Dial hand */}
+                        <div className="absolute w-0.5 h-6 bg-red-500 origin-bottom" style={{ bottom: '50%', left: 'calc(50% - 1px)', transform: `rotate(${((properties.time || 0) % 60) * 6}deg)` }}></div>
+                    </div>
+                    <div className="mt-1 text-[8px] font-mono text-slate-500 uppercase tracking-widest">Stopwatch</div>
+                </div>
+            );
+
+        case 'meter-scale':
+            return (
+                <div className={`relative w-60 h-12 flex flex-col items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Scale body */}
+                    <div className="w-56 h-6 bg-amber-900/80 border border-amber-800 rounded-sm relative overflow-hidden">
+                        {/* Graduation marks */}
+                        <div className="absolute inset-0 flex">
+                            {Array.from({ length: 11 }).map((_, i) => (
+                                <div key={i} className="flex-1 relative">
+                                    <div className="absolute left-0 top-0 w-px h-full bg-amber-600/60"></div>
+                                    <span className="absolute left-0.5 bottom-0 text-[6px] font-mono text-amber-400/80">{i * 10}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="mt-0.5 text-[8px] font-mono text-slate-500 uppercase tracking-widest">cm</div>
+                </div>
+            );
+
+        case 'screen':
+            return (
+                <div className={`relative w-12 h-48 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Screen panel */}
+                    <div className="w-8 h-40 bg-white/90 border-2 border-slate-400 rounded-sm shadow-inner relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"></div>
+                        {/* Center crosshair */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <div className="w-px h-4 bg-slate-400/50 absolute left-1/2 -translate-x-1/2"></div>
+                            <div className="h-px w-4 bg-slate-400/50 absolute top-1/2 -translate-y-1/2"></div>
+                        </div>
+                    </div>
+                    {/* Stand */}
+                    <div className="absolute bottom-0 w-12 h-2 bg-slate-700 rounded-sm"></div>
+                    <div className="absolute -bottom-2 text-[8px] font-mono text-slate-500 uppercase tracking-widest">Screen</div>
                 </div>
             );
 

@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck } from 'lucide-react';
+import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Database, Clock, Trash2 } from 'lucide-react';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
+import type { SavedSession } from '@/context/PhysicsLabContext';
 import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
 import {  PhysicsLabProvider } from '@/context/PhysicsLabContext';
 
@@ -54,6 +55,7 @@ function PhysicsLabDashboardContent() {
     const [activeCategory, setActiveCategory] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [history, setHistory] = React.useState<string[]>([]);
+    const [savedSessions, setSavedSessions] = React.useState<SavedSession[]>([]);
     const categories = ['All', 'Electricity', 'Mechanics', 'Optics'];
 
     React.useEffect(() => {
@@ -62,6 +64,33 @@ function PhysicsLabDashboardContent() {
             setHistory(savedHistory);
         }
     }, []);
+
+    // Fetch saved experiments from database
+    React.useEffect(() => {
+        async function fetchSessions() {
+            try {
+                const res = await fetch('/api/experiment-sessions');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSavedSessions(data.sessions || []);
+                }
+            } catch {
+                // User may not be logged in — silently ignore
+            }
+        }
+        fetchSessions();
+    }, []);
+
+    const handleDeleteSession = async (sessionId: string) => {
+        try {
+            const res = await fetch(`/api/experiment-sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' });
+            if (res.ok) {
+                setSavedSessions(prev => prev.filter(s => s.id !== sessionId));
+            }
+        } catch {
+            // Silently ignore
+        }
+    };
 
     const filteredExperiments = experiments.filter(e => {
         const matchesCategory = activeCategory === 'All' || e.category === activeCategory;
@@ -134,6 +163,65 @@ function PhysicsLabDashboardContent() {
                                     </div>
                                 </Link>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Saved Experiments from Database */}
+                {savedSessions.length > 0 && (
+                    <div className="mb-16 animate-in fade-in slide-in-from-left-4 duration-700">
+                        <div className="flex items-center gap-2 mb-6 text-slate-400">
+                            <Database className="w-4 h-4 text-blue-500" />
+                            <h2 className="text-sm font-bold uppercase tracking-widest italic">Saved Experiments</h2>
+                            <span className="ml-2 text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
+                                {savedSessions.length} saved
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {savedSessions.map((session) => {
+                                const exp = experiments.find(e => e.id === session.experimentId);
+                                const Icon = exp?.icon || Beaker;
+                                const obsCount = Array.isArray(session.observations) ? session.observations.length : 0;
+                                return (
+                                    <div key={session.id} className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 hover:border-blue-500/50 hover:bg-slate-900/50 transition-all">
+                                        <Link href={`/physics-lab/${session.experimentId}?sessionId=${session.id}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                                    <Icon className="w-5 h-5 text-blue-400" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight truncate">
+                                                        {session.experimentTitle}
+                                                    </h4>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        <div className="flex items-center gap-1">
+                                                            <Clock className="w-3 h-3 text-slate-600" />
+                                                            <p className="text-[10px] text-slate-500 font-medium">
+                                                                {new Date(session.updatedAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                        {obsCount > 0 && (
+                                                            <span className="text-[10px] text-emerald-500 font-medium">
+                                                                {obsCount} observation{obsCount !== 1 ? 's' : ''}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-slate-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
+                                            </div>
+                                        </Link>
+                                        <div className="mt-3 pt-3 border-t border-slate-800/50 flex justify-end">
+                                            <button
+                                                onClick={() => handleDeleteSession(session.id)}
+                                                className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-red-400 transition-colors"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

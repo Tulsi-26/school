@@ -15,6 +15,8 @@ import { validateOhmLawCircuit, validateWheatstoneBridge } from '@/lib/physics/c
 import { traceRayThroughComponents } from '@/lib/physics/core/optics';
 
 const SNAP_SIZE = 40;
+const MECHANICAL_INSTRUMENT_TYPES = ['pulley', 'block'];
+const MECHANICS_EXPERIMENT_IDS = ['newton-second-law'];
 
 export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const {
@@ -24,6 +26,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         updateInstrumentProperties,
         connections,
         addConnection,
+        removeConnection,
         simulationResults,
         setSimulationResults
     } = usePhysicsLab();
@@ -52,28 +55,43 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
         const instData = JSON.parse(data);
         const rect = workspaceRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left - 50; // Center offset
-        const y = e.clientY - rect.top - 50;
+
+        const typeDimensions: Record<string, { w: number, h: number }> = {
+            battery: { w: 280, h: 160 },
+            ammeter: { w: 200, h: 250 },
+            voltmeter: { w: 200, h: 250 },
+            resistor: { w: 160, h: 60 },
+            rheostat: { w: 260, h: 120 },
+            switch: { w: 180, h: 120 },
+            galvanometer: { w: 288, h: 340 },
+        };
+        const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
+
+        const x = e.clientX - rect.left - (dim.w / 2); // Dynamic Center offset
+        const y = e.clientY - rect.top - (dim.h / 2);
 
         // Snap to grid
         const finalX = snapToGrid(x);
         const finalY = snapToGrid(y);
 
         const terminalLayouts: Record<string, { x: number; y: number }[]> = {
-            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
-            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
-            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
-            resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
+            battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
+            ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
+            voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
+            resistor: [{ x: 8, y: 30 }, { x: 152, y: 30 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
-            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
-            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
+            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
-        const terminals = [
-            { id: `${instData.type}-t1-${Date.now()}`, parentId: '', type: 'positive', position: layout[0] },
-            { id: `${instData.type}-t2-${Date.now()}`, parentId: '', type: 'negative', position: layout[1] },
-        ] as any[];
+        const isMechanical = MECHANICAL_INSTRUMENT_TYPES.includes(instData.type);
+        const terminals = layout.map((pos, idx) => ({
+            id: `${instData.type}-t${idx + 1}-${Date.now()}`,
+            parentId: '',
+            type: isMechanical ? (idx === 0 ? 'input' : 'output') : (idx === 0 ? 'positive' : 'negative'),
+            position: pos,
+        })) as any[];
 
         addInstrument({
             ...instData,
@@ -86,16 +104,58 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalClick = (terminalId: string, type: string) => {
+    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
         if (!isConnecting) {
             setIsConnecting({ from: terminalId, type });
-        } else {
+        }
+    };
+
+    const handleTerminalClick = (terminalId: string, type: string) => {
+        if (isConnecting) {
             if (isConnecting.from !== terminalId) {
-                addConnection(isConnecting.from, terminalId);
+                const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
+                addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
             }
             setIsConnecting(null);
         }
-    };
+    }, [isConnecting, addConnection, experimentId]);
+
+    const handleTerminalDoubleClick = useCallback((terminalId: string, type: string) => {
+        setIsConnecting({ from: terminalId, type });
+    }, []);
+
+    const handleInstrumentDoubleClick = useCallback((instrumentId: string) => {
+        setWirePanelInstrumentId((prev) => prev === instrumentId ? null : instrumentId);
+        setIsConnecting(null); // Cancel any active terminal connection
+    }, []);
+
+    const handleWirePanelClose = useCallback(() => {
+        setWirePanelInstrumentId(null);
+    }, []);
+
+    const handleWireConnect = useCallback((fromTerminalId: string, toTerminalId: string) => {
+        addConnection(fromTerminalId, toTerminalId);
+    }, [addConnection]);
+
+    const handleWireDisconnect = useCallback((connectionId: string) => {
+        removeConnection(connectionId);
+    }, [removeConnection]);
+
+    const handlePositionChange = useCallback((id: string, x: number, y: number) => {
+        const snappedX = snapToGrid(x);
+        const snappedY = snapToGrid(y);
+        updateInstrumentPosition(id, snappedX, snappedY);
+    }, [snapToGrid, updateInstrumentPosition]);
+
+    const handlePropertyUpdate = useCallback((id: string, props: any) => {
+        updateInstrumentProperties(id, props);
+    }, [updateInstrumentProperties]);
+
+    const handleWorkspaceClick = useCallback(() => {
+        if (wirePanelInstrumentId) {
+            setWirePanelInstrumentId(null);
+        }
+    }, [wirePanelInstrumentId]);
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (workspaceRef.current) {
@@ -120,20 +180,50 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             setValidationSuggestions(validation.suggestions);
             setCircuitIsValid(validation.isValid);
         } else {
-            setValidationErrors([]);
-            setValidationSuggestions([]);
-            setCircuitIsValid(true);
+            setValidationState([], [], true);
         }
-    }, [instruments, connections, experimentId]);
+    }, [instruments, connections, experimentId, setValidationState]);
 
-    // Simulation integration
+    // Extract simulation-relevant values as primitives to avoid infinite loops.
+    // The old code had instruments in the dependency array AND called updateInstrumentProperties
+    // (which modifies instruments), creating: useEffect runs → setInstruments → useEffect runs → ...
+    const simInputs = useMemo(() => {
+        const battery = instruments.find(i => i.type === 'battery');
+        const resistor = instruments.find(i => i.type === 'resistor');
+        const rheostat = instruments.find(i => i.type === 'rheostat');
+        const sw = instruments.find(i => i.type === 'switch');
+        const p = instruments.find(i => i.id === 'p');
+        const q = instruments.find(i => i.id === 'q');
+        const r = instruments.find(i => i.id === 'r');
+        const s = instruments.find(i => i.id === 's');
+        const galvanometer = instruments.find(i => i.type === 'galvanometer');
+        const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({ id: i.id, type: i.type }));
+        const object = instruments.find(i => i.type === 'block');
+        const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));
+        const m1 = instruments.find(i => i.name?.includes('M1'));
+        const m2 = instruments.find(i => i.name?.includes('M2'));
+
+        return {
+            voltage: battery?.properties.voltage || 9,
+            resistance: resistor?.properties.resistance || 100,
+            rheostatR: rheostat?.properties.resistance || 50,
+            switchClosed: sw?.properties.closed || false,
+            pR: p?.properties.resistance || 100,
+            qR: q?.properties.resistance || 100,
+            rR: r?.properties.resistance || 100,
+            sR: s?.properties.resistance || 100,
+            galvanometerId: galvanometer?.id || null,
+            meterIds,
+            object: object ? { posX: object.position.x, posY: object.position.y } : null,
+            lenses,
+            m1: m1 ? { posX: m1.position.x, posY: m1.position.y, mass: m1.properties.mass } : null,
+            m2: m2 ? { posX: m2.position.x, posY: m2.position.y, mass: m2.properties.mass } : null,
+        };
+    }, [instruments]);
+
+    // Simulation integration — uses extracted primitive values to avoid dependency on instruments object
     useEffect(() => {
         if (experimentId === 'ohm-law') {
-            const battery = instruments.find(i => i.type === 'battery');
-            const resistor = instruments.find(i => i.type === 'resistor');
-            const rheostat = instruments.find(i => i.type === 'rheostat');
-            const sw = instruments.find(i => i.type === 'switch');
-
             const result = calculateOhmLaw(
                 battery?.properties.voltage || 9,
                 resistor?.properties.resistance || 100,
@@ -145,13 +235,18 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
             setSimulationResults(result);
 
-            // Update instrument readings
-            instruments.forEach(inst => {
-                if (inst.type === 'ammeter') {
-                    updateInstrumentProperties(inst.id, { reading: (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0 });
+            // Update instrument readings only when values actually change
+            simInputs.meterIds.forEach(({ id, type }) => {
+                let newReading: number | string = 0;
+                if (type === 'ammeter') {
+                    newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
+                } else if (type === 'voltmeter') {
+                    newReading = (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0;
                 }
-                if (inst.type === 'voltmeter') {
-                    updateInstrumentProperties(inst.id, { reading: (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0 });
+                const key = `${id}-reading`;
+                if (lastReadingsRef.current[key] !== Number(newReading)) {
+                    lastReadingsRef.current[key] = Number(newReading);
+                    updateInstrumentProperties(id, { reading: newReading });
                 }
             });
         } else if (experimentId === 'wheatstone-bridge') {
@@ -249,6 +344,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onMouseMove={handleMouseMove}
+            onClick={handleWorkspaceClick}
             className="w-full h-full relative cursor-crosshair overflow-hidden"
         >
             {/* Lab HUD */}
@@ -336,13 +432,15 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             {instruments.map((inst) => (
                 <Instrument
                     key={inst.id}
-                    instrument={inst}
-                    onPositionChange={(x: number, y: number) => {
-                        const snappedX = snapToGrid(x);
-                        const snappedY = snapToGrid(y);
-                        updateInstrumentPosition(inst.id, snappedX, snappedY);
-                    }}
+                    id={inst.id}
+                    type={inst.type}
+                    name={inst.name}
+                    position={inst.position}
+                    properties={inst.properties}
+                    terminals={inst.terminals}
+                    onPositionChange={handlePositionChange}
                     onTerminalClick={handleTerminalClick}
+                    onTerminalDoubleClick={handleTerminalDoubleClick}
                     updateProperties={updateInstrumentProperties}
                 />
             ))}
@@ -373,7 +471,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             {/* Connection Indicator */}
             {isConnecting && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold animate-pulse uppercase tracking-widest">
-                    Connecting {isConnecting.type} terminal...
+                    {experimentId === 'newton-second-law' ? 'Attaching rope...' : `Connecting ${isConnecting.type} terminal...`}
                 </div>
             )}
         </div>
