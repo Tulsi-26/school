@@ -2,11 +2,22 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useSession, signOut } from "next-auth/react"
 import { Menu, X, Atom, Beaker } from "@/lib/icons"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
+    const { data: session } = useSession()
 
     return (
         <nav className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -38,14 +49,39 @@ export function Navbar() {
                         </div>
                     </div>
                     <div className="hidden md:flex items-center space-x-3">
-                        <Link href="/signin">
-                            <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">Sign In</Button>
-                        </Link>
                         <Link href="/physics-lab">
                             <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white border-0 shadow-lg shadow-blue-500/20 gap-2">
                                 <Beaker className="w-4 h-4" /> Open Lab
                             </Button>
                         </Link>
+                        {session ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={session.user?.image || ""} alt={session.user?.name || "User"} />
+                                            <AvatarFallback>{session.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56" align="end" forceMount>
+                                    <DropdownMenuLabel className="font-normal">
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                                            <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+                                        Log out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Link href="/signin">
+                                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">Sign In</Button>
+                            </Link>
+                        )}
                     </div>
                     <div className="flex items-center md:hidden">
                         <button
@@ -63,6 +99,18 @@ export function Navbar() {
             {isOpen && (
                 <div className="md:hidden border-t border-slate-200">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white">
+                        {session && (
+                            <div className="flex items-center gap-3 px-3 py-3 border-b border-slate-100 mb-2">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={session.user?.image || ""} alt={session.user?.name || "User"} />
+                                    <AvatarFallback>{session.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-slate-900">{session.user?.name}</span>
+                                    <span className="text-xs text-slate-500">{session.user?.email}</span>
+                                </div>
+                            </div>
+                        )}
                         <Link href="/physics-lab" className="block px-3 py-2.5 rounded-lg text-base font-medium text-blue-600 hover:bg-blue-50">
                             Experiments
                         </Link>
@@ -76,9 +124,15 @@ export function Navbar() {
                             Docs
                         </Link>
                         <div className="pt-4 flex flex-col gap-2 border-t border-slate-200 mt-2">
-                            <Link href="/signin" className="w-full">
-                                <Button variant="ghost" className="w-full justify-start text-slate-600">Sign In</Button>
-                            </Link>
+                            {session ? (
+                                <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => signOut()}>
+                                    Log out
+                                </Button>
+                            ) : (
+                                <Link href="/signin" className="w-full">
+                                    <Button variant="ghost" className="w-full justify-start text-slate-600">Sign In</Button>
+                                </Link>
+                            )}
                             <Link href="/physics-lab" className="w-full">
                                 <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white gap-2">
                                     <Beaker className="w-4 h-4" /> Open Lab
