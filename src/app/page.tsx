@@ -7,7 +7,11 @@ import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
 import { Card } from "@/components/ui/card"
 import { motion, Variants } from "framer-motion"
-import { Hero3D } from "@/components/hero-3d"
+import dynamic from "next/dynamic"
+const Hero3D = dynamic(() => import("@/components/hero-3d").then((mod) => mod.Hero3D), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 -z-10 bg-slate-50/50" />
+})
 
 export default function Home() {
   const containerVariants: Variants = {
@@ -31,20 +35,37 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* --- HERO SECTION --- */}
-        <section className="relative min-h-[90vh] flex items-center pt-20 pb-32 overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white to-white -z-20" />
-          <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none -z-10"
-            style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {/* --- HERO SECTION: TEXT AREA WITH BACKGROUND --- */}
+        <section className="relative pt-32 pb-24 flex items-center min-h-[85vh] overflow-hidden">
+          {/* Background Image for Text Area */}
+          <div className="absolute inset-0 -z-30">
+            <motion.img
+              initial={{ scale: 1.1, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.15 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop"
+              alt="Physics Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-white/60 to-white" />
+
+            {/* Decorative Grid Overlay */}
+            <div className="absolute top-0 left-0 w-full h-full opacity-[0.4] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            
+            {/* Glowing Orbs for physics vibe */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px] pointer-events-none" />
+          </div>
 
           <Hero3D />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
             <motion.div
-              className="text-center max-w-4xl mx-auto"
               initial="hidden"
               animate="visible"
               variants={containerVariants}
+              className="max-w-4xl mx-auto"
             >
               <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/50 backdrop-blur-sm px-4 py-1.5 text-xs font-bold text-blue-600 mb-8 uppercase tracking-widest shadow-sm">
                 <span className="relative flex h-2 w-2">
@@ -56,7 +77,7 @@ export default function Home() {
 
               <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]">
                 Master Physics <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 animate-gradient-x">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 animate-gradient-x drop-shadow-sm">
                   Through Discovery.
                 </span>
               </motion.h1>
@@ -79,20 +100,54 @@ export default function Home() {
                 </Link>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* Floating Visual Elements */}
+        {/* --- VIDEO PREVIEW SECTION --- */}
+        <section className="pb-40 pt-10 bg-white relative overflow-hidden">
+          {/* Section decorative background */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
+            style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+          
+          {/* Decorative Glowing Orbs */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-100/30 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-100/30 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8, duration: 1 }}
-              className="mt-24 relative mx-auto max-w-5xl rounded-[2.5rem] border border-white bg-white/40 backdrop-blur-md p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5 overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="relative mx-auto max-w-5xl rounded-[3.5rem] border border-slate-200/50 bg-white/50 backdrop-blur-sm p-5 shadow-[0_48px_100px_-20px_rgba(37,99,235,0.12)]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 pointer-events-none" />
-              <div className="aspect-[16/10] rounded-[2rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-inner">
-                <img src="/physics_lab_hero_bg_1773209928983.png" alt="Physics Lab Preview" className="w-full h-full object-cover opacity-80" />
+              <div className="aspect-[16/10] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-2xl group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" 
+                  alt="Physics Laboratory" 
+                  className="w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105" 
+                />
+                
+                {/* Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20" />
+                
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="p-4 rounded-full bg-blue-600/20 backdrop-blur-xl border border-white/30 animate-pulse cursor-pointer hover:scale-110 transition-transform">
-                    <Play className="w-12 h-12 text-white fill-white ml-1" />
+                  <div className="relative">
+                    {/* Pulsing rings */}
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping -z-10" />
+                    <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-pulse -z-10" style={{ animationDuration: '3s' }} />
+                    
+                    <div className="p-8 rounded-full bg-blue-600 border border-white/30 shadow-[0_0_50px_-10px_rgba(37,99,235,0.6)] group-hover:scale-110 group-hover:bg-blue-500 transition-all duration-300">
+                      <Play className="w-14 h-14 text-white fill-white ml-2" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bottom Badge */}
+                <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-2xl">
+                    <p className="text-white text-sm font-bold tracking-wide uppercase">Virtual Lab Tour</p>
+                    <p className="text-blue-200 text-xs">Watch the 2-minute walkthrough</p>
                   </div>
                 </div>
               </div>
