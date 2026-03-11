@@ -8,7 +8,7 @@ import { Footer } from "@/components/ui/footer"
 import { Card } from "@/components/ui/card"
 import { motion, Variants } from "framer-motion"
 import dynamic from "next/dynamic"
-const Hero3D = dynamic(() => import("@/components/hero-3d").then((mod) => mod.Hero3D), { 
+const Hero3D = dynamic(() => import("@/components/hero-3d").then((mod) => mod.Hero3D), {
   ssr: false,
   loading: () => <div className="absolute inset-0 -z-10 bg-slate-50/50" />
 })
@@ -39,21 +39,25 @@ export default function Home() {
         <section className="relative pt-32 pb-24 flex items-center min-h-[85vh] overflow-hidden">
           {/* Background Image for Text Area */}
           <div className="absolute inset-0 -z-30">
-            <motion.img 
+            <motion.img
               initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 0.7 }}
+              animate={{ scale: 1, opacity: 0.15 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              src="/physics_hero_bg_new.png" 
-              alt="Physics Background" 
+              src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop"
+              alt="Physics Background"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-white" />
-            
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-white/60 to-white" />
+
             {/* Decorative Grid Overlay */}
-            <div className="absolute top-0 left-0 w-full h-full opacity-[0.12] pointer-events-none" 
-                 style={{ backgroundImage: 'radial-gradient(#3b82f6 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
+            <div className="absolute top-0 left-0 w-full h-full opacity-[0.4] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            
+            {/* Glowing Orbs for physics vibe */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px] pointer-events-none" />
           </div>
-          
+
           <Hero3D />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
@@ -84,8 +88,7 @@ export default function Home() {
 
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-center gap-6">
                 <Link href="/physics-lab">
-                  <Button size="lg" className="w-full sm:w-auto text-lg px-10 h-16 bg-blue-600 hover:bg-blue-700 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)] rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <Button size="lg" className="w-full sm:w-auto text-lg px-10 h-16 bg-blue-600 hover:bg-blue-700 shadow-2xl shadow-blue-500/30 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group">
                     <Beaker className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                     Enter Virtual Lab
                   </Button>
@@ -103,29 +106,48 @@ export default function Home() {
         {/* --- VIDEO PREVIEW SECTION --- */}
         <section className="pb-40 pt-10 bg-white relative overflow-hidden">
           {/* Section decorative background */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-               style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-               
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
+            style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+          
+          {/* Decorative Glowing Orbs */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-100/30 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-100/30 rounded-full blur-[100px] pointer-events-none" />
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 40 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="relative mx-auto max-w-5xl rounded-[3rem] border border-slate-200/60 bg-white p-5 shadow-[0_40px_100px_-20px_rgba(37,99,235,0.15)] overflow-hidden"
+              className="relative mx-auto max-w-5xl rounded-[3.5rem] border border-slate-200/50 bg-white/50 backdrop-blur-sm p-5 shadow-[0_48px_100px_-20px_rgba(37,99,235,0.12)]"
             >
-              <div className="relative aspect-[16/10] min-h-[400px] md:min-h-[500px] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group">
+              <div className="aspect-[16/10] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-2xl group cursor-pointer">
                 <img 
-                  src="/physics_lab_preview_bg_new.png" 
-                  alt="Physics Lab Preview" 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" 
+                  alt="Physics Laboratory" 
+                  className="w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105" 
                 />
-                <div className="absolute inset-0 bg-blue-600/5 mix-blend-overlay group-hover:bg-blue-600/0 transition-colors duration-700" />
+                
+                {/* Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20" />
                 
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="p-6 rounded-full bg-white/30 backdrop-blur-2xl border border-white/40 shadow-2xl cursor-pointer hover:scale-110 hover:bg-white/40 transition-all duration-300 group/play">
-                    <Play className="w-16 h-16 text-white fill-white ml-2 transition-transform group-hover/play:scale-110" />
-                    <div className="absolute inset-0 rounded-full bg-white/20 animate-ping -z-10 group-hover/play:animate-none" />
+                  <div className="relative">
+                    {/* Pulsing rings */}
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping -z-10" />
+                    <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-pulse -z-10" style={{ animationDuration: '3s' }} />
+                    
+                    <div className="p-8 rounded-full bg-blue-600 border border-white/30 shadow-[0_0_50px_-10px_rgba(37,99,235,0.6)] group-hover:scale-110 group-hover:bg-blue-500 transition-all duration-300">
+                      <Play className="w-14 h-14 text-white fill-white ml-2" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bottom Badge */}
+                <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-2xl">
+                    <p className="text-white text-sm font-bold tracking-wide uppercase">Virtual Lab Tour</p>
+                    <p className="text-blue-200 text-xs">Watch the 2-minute walkthrough</p>
                   </div>
                 </div>
               </div>
@@ -366,14 +388,8 @@ export default function Home() {
         {/* --- CTA SECTION --- */}
         <section className="py-24 relative overflow-hidden bg-white">
           <div className="max-w-5xl mx-auto px-4">
-            <div className="relative rounded-[3rem] bg-gradient-to-r from-blue-600 to-indigo-700 p-12 md:p-20 text-center overflow-hidden shadow-[0_40px_80px_-20px_rgba(59,130,246,0.5)] group">
-              <div className="absolute inset-0 -z-0">
-                <img 
-                  src="/physics_bg.png" 
-                  alt="" 
-                  className="w-full h-full object-cover opacity-10 mix-blend-overlay group-hover:scale-110 transition-transform duration-700" 
-                />
-              </div>
+            <div className="relative rounded-[3rem] bg-gradient-to-r from-blue-600 to-indigo-700 p-12 md:p-20 text-center overflow-hidden shadow-[0_40px_80px_-20px_rgba(59,130,246,0.5)]">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}

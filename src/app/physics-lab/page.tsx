@@ -306,6 +306,8 @@ function PhysicsLabDashboardContent() {
                                         <div className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-wide">
                                             {status === 'authenticated' ? (
                                                 <>START LAB <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                            ) : status === 'loading' ? (
+                                                <span className="opacity-50">SYNCING LAB...</span>
                                             ) : (
                                                 <>SIGN UP TO START <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                                             )}
