@@ -13,7 +13,7 @@ import {
   Loader2,
   ArrowRight,
   Clock,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";

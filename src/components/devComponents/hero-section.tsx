@@ -3,7 +3,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@/lib/icons";
 import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import { Glow } from "@/components/ui/glow";
 import Image from "next/image";

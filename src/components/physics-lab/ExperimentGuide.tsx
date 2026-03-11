@@ -14,7 +14,7 @@ import {
     ListChecks,
     Trophy,
     PlayCircle,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';

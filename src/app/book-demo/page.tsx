@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CheckCircle2 } from "lucide-react"
+import { CheckCircle2 } from "@/lib/icons"
 import { sendToWhatsApp } from "@/lib/whatsapp"
 import { FormEvent, useState } from "react"
 

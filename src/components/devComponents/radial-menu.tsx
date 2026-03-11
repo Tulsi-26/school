@@ -1,16 +1,8 @@
 import { useState, useRef } from "react";
-import { LucideIcon } from 'lucide-react';
+import { type LucideIcon, Copy, Scissors, ClipboardPaste, Trash2, Star, Pin } from '@/lib/icons';
 import { motion, AnimatePresence, type Transition } from 'motion/react';
 import { ContextMenu } from '@base-ui-components/react/context-menu';
 import { cn } from '@/lib/utils';
-import {
-  Copy,
-  Scissors,
-  ClipboardPaste,
-  Trash2,
-  Star,
-  Pin,
-} from 'lucide-react';
 
 const DUMMY_MENU_ITEMS = [
   { id: 1, label: 'Copy', icon: Copy },

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"
-import { Search, Book, Zap, FileText, ChevronRight, ExternalLink } from "lucide-react"
+import { Search, Book, Zap, FileText, ChevronRight, ExternalLink } from "@/lib/icons"
 import { Input } from "@/components/ui/input"
 
 export default function DocsPage() {

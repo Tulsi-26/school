@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRight, Check, Play, Zap, Beaker, Lightbulb, Microscope, Quote, Globe, BookOpen, Clock, PenTool } from "lucide-react"
+import { ArrowRight, Check, Play, Zap, Beaker, Lightbulb, Microscope, Quote, Globe, BookOpen, Clock, PenTool } from "@/lib/icons"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/ui/navbar"
 import { Footer } from "@/components/ui/footer"

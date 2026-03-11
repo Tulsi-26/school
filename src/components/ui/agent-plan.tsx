@@ -7,7 +7,7 @@ import {
   CircleAlert,
   CircleDotDashed,
   CircleX,
-} from "lucide-react";
+} from "@/lib/icons";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import type { Variants } from "framer-motion";
 

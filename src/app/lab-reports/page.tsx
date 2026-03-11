@@ -10,7 +10,7 @@ import {
   FlaskConical,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Trophy, Star, Zap, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Star, Zap, Award, TrendingUp } from '@/lib/icons';
 
 interface Badge {
   id: string;

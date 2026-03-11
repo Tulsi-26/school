@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle2, Circle, ListChecks } from 'lucide-react';
+import { CheckCircle2, Circle, ListChecks } from '@/lib/icons';
 import { useGamification } from './GamificationPanel';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 

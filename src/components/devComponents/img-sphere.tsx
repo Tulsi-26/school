@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/lib/icons';
 
 /**
  * SphereImageGrid - Interactive 3D Image Sphere Component

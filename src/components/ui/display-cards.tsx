@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/lib/icons";
 
 interface DisplayCardProps {
   className?: string;

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X, Atom, Beaker } from "lucide-react"
+import { Menu, X, Atom, Beaker } from "@/lib/icons"
 import { Button } from "@/components/ui/button"
 
 export function Navbar() {
