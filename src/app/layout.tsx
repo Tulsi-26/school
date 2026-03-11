@@ -68,7 +68,18 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
+                  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+                    // In development: unregister service workers to prevent stale cache issues
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                      registrations.forEach(function(registration) { registration.unregister(); });
+                    });
+                    caches.keys().then(function(names) {
+                      names.forEach(function(name) { caches.delete(name); });
+                    });
+                  } else {
+                    // In production: register the service worker normally
+                    navigator.serviceWorker.register('/sw.js');
+                  }
                 });
               }
             `,

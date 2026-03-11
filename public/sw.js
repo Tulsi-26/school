@@ -1,5 +1,5 @@
 // Service Worker for Physics Lab - Offline Support & Caching
-const CACHE_NAME = 'physics-lab-v1';
+const CACHE_NAME = 'physics-lab-v2';
 const STATIC_ASSETS = [
   '/physics-lab',
   '/manifest.json',
