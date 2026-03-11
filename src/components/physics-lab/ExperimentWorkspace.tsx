@@ -34,17 +34,20 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
-    const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
-    const lastReadingsRef = useRef<Record<string, number>>({});
-
-    // Circuit validation state
     const [validationErrors, setValidationErrors] = useState<any[]>([]);
     const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
     const [circuitIsValid, setCircuitIsValid] = useState(false);
-
     const workspaceRef = useRef<HTMLDivElement>(null);
+    const lastReadingsRef = useRef<Record<string, number>>({});
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
+
+    const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
+        setValidationErrors(errors);
+        setValidationSuggestions(suggestions);
+        setCircuitIsValid(isValid);
+    }, []);
 
     const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
@@ -105,6 +108,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
     };
+
 
     const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
@@ -234,7 +238,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             setSimulationResults(result);
 
             // Update instrument readings only when values actually change
-            simInputs.meterIds.forEach(({ id, type }) => {
+            simInputs.meterIds.forEach(({ id, type }: { id: string, type: string }) => {
                 let newReading: number | string = 0;
                 if (type === 'ammeter') {
                     newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
