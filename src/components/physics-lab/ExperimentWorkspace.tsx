@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
@@ -41,8 +41,16 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const [circuitIsValid, setCircuitIsValid] = useState(false);
 
     const workspaceRef = useRef<HTMLDivElement>(null);
+    const lastReadingsRef = useRef<Record<string, number>>({});
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
+
+    const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
+        setValidationErrors(errors);
+        setValidationSuggestions(suggestions);
+        setCircuitIsValid(isValid);
+    }, []);
 
     const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
@@ -104,13 +112,8 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
-        if (!isConnecting) {
-            setIsConnecting({ from: terminalId, type });
-        }
-    };
 
-    const handleTerminalClick = (terminalId: string, type: string) => {
+    const handleTerminalClick = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
                 const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
@@ -225,10 +228,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     useEffect(() => {
         if (experimentId === 'ohm-law') {
             const result = calculateOhmLaw(
-                battery?.properties.voltage || 9,
-                resistor?.properties.resistance || 100,
-                rheostat?.properties.resistance || 50,
-                sw?.properties.closed || false,
+                simInputs.voltage,
+                simInputs.resistance,
+                simInputs.rheostatR,
+                simInputs.switchClosed,
                 connections,
                 instruments
             );
@@ -236,7 +239,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             setSimulationResults(result);
 
             // Update instrument readings only when values actually change
-            simInputs.meterIds.forEach(({ id, type }) => {
+            simInputs.meterIds.forEach(({ id, type }: { id: string, type: string }) => {
                 let newReading: number | string = 0;
                 if (type === 'ammeter') {
                     newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
