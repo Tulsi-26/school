@@ -18,7 +18,7 @@ import {
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';
-import { GamificationPanel } from './GamificationPanel';
+import { GamificationPanel, useGamification } from './GamificationPanel';
 import { CircuitFeedback } from './CircuitFeedback';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {
@@ -114,11 +114,11 @@ const OhmTheory = () => (
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                 Basic Concept
             </h3>
-            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
-                <p className="text-slate-300 text-sm italic">
+            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
                     "At a constant temperature, the current (I) flowing through a conductor is directly proportional to the potential difference (V) across its ends."
                 </p>
-                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                     <code className="text-blue-400 font-bold text-lg">V = I × R</code>
                 </div>
             </div>
@@ -139,10 +139,10 @@ const OhmProcedure = () => (
                 "Close the switch and adjust the rheostat to get different readings."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
                         {i + 1}
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
                 </li>
             ))}
         </ul>
@@ -166,11 +166,11 @@ const WheatstoneTheory = () => (
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                 Bridge Principle
             </h3>
-            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
-                <p className="text-slate-300 text-sm italic">
+            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
                     "When the bridge is balanced, no current flows through the galvanometer. This happens when the ratio of adjacent resistances is equal."
                 </p>
-                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                     <code className="text-purple-400 font-bold text-lg">P / Q = R / S</code>
                 </div>
             </div>
@@ -190,10 +190,10 @@ const WheatstoneProcedure = () => (
                 "Calculate S = (Q * R) / P."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
                         {i + 1}
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
                 </li>
             ))}
         </ul>
@@ -217,11 +217,11 @@ const OpticsTheory = () => (
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                 Lens Formula
             </h3>
-            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
-                <p className="text-slate-300 text-sm italic">
+            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
                     "The relationship between object distance (u), image distance (v), and focal length (f) of a lens."
                 </p>
-                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                     <code className="text-blue-400 font-bold text-lg">1/f = 1/v - 1/u</code>
                 </div>
             </div>
@@ -240,10 +240,10 @@ const OpticsProcedure = () => (
                 "Verify the lens formula using the measured values."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
                         {i + 1}
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
                 </li>
             ))}
         </ul>
@@ -267,11 +267,11 @@ const MechanicsTheory = () => (
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
                 Force Equation
             </h3>
-            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
-                <p className="text-slate-300 text-sm italic">
+            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
                     "The acceleration of an object as produced by a net force is directly proportional to the magnitude of the net force and inversely proportional to the mass of the object."
                 </p>
-                <div className="bg-slate-900 p-3 rounded text-center border border-slate-800">
+                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                     <code className="text-red-400 font-bold text-lg">F = m × a</code>
                 </div>
             </div>
@@ -290,10 +290,10 @@ const MechanicsProcedure = () => (
                 "Analyze the results using Newton's laws of motion."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
                         {i + 1}
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{step}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
                 </li>
             ))}
         </ul>

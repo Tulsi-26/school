@@ -73,7 +73,7 @@ function PhysicsLabDashboardContent() {
     const recentExps = experiments.filter(e => history.includes(e.id));
 
     return (
-        <div className="min-h-screen bg-[#0a0c10] text-slate-200 font-sans">
+        <div className="min-h-screen font-sans" style={{ backgroundColor: 'var(--lab-bg)', color: 'var(--lab-text)' }}>
             <Navbar />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
@@ -93,10 +93,10 @@ function PhysicsLabDashboardContent() {
                             </div>
                             <div className="h-px w-12 bg-slate-800"></div>
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white mb-6">
+                        <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6" style={{ color: 'var(--lab-text)' }}>
                             Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Physics</span> via Experimentation
                         </h1>
-                        <p className="text-xl text-slate-400 max-w-2xl leading-relaxed">
+                        <p className="text-xl max-w-2xl leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
                             Master complex concepts through immersive, hands-on simulations. Build circuits, collect real-time data, and visualize the laws of nature.
                         </p>
                     </motion.div>
@@ -110,27 +110,27 @@ function PhysicsLabDashboardContent() {
                 {/* Recently Viewed */}
                 {recentExps.length > 0 && (
                     <div className="mb-16 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="flex items-center gap-2 mb-6 text-slate-400">
+                        <div className="flex items-center gap-2 mb-6" style={{ color: 'var(--lab-text-secondary)' }}>
                             <Star className="w-4 h-4 text-yellow-500" />
                             <h2 className="text-sm font-bold uppercase tracking-widest italic">Pick up where you left off</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {recentExps.map((exp) => (
                                 <Link key={exp.id} href={`/physics-lab/${exp.id}`}>
-                                    <div className="group bg-slate-900/30 border border-slate-800/50 rounded-2xl p-4 flex items-center gap-4 hover:border-blue-500/50 hover:bg-slate-900/50 transition-all">
-                                        <div className={`w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20`}>
+                                    <div className="group border rounded-2xl p-4 flex items-center gap-4 transition-all" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border`} style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                                             <exp.icon className={`w-5 h-5 text-blue-400`} />
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight flex items-center gap-2">
+                                            <h4 className="text-sm font-bold group-hover:text-blue-400 transition-colors uppercase tracking-tight flex items-center gap-2" style={{ color: 'var(--lab-text)' }}>
                                                 {exp.title}
                                                 {masteredExperiments.includes(exp.id) && (
                                                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
                                                 )}
                                             </h4>
-                                            <p className="text-[10px] text-slate-500 font-medium">Last active section</p>
+                                            <p className="text-[10px] font-medium" style={{ color: 'var(--lab-text-muted)' }}>Last active section</p>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 ml-auto text-slate-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                                        <ArrowRight className="w-4 h-4 ml-auto text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </Link>
                             ))}
@@ -147,7 +147,8 @@ function PhysicsLabDashboardContent() {
                             placeholder="Search experiments..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all text-slate-100"
+                            className="w-full rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                            style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text)' }}
                         />
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-4 md:pb-0 no-scrollbar">
@@ -157,8 +158,9 @@ function PhysicsLabDashboardContent() {
                                 onClick={() => setActiveCategory(cat)}
                                 className={`flex items-center gap-2 border rounded-2xl px-6 py-4 transition-all whitespace-nowrap ${activeCategory === cat
                                     ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]'
-                                    : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:bg-slate-800'
+                                    : 'hover:opacity-80'
                                     }`}
+                                style={activeCategory === cat ? {} : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                             >
                                 {cat === 'All' && <Filter className="w-4 h-4" />}
                                 <span className="font-semibold text-sm">{cat}</span>
@@ -179,8 +181,8 @@ function PhysicsLabDashboardContent() {
                             className="group relative"
                         >
                             <Link href={`/physics-lab/${exp.id}`}>
-                                <div className="h-full bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 backdrop-blur-sm hover:border-blue-500/30 transition-all duration-300">
-                                    <div className={`w-14 h-14 rounded-2xl bg-${exp.color}-500/10 flex items-center justify-center mb-6 border border-${exp.color}-500/20 group-hover:scale-110 transition-transform`}>
+                                <div className="h-full border rounded-3xl p-8 backdrop-blur-sm transition-all duration-300" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border group-hover:scale-110 transition-transform`} style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
                                         <exp.icon className={`w-7 h-7 text-${exp.color}-400`} />
                                     </div>
 
@@ -192,7 +194,7 @@ function PhysicsLabDashboardContent() {
                                         </div>
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors flex items-center gap-3">
+                                    <h3 className="text-2xl font-bold mb-3 group-hover:text-blue-400 transition-colors flex items-center gap-3" style={{ color: 'var(--lab-text)' }}>
                                         {exp.title}
                                         {masteredExperiments.includes(exp.id) && (
                                             <div className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center gap-1">
@@ -206,10 +208,10 @@ function PhysicsLabDashboardContent() {
                                         {exp.description}
                                     </p>
 
-                                    <div className="flex items-center justify-between pt-6 border-t border-slate-800/50">
+                                    <div className="flex items-center justify-between pt-6 border-t" style={{ borderTop: '1px solid var(--lab-border)' }}>
                                         <div className="flex items-center gap-2">
                                             <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                            <span className="text-xs font-semibold text-slate-400">{exp.difficulty}</span>
+                                            <span className="text-xs font-semibold" style={{ color: 'var(--lab-text-secondary)' }}>{exp.difficulty}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-wide">
                                             START LAB <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -221,13 +223,13 @@ function PhysicsLabDashboardContent() {
                     ))}
 
                     {/* Placeholder Card for Future Experiments */}
-                    <div className="relative group overflow-hidden rounded-3xl border border-slate-800 border-dashed p-8 flex flex-col items-center justify-center text-center bg-slate-900/20">
-                        <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center mb-4">
-                            <BookOpen className="w-7 h-7 text-slate-600" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-600">More Experiments Coming Soon</h3>
-                        <p className="text-slate-700 text-xs mt-2">Optics, Mechanics, and Thermodynamics are in development.</p>
-                    </div>
+                    <div className="relative group overflow-hidden rounded-3xl border border-dashed p-8 flex flex-col items-center justify-center text-center shadow-sm" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '2px dashed var(--lab-border)' }}>
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--lab-card-bg)' }}>
+                                    <BookOpen className="w-7 h-7 text-slate-400" />
+                                </div>
+                                <h3 className="text-lg font-bold" style={{ color: 'var(--lab-text-muted)' }}>More Experiments Coming Soon</h3>
+                                <p className="text-xs mt-2" style={{ color: 'var(--lab-text-muted)' }}>Optics, Mechanics, and Thermodynamics are in development.</p>
+                            </div>
                 </div>
             </main>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Settings, Eye, EyeOff, Grid3X3 } from 'lucide-react';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { Instrument } from '@/components/physics-lab/Instrument';
@@ -25,18 +25,21 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         connections,
         addConnection,
         simulationResults,
-        setSimulationResults,
-        setValidationState
+        setSimulationResults
     } = usePhysicsLab();
 
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
 
+    // Circuit validation state
+    const [validationErrors, setValidationErrors] = useState<any[]>([]);
+    const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
+    const [circuitIsValid, setCircuitIsValid] = useState(false);
+
     const workspaceRef = useRef<HTMLDivElement>(null);
     const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const lastReadingsRef = useRef<Record<string, number>>({});
 
     const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
@@ -49,33 +52,21 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
         const instData = JSON.parse(data);
         const rect = workspaceRef.current.getBoundingClientRect();
-
-        const typeDimensions: Record<string, { w: number, h: number }> = {
-            battery: { w: 280, h: 160 },
-            ammeter: { w: 200, h: 250 },
-            voltmeter: { w: 200, h: 250 },
-            resistor: { w: 160, h: 60 },
-            rheostat: { w: 260, h: 120 },
-            switch: { w: 180, h: 120 },
-            galvanometer: { w: 288, h: 340 },
-        };
-        const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
-
-        const x = e.clientX - rect.left - (dim.w / 2); // Dynamic Center offset
-        const y = e.clientY - rect.top - (dim.h / 2);
+        const x = e.clientX - rect.left - 50; // Center offset
+        const y = e.clientY - rect.top - 50;
 
         // Snap to grid
         const finalX = snapToGrid(x);
         const finalY = snapToGrid(y);
 
         const terminalLayouts: Record<string, { x: number; y: number }[]> = {
-            battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
-            ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
-            voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
-            resistor: [{ x: 8, y: 30 }, { x: 152, y: 30 }],
+            battery: [{ x: 88, y: 110 }, { x: 128, y: 110 }],
+            ammeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            voltmeter: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
+            resistor: [{ x: 4, y: 32 }, { x: 124, y: 32 }],
             rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
-            switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
-            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
+            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
+            galvanometer: [{ x: 8, y: 64 }, { x: 120, y: 64 }],
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
@@ -95,14 +86,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         e.preventDefault();
     };
 
-    const handleTerminalDoubleClick = (terminalId: string, type: string) => {
+    const handleTerminalClick = (terminalId: string, type: string) => {
         if (!isConnecting) {
             setIsConnecting({ from: terminalId, type });
-        }
-    };
-
-    const handleTerminalClick = (terminalId: string, type: string) => {
-        if (isConnecting) {
+        } else {
             if (isConnecting.from !== terminalId) {
                 addConnection(isConnecting.from, terminalId);
             }
@@ -110,121 +97,102 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         }
     };
 
-    const handleMouseMove = useCallback((e: React.MouseEvent) => {
-        if (isConnecting && workspaceRef.current) {
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (workspaceRef.current) {
             const rect = workspaceRef.current.getBoundingClientRect();
             setMousePos({
                 x: e.clientX - rect.left,
                 y: e.clientY - rect.top,
             });
         }
-    }, [isConnecting]);
+    };
 
     // Circuit validation
     useEffect(() => {
         if (experimentId === 'ohm-law') {
             const validation = validateOhmLawCircuit(instruments, connections);
-            setValidationState(validation.errors, validation.suggestions, validation.isValid);
+            setValidationErrors(validation.errors);
+            setValidationSuggestions(validation.suggestions);
+            setCircuitIsValid(validation.isValid);
         } else if (experimentId === 'wheatstone-bridge') {
             const validation = validateWheatstoneBridge(instruments, connections);
-            setValidationState(validation.errors, validation.suggestions, validation.isValid);
+            setValidationErrors(validation.errors);
+            setValidationSuggestions(validation.suggestions);
+            setCircuitIsValid(validation.isValid);
         } else {
-            setValidationState([], [], true);
+            setValidationErrors([]);
+            setValidationSuggestions([]);
+            setCircuitIsValid(true);
         }
-    }, [instruments, connections, experimentId, setValidationState]);
+    }, [instruments, connections, experimentId]);
 
-    // Extract simulation-relevant values as primitives to avoid infinite loops.
-    // The old code had instruments in the dependency array AND called updateInstrumentProperties
-    // (which modifies instruments), creating: useEffect runs → setInstruments → useEffect runs → ...
-    const simInputs = useMemo(() => {
-        const battery = instruments.find(i => i.type === 'battery');
-        const resistor = instruments.find(i => i.type === 'resistor');
-        const rheostat = instruments.find(i => i.type === 'rheostat');
-        const sw = instruments.find(i => i.type === 'switch');
-        const p = instruments.find(i => i.id === 'p');
-        const q = instruments.find(i => i.id === 'q');
-        const r = instruments.find(i => i.id === 'r');
-        const s = instruments.find(i => i.id === 's');
-        const galvanometer = instruments.find(i => i.type === 'galvanometer');
-        const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({ id: i.id, type: i.type }));
-        const object = instruments.find(i => i.type === 'block');
-        const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));
-        const m1 = instruments.find(i => i.name?.includes('M1'));
-        const m2 = instruments.find(i => i.name?.includes('M2'));
-
-        return {
-            voltage: battery?.properties.voltage || 9,
-            resistance: resistor?.properties.resistance || 100,
-            rheostatR: rheostat?.properties.resistance || 50,
-            switchClosed: sw?.properties.closed || false,
-            pR: p?.properties.resistance || 100,
-            qR: q?.properties.resistance || 100,
-            rR: r?.properties.resistance || 100,
-            sR: s?.properties.resistance || 100,
-            galvanometerId: galvanometer?.id || null,
-            meterIds,
-            object: object ? { posX: object.position.x, posY: object.position.y } : null,
-            lenses,
-            m1: m1 ? { posX: m1.position.x, posY: m1.position.y, mass: m1.properties.mass } : null,
-            m2: m2 ? { posX: m2.position.x, posY: m2.position.y, mass: m2.properties.mass } : null,
-        };
-    }, [instruments]);
-
-    // Simulation integration — uses extracted primitive values to avoid dependency on instruments object
+    // Simulation integration
     useEffect(() => {
         if (experimentId === 'ohm-law') {
+            const battery = instruments.find(i => i.type === 'battery');
+            const resistor = instruments.find(i => i.type === 'resistor');
+            const rheostat = instruments.find(i => i.type === 'rheostat');
+            const sw = instruments.find(i => i.type === 'switch');
+
             const result = calculateOhmLaw(
-                simInputs.voltage,
-                simInputs.resistance,
-                simInputs.rheostatR,
-                simInputs.switchClosed,
+                battery?.properties.voltage || 9,
+                resistor?.properties.resistance || 100,
+                rheostat?.properties.resistance || 50,
+                sw?.properties.closed || false,
                 connections,
                 instruments
             );
 
             setSimulationResults(result);
 
-            // Update instrument readings only when values actually change
-            simInputs.meterIds.forEach(({ id, type }) => {
-                let newReading: number | string = 0;
-                if (type === 'ammeter') {
-                    newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
-                } else if (type === 'voltmeter') {
-                    newReading = (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0;
+            // Update instrument readings
+            instruments.forEach(inst => {
+                if (inst.type === 'ammeter') {
+                    updateInstrumentProperties(inst.id, { reading: (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0 });
                 }
-                const key = `${id}-reading`;
-                if (lastReadingsRef.current[key] !== Number(newReading)) {
-                    lastReadingsRef.current[key] = Number(newReading);
-                    updateInstrumentProperties(id, { reading: newReading });
+                if (inst.type === 'voltmeter') {
+                    updateInstrumentProperties(inst.id, { reading: (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0 });
                 }
             });
         } else if (experimentId === 'wheatstone-bridge') {
+            const battery = instruments.find(i => i.type === 'battery');
+            const sw = instruments.find(i => i.type === 'switch');
+            const p = instruments.find(i => i.id === 'p');
+            const q = instruments.find(i => i.id === 'q');
+            const r = instruments.find(i => i.id === 'r');
+            const s = instruments.find(i => i.id === 's');
+
             const result = calculateWheatstoneBridge(
-                simInputs.pR,
-                simInputs.qR,
-                simInputs.rR,
-                simInputs.sR,
-                simInputs.voltage,
-                simInputs.switchClosed,
+                p?.properties.resistance || 100,
+                q?.properties.resistance || 100,
+                r?.properties.resistance || 100,
+                s?.properties.resistance || 100,
+                battery?.properties.voltage || 9,
+                sw?.properties.closed || false,
                 connections
             );
 
             setSimulationResults(result);
 
-            // Update Galvanometer only when reading changes
-            if (simInputs.galvanometerId) {
-                const newReading = result.isClosed && result.isValid ? result.galvanometerReading : 0;
-                const key = `${simInputs.galvanometerId}-reading`;
-                if (lastReadingsRef.current[key] !== newReading) {
-                    lastReadingsRef.current[key] = newReading;
-                    updateInstrumentProperties(simInputs.galvanometerId, { reading: newReading });
-                }
+            // Update Galvanometer
+            const galvanometer = instruments.find(i => i.type === 'galvanometer');
+            if (galvanometer) {
+                updateInstrumentProperties(galvanometer.id, { reading: result.isClosed && result.isValid ? result.galvanometerReading : 0 });
             }
         } else if (experimentId === 'reflection-refraction') {
-            if (simInputs.object && simInputs.lenses.length > 0) {
-                const initialRay = { origin: { x: simInputs.object.posX + 50, y: 0 }, angle: 0 };
-                const path = traceRayThroughComponents(initialRay, simInputs.lenses);
-                const firstLensY = simInputs.lenses[0].position.y;
+            const object = instruments.find(i => i.type === 'block');
+            const lenses = instruments
+                .filter(i => i.type === 'lens')
+                .map(l => ({
+                    position: l.position,
+                    focalLength: l.properties.focalLength,
+                    type: l.properties.type
+                }));
+
+            if (object && lenses.length > 0) {
+                const initialRay = { origin: { x: object.position.x + 50, y: 0 }, angle: 0 };
+                const path = traceRayThroughComponents(initialRay, lenses);
+                const firstLensY = lenses[0].position.y;
                 const rays = path.map((r, i) => ({
                     ...r,
                     origin: { x: r.origin.x, y: firstLensY + 100 + r.origin.y },
@@ -233,23 +201,26 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 setSimulationResults({ rays, isValid: true, isClosed: true });
             }
         } else if (experimentId === 'newton-second-law') {
-            if (simInputs.m1 && simInputs.m2) {
+            const m1 = instruments.find(i => i.name.includes('M1'));
+            const m2 = instruments.find(i => i.name.includes('M2'));
+
+            if (m1 && m2) {
                 const result = calculateMechanicsSimulation(
-                    simInputs.m1.mass,
-                    simInputs.m2.mass,
+                    m1.properties.mass,
+                    m2.properties.mass,
                     0 // static for now
                 );
 
                 // Generate vectors for visualization (Weight and Accel)
                 const vectors = [
                     {
-                        origin: { x: simInputs.m1.posX + 50, y: simInputs.m1.posY + 50 },
+                        origin: { x: m1.position.x + 50, y: m1.position.y + 50 },
                         direction: { x: 0, y: 40 },
                         label: 'W1',
                         color: 'text-red-400'
                     },
                     {
-                        origin: { x: simInputs.m2.posX + 50, y: simInputs.m2.posY + 50 },
+                        origin: { x: m2.position.x + 50, y: m2.position.y + 50 },
                         direction: { x: 0, y: 40 },
                         label: 'W2',
                         color: 'text-red-400'
@@ -258,7 +229,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
                 if (result.acceleration > 0) {
                     vectors.push({
-                        origin: { x: (simInputs.m1.posX + simInputs.m2.posX) / 2 + 50, y: 50 },
+                        origin: { x: (m1.position.x + m2.position.x) / 2 + 50, y: 50 },
                         direction: { x: 0, y: -30 },
                         label: 'a',
                         color: 'text-emerald-400'
@@ -268,8 +239,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 setSimulationResults({ ...result, vectors, isValid: true, isClosed: true });
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [simInputs, connections, experimentId]);
+    }, [instruments, connections, updateInstrumentProperties, setSimulationResults, experimentId]);
 
     const isCurrentFlowing = simulationResults.isValid && simulationResults.isClosed;
 
@@ -319,6 +289,15 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 </div>
             )}
 
+            {/* Circuit Validation Feedback */}
+            {instruments.length > 0 && (experimentId === 'ohm-law' || experimentId === 'wheatstone-bridge') && (
+                <CircuitFeedback
+                    errors={validationErrors}
+                    suggestions={validationSuggestions}
+                    isValid={circuitIsValid}
+                />
+            )}
+
             {/* Optical Bench Ruler */}
             {experimentId === 'reflection-refraction' && (
                 <div className="absolute bottom-8 inset-x-12 h-10 border-t-2 border-slate-700/50 flex items-start pointer-events-none">
@@ -364,7 +343,6 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                         updateInstrumentPosition(inst.id, snappedX, snappedY);
                     }}
                     onTerminalClick={handleTerminalClick}
-                    onTerminalDoubleClick={handleTerminalDoubleClick}
                     updateProperties={updateInstrumentProperties}
                 />
             ))}

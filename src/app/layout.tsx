@@ -31,12 +31,15 @@ export const metadata: Metadata = {
   title: "Physics Lab | Virtual Laboratory",
   description: "Interactive virtual physics laboratory — build circuits, trace rays, and explore the laws of nature through hands-on experiments.",
   manifest: "/manifest.json",
-  themeColor: "#3b82f6",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Physics Lab",
   },
+}
+
+export const viewport = {
+  themeColor: "#3b82f6",
 }
 
 export default function RootLayout({
@@ -51,7 +54,7 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

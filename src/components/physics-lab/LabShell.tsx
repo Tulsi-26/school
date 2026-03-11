@@ -5,7 +5,7 @@ import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentPanel } from '@/components/physics-lab/InstrumentPanel';
 import { ExperimentWorkspace } from '@/components/physics-lab/ExperimentWorkspace';
 import { ExperimentGuide } from '@/components/physics-lab/ExperimentGuide';
-import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
+import { GamificationPanel, useGamification } from '@/components/physics-lab/GamificationPanel';
 import {
     ChevronRight, Home, Beaker, RotateCcw, ShieldCheck,
     Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone
@@ -25,7 +25,8 @@ interface LabShellProps {
 }
 
 export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
-    const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery } = usePhysicsLab();
+    const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery: toggleContextMastery } = usePhysicsLab();
+    const { completeExperiment } = useGamification();
     const experimentName = experimentNames[experimentId] || experimentId;
     const isMastered = masteredExperiments.includes(experimentId);
     const { theme, setTheme } = useTheme();
@@ -35,6 +36,14 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const [showRotateOverlay, setShowRotateOverlay] = useState(false);
     const [guideWidth, setGuideWidth] = useState(384);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const toggleMastery = useCallback((id: string) => {
+        const alreadyMastered = masteredExperiments.includes(id);
+        toggleContextMastery(id);
+        if (!alreadyMastered) {
+            completeExperiment(id);
+        }
+    }, [masteredExperiments, toggleContextMastery, completeExperiment]);
 
     const startRightResize = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
