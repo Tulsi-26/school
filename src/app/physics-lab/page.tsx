@@ -6,10 +6,11 @@ import { motion } from 'framer-motion';
 import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Database, Clock, Trash2 } from 'lucide-react';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
+import { useSession } from "next-auth/react";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import type { SavedSession } from '@/context/PhysicsLabContext';
 import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
-import {  PhysicsLabProvider } from '@/context/PhysicsLabContext';
+import { PhysicsLabProvider } from '@/context/PhysicsLabContext';
 
 const experiments = [
     {
@@ -51,6 +52,7 @@ const experiments = [
 ];
 
 function PhysicsLabDashboardContent() {
+    const { data: session, status } = useSession();
     const { masteredExperiments } = usePhysicsLab();
     const [activeCategory, setActiveCategory] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -302,7 +304,11 @@ function PhysicsLabDashboardContent() {
                                             <span className="text-xs font-semibold" style={{ color: 'var(--lab-text-secondary)' }}>{exp.difficulty}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-wide">
-                                            START LAB <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            {status === 'authenticated' ? (
+                                                <>START LAB <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                            ) : (
+                                                <>SIGN UP TO START <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -312,12 +318,12 @@ function PhysicsLabDashboardContent() {
 
                     {/* Placeholder Card for Future Experiments */}
                     <div className="relative group overflow-hidden rounded-3xl border border-dashed p-8 flex flex-col items-center justify-center text-center shadow-sm" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '2px dashed var(--lab-border)' }}>
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--lab-card-bg)' }}>
-                                    <BookOpen className="w-7 h-7 text-slate-400" />
-                                </div>
-                                <h3 className="text-lg font-bold" style={{ color: 'var(--lab-text-muted)' }}>More Experiments Coming Soon</h3>
-                                <p className="text-xs mt-2" style={{ color: 'var(--lab-text-muted)' }}>Optics, Mechanics, and Thermodynamics are in development.</p>
-                            </div>
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--lab-card-bg)' }}>
+                            <BookOpen className="w-7 h-7 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-bold" style={{ color: 'var(--lab-text-muted)' }}>More Experiments Coming Soon</h3>
+                        <p className="text-xs mt-2" style={{ color: 'var(--lab-text-muted)' }}>Optics, Mechanics, and Thermodynamics are in development.</p>
+                    </div>
                 </div>
             </main>
 
