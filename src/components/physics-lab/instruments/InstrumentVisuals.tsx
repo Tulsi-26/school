@@ -418,7 +418,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                             opacity: properties.closed ? 1 : 0.8,
                             scale: properties.closed ? 1 : 1.05
                         }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                         className="absolute top-[8px] left-1/2 -translate-x-1/2 w-[34px] h-[65px] z-20 pointer-events-none drop-shadow-2xl"
                     >
                         <svg viewBox="0 0 34 65" className="w-full h-full overflow-visible">

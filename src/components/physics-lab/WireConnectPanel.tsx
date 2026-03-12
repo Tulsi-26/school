@@ -138,7 +138,7 @@ export const WireConnectPanel: React.FC<WireConnectPanelProps> = ({
             initial={{ opacity: 0, scale: 0.9, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
             className="absolute z-[200] w-72 bg-slate-900/95 border border-slate-700/60 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_30px_rgba(59,130,246,0.1)] backdrop-blur-xl overflow-hidden"
             style={{ left: '100%', top: 0, marginLeft: 12 }}
             onClick={(e) => e.stopPropagation()}

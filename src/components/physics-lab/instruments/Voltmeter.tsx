@@ -118,7 +118,7 @@ export const Voltmeter: React.FC<VoltmeterProps> = ({ reading, scale = 5, unit =
                         <motion.div
                             className="absolute bottom-0 w-[1.5px] h-36 bg-[#e02020] origin-bottom shadow-sm"
                             animate={{ rotate: angle }}
-                            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+                            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                         >
                             {/* Arrow Tip */}
                             <div className="absolute -top-[2px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[2px] border-r-[2px] border-b-[6px] border-transparent border-b-[#e02020]"></div>

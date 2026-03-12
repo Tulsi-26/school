@@ -112,7 +112,7 @@ export const Meter: React.FC<MeterProps> = ({ type, reading, scale, unit, label,
                         <motion.div
                             className="absolute bottom-0 w-[1px] h-32 bg-red-500 origin-bottom"
                             animate={{ rotate: angle }}
-                            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+                            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                         ></motion.div>
 
                         {/* Center Pivot Cover (The black circle with a slot) */}

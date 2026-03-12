@@ -112,6 +112,21 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
     }, []);
 
+    // Real-time mirroring to Local Storage for user visibility and recovery
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && activeExperimentId) {
+            const draft = {
+                id: activeExperimentId,
+                instruments,
+                connections,
+                observations,
+                simulationResults,
+                updatedAt: new Date().toISOString()
+            };
+            localStorage.setItem(`physics-lab-draft-${activeExperimentId}`, JSON.stringify(draft));
+        }
+    }, [activeExperimentId, instruments, connections, observations, simulationResults]);
+
     const addInstrument = useCallback((instrument: Omit<Instrument, 'id'>) => {
         const id = `${instrument.type}-${Date.now()}`;
         setInstruments((prev) => [...prev, { ...instrument, id }]);
@@ -186,6 +201,13 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             if (!res.ok) {
                 throw new Error('Failed to save experiment session');
+            }
+
+            const data = await res.json();
+            
+            // Mirror the successful database session to Local Storage for user visibility
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(`physics-lab-session-${activeExperimentId}`, JSON.stringify(data.session));
             }
 
             setLastSavedAt(new Date());

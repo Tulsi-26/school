@@ -46,6 +46,7 @@ export const VectorCanvas: React.FC<VectorCanvasProps> = ({ vectors }) => {
                             markerEnd="url(#arrowhead)"
                             initial={{ pathLength: 0 }}
                             animate={{ pathLength: 1 }}
+                            transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
                         />
                         <text
                             x={endX + 5}
