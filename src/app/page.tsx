@@ -387,37 +387,78 @@ export default function Home() {
           </div>
         </section>
 
-        {/* --- CTA SECTION --- */}
-        <section className="py-24 relative overflow-hidden bg-white">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="relative rounded-[3rem] bg-gradient-to-r from-blue-600 to-indigo-700 p-12 md:p-20 text-center overflow-hidden shadow-[0_40px_80px_-20px_rgba(59,130,246,0.5)]">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="relative z-10"
-              >
-                <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">
-                  Start Your Virtual <br /> Experiment Today
+        <section className="py-32 relative overflow-hidden bg-white">
+          <div className="max-w-6xl mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="relative rounded-[4rem] bg-slate-900 p-12 md:p-24 text-center overflow-hidden shadow-[0_50px_100px_-20px_rgba(30,58,138,0.4)] group"
+            >
+              {/* --- SCIENTIFIC BACKGROUND ELEMENTS (CSS ONLY) --- */}
+              
+              {/* Modern Mesh Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 opacity-90" />
+              
+              {/* Animated Blueprint Grid */}
+              <div 
+                className="absolute inset-0 opacity-[0.07] pointer-events-none"
+                style={{ 
+                  backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+                  backgroundSize: '50px 50px'
+                }}
+              />
+              
+              {/* Glowing High-Tech Orbs */}
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] -mr-64 -mt-64 animate-pulse" />
+              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-600/20 rounded-full blur-[100px] -ml-48 -mb-48" />
+
+              {/* Decorative Physics "Atomic" Rings (CSS) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/5 rounded-full pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full pointer-events-none rotate-45" />
+
+              <div className="relative z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1.5 text-xs font-bold text-blue-300 mb-8 uppercase tracking-[0.2em]"
+                >
+                  Ready to explore?
+                </motion.div>
+
+                <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
+                  Start Your <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                    Virtual Experiment
+                  </span> <br />
+                  Today.
                 </h2>
-                <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto font-medium">
-                  No equipment? No Problem. Access the full laboratory experience from any browser, at any time.
+                
+                <p className="text-xl text-slate-400 mb-14 max-w-2xl mx-auto font-medium leading-relaxed">
+                  Join the digital frontier of STEM education. No physical equipment required—just curiosity and a browser.
                 </p>
+
                 <div className="flex flex-col sm:flex-row justify-center gap-6">
                   <Link href="/physics-lab">
-                    <Button size="lg" className="h-16 px-12 text-lg font-bold bg-white text-blue-700 hover:bg-blue-50 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95">
+                    <Button size="lg" className="h-18 px-12 text-lg font-black bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-[0_20px_40px_-10px_rgba(37,99,235,0.5)] transition-all hover:scale-105 active:scale-95 group/btn">
                       Get Started Free
+                      <Zap className="ml-2 w-5 h-5 fill-current group-hover/btn:animate-bounce" />
                     </Button>
                   </Link>
                   <Link href="/docs">
-                    <Button size="lg" variant="outline" className="h-16 px-12 text-lg font-bold text-white border-white/30 hover:bg-white/10 rounded-2xl transition-all hover:scale-105 active:scale-95">
-                      Read the Guide
+                    <Button size="lg" className="h-18 px-12 text-lg font-black bg-white text-blue-900 hover:bg-slate-100 rounded-2xl shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)] transition-all hover:scale-105 active:scale-95 group/guide">
+                      Explore the Guide
+                      <BookOpen className="ml-2 w-5 h-5 fill-current group-hover/guide:animate-pulse" />
                     </Button>
                   </Link>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+              
+              {/* Glassy Sweep Animation */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+            </motion.div>
           </div>
         </section>
 
