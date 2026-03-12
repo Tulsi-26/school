@@ -33,13 +33,15 @@ const XP_REWARDS: Record<string, number> = {
   'first-circuit-closed': 15,
 };
 
+const INITIAL_STATS: UserStats = { totalXP: 0, experimentsCompleted: [], observationsRecorded: 0 };
+
 function loadStats(): UserStats {
-  if (typeof window === 'undefined') return { totalXP: 0, experimentsCompleted: [], observationsRecorded: 0 };
+  if (typeof window === 'undefined') return INITIAL_STATS;
   try {
     const raw = localStorage.getItem('physics-lab-gamification');
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  return { totalXP: 0, experimentsCompleted: [], observationsRecorded: 0 };
+  return INITIAL_STATS;
 }
 
 function saveStats(stats: UserStats) {
@@ -49,10 +51,11 @@ function saveStats(stats: UserStats) {
 }
 
 export function useGamification() {
-  const [stats, setStats] = useState<UserStats>(loadStats);
+  const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
 
   useEffect(() => {
-    setStats(loadStats());
+    const loaded = loadStats();
+    setStats(loaded);
   }, []);
 
   const addXP = (reason: string) => {

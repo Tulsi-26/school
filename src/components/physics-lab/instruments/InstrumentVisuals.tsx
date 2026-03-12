@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Battery } from './Battery';
 import { Ammeter } from './Ammeter';
@@ -19,6 +20,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
     isHovered,
     onPropertyChange
 }) => {
+    const rheostatContainerRef = useRef<HTMLDivElement>(null);
     const glowShadow = "drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]";
     const activeGlow = "drop-shadow-[0_0_12px_rgba(59,130,246,0.5)]";
 
@@ -171,7 +173,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             const sliderX = (currentR / maxR) * 170; // 170 is the track width
 
             return (
-                <div className={`relative w-[320px] h-[150px] select-none ${isHovered ? activeGlow : glowShadow}`}>
+                <div ref={rheostatContainerRef} className={`relative w-[320px] h-[150px] select-none ${isHovered ? activeGlow : glowShadow}`}>
                     {/* Main Base Shadow */}
                     <div className="absolute inset-x-8 bottom-2 h-3 bg-black/20 blur-md rounded-full"></div>
 
@@ -268,7 +270,7 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
                         dragElastic={0}
                         dragMomentum={false}
                         onDragEnd={(e, info) => {
-                            const container = (e.currentTarget as HTMLElement).parentElement;
+                            const container = rheostatContainerRef.current;
                             if (!container) return;
                             const rect = container.getBoundingClientRect();
                             const relativeX = info.point.x - rect.left - 50 - 25; // 50 left offset, 25 slider center

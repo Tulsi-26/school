@@ -95,7 +95,7 @@ export default function Home() {
                     Enter Virtual Lab
                   </Button>
                 </Link>
-                <Link href="/docs">
+                <Link href="#demo-video">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-10 h-16 bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-slate-50 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95">
                     <Play className="w-5 h-5 fill-slate-700" /> Watch Demo
                   </Button>
@@ -106,7 +106,7 @@ export default function Home() {
         </section>
 
         {/* --- VIDEO PREVIEW SECTION --- */}
-        <section className="pb-40 pt-10 bg-white relative overflow-hidden">
+        <section id="demo-video" className="pb-40 pt-10 bg-white relative overflow-hidden">
           {/* Section decorative background */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
             style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
@@ -123,65 +123,72 @@ export default function Home() {
               transition={{ duration: 1, ease: "easeOut" }}
               className="relative mx-auto max-w-5xl rounded-[3.5rem] border border-slate-200/50 bg-white/50 backdrop-blur-sm p-5 shadow-[0_48px_100px_-20px_rgba(37,99,235,0.12)]"
             >
-              <div className="aspect-[16/10] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-2xl group cursor-pointer">
-                <img 
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" 
-                  alt="Physics Laboratory" 
-                  className="w-full h-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105" 
-                />
-                
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/20" />
-                
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative">
-                    {/* Pulsing rings */}
-                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping -z-10" />
-                    <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-pulse -z-10" style={{ animationDuration: '3s' }} />
-                    
-                    <div className="p-8 rounded-full bg-blue-600 border border-white/30 shadow-[0_0_50px_-10px_rgba(37,99,235,0.6)] group-hover:scale-110 group-hover:bg-blue-500 transition-all duration-300">
-                      <Play className="w-14 h-14 text-white fill-white ml-2" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Bottom Badge */}
-                <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-2xl">
-                    <p className="text-white text-sm font-bold tracking-wide uppercase">Virtual Lab Tour</p>
-                    <p className="text-blue-200 text-xs">Watch the 2-minute walkthrough</p>
-                  </div>
-                </div>
+              <div className="aspect-[16/10] rounded-[2.5rem] bg-slate-900 flex items-center justify-center overflow-hidden relative border border-slate-800 shadow-2xl">
+                <video 
+                  controls 
+                  className="w-full h-full object-cover"
+                  poster="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop"
+                >
+                  <source src="/demo-video.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* --- STATS SECTION --- */}
-        <section className="py-20 relative bg-white border-y border-slate-100 overflow-hidden">
+        {/* --- STATS SECTION: SCIENTIFIC DASHBOARD --- */}
+        <section className="py-24 relative bg-slate-50 overflow-hidden isolate">
+          {/* Background decoration */}
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,#eff6ff,transparent_50%)]" />
+          <div 
+            className="absolute inset-0 opacity-[0.03] -z-10"
+            style={{ 
+              backgroundImage: `linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { val: "100%", label: "Curriculum Aligned", icon: Check },
-                { val: "4+", label: "Physics Domains", icon: Globe },
-                { val: "Real-time", label: "Simulation Engine", icon: Zap },
-                { val: "24/7", label: "Accessible Anywhere", icon: Clock }
+                { val: "100%", label: "Curriculum Aligned", icon: Check, color: "blue" },
+                { val: "4+", label: "Physics Domains", icon: Globe, color: "indigo" },
+                { val: "Real-time", label: "Simulation Engine", icon: Zap, color: "cyan" },
+                { val: "24/7", label: "Accessible Anywhere", icon: Clock, color: "violet" }
               ].map((stat, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="group"
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="relative group"
                 >
-                  <div className="mb-4 flex justify-center">
-                    <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-blue-50 transition-colors">
-                      <stat.icon className="w-6 h-6 text-blue-600" />
+                  <div className="h-full p-8 rounded-[2.5rem] bg-white border border-slate-200 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] group-hover:shadow-[0_20px_40px_-15px_rgba(37,99,235,0.1)] transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                    {/* Inner glowing orb on hover */}
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+                    
+                    <div className="relative z-10">
+                      <div className="mb-6 flex">
+                        <div className={`p-4 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-${stat.color}-100`}>
+                          <stat.icon className="w-6 h-6" />
+                        </div>
+                      </div>
+                      <div className="text-4xl font-black tracking-tighter text-slate-900 mb-2">{stat.val}</div>
+                      <div className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-tight">{stat.label}</div>
+                      
+                      {/* Decorative progress-like bar */}
+                      <div className="mt-6 h-1 w-12 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div 
+                          className={`h-full bg-blue-500`}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: "100%" }}
+                          transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="text-4xl font-black text-slate-900 mb-1">{stat.val}</div>
-                  <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
@@ -349,39 +356,79 @@ export default function Home() {
           </div>
         </section>
 
-        {/* --- TESTIMONIALS --- */}
-        <section className="py-32 bg-white">
+        {/* --- TESTIMONIALS: LAB OBSERVATIONS STYLE --- */}
+        <section className="py-32 bg-white relative overflow-hidden">
+          {/* Decorative scientific background elements */}
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+          
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-20">
-              <h2 className="text-4xl font-black text-slate-900 mb-4">Empowering Learners Globally</h2>
-              <p className="text-slate-500 font-medium">Join thousands of students and educators transforming the STEM experience.</p>
+            <div className="text-center mb-20 relative">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1 text-xs font-bold text-blue-600 mb-4 uppercase tracking-widest">
+                  Scientific Impact
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">Empowering Learners <span className="text-blue-600">Globally</span></h2>
+                <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Join thousands of students and educators transforming the STEM experience through active experimentation.</p>
+              </motion.div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {[
                 {
                   quote: "This lab turned complex circuit diagrams into something I could actually see and play with. My grades improved within weeks!",
                   author: "Sarah J.",
-                  role: "High School Student"
+                  role: "High School Student",
+                  status: "Verified Learner"
                 },
                 {
                   quote: "As a teacher, PhysicsLab has been a lifesaver for remote learning. It’s the most accurate web-based simulation I've used.",
                   author: "Dr. Marcus V.",
-                  role: "Physics Professor"
+                  role: "Physics Professor",
+                  status: "Expert Educator"
                 },
                 {
                   quote: "The ray tracing visualization is simply stunning. It's so much easier to explain focal lengths when you can actually see the rays bend.",
                   author: "Elena R.",
-                  role: "Science Educator"
+                  role: "Science Educator",
+                  status: "Curriculum Lead"
                 }
               ].map((t, i) => (
-                <Card key={i} className="p-8 border-slate-100 bg-slate-50/50 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300">
-                  <Quote className="w-10 h-10 text-blue-200 mb-6" />
-                  <p className="text-slate-700 font-medium italic mb-8 leading-relaxed">"{t.quote}"</p>
-                  <div>
-                    <div className="font-black text-slate-900">{t.author}</div>
-                    <div className="text-sm font-bold text-blue-600">{t.role}</div>
-                  </div>
-                </Card>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15 }}
+                >
+                  <Card className="p-8 h-full bg-slate-50/50 backdrop-blur-sm border-slate-200/60 rounded-[2.5rem] hover:bg-white transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] group relative overflow-hidden">
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-10 right-10 h-1 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+                    
+                    <div className="flex justify-between items-start mb-8">
+                      <Quote className="w-12 h-12 text-blue-100 group-hover:text-blue-200 transition-colors" />
+                      <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                        {t.status}
+                      </div>
+                    </div>
+
+                    <p className="text-slate-700 font-bold italic mb-10 leading-relaxed text-lg">"{t.quote}"</p>
+                    
+                    <div className="flex items-center gap-4 mt-auto">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 flex items-center justify-center font-black text-slate-400 border border-white shadow-sm group-hover:from-blue-100 group-hover:to-blue-50 group-hover:text-blue-500 transition-all duration-500">
+                        {t.author.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-black text-slate-900 leading-tight">{t.author}</div>
+                        <div className="text-xs font-bold text-blue-600 tracking-wide">{t.role}</div>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           </div>
