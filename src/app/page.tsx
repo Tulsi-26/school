@@ -36,26 +36,28 @@ export default function Home() {
       <main className="flex-grow">
         {/* --- HERO SECTION --- */}
         {/* --- HERO SECTION: TEXT AREA WITH BACKGROUND --- */}
-        <section className="relative pt-32 pb-24 flex items-center min-h-[85vh] overflow-hidden bg-slate-50/50">
-          {/* Background Image for Text Area */}
-          <div className="absolute inset-0 -z-30">
+        <section className="relative pt-32 pb-24 flex items-center min-h-[85vh] overflow-hidden isolate">
+          {/* Background Layers */}
+          <div className="absolute inset-0 -z-50 bg-slate-50" />
+          
+          <div className="absolute inset-0 -z-40">
             <motion.img
               initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 0.12 }}
+              animate={{ scale: 1, opacity: 0.6 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop"
+              src="/physics-hero-bg.png"
               alt="Physics Background"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white/40 to-white" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white" />
 
             {/* Decorative Grid Overlay */}
-            <div className="absolute top-0 left-0 w-full h-full opacity-[0.3] pointer-events-none"
+            <div className="absolute top-0 left-0 w-full h-full opacity-[0.2] pointer-events-none"
               style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
             {/* Glowing Orbs for physics vibe */}
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-400/15 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-400/15 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
+            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-400/10 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
           </div>
 
           <Hero3D />
