@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Instrument as InstrumentType, usePhysicsLab } from '@/context/PhysicsLabContext';
 import { InstrumentVisuals } from './instruments/InstrumentVisuals';
 import { WireConnectPanel } from './WireConnectPanel';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Trash2, Settings2, Check, RotateCcw, Copy, Info } from '@/lib/icons';
 
 interface InstrumentProps {
@@ -18,6 +18,7 @@ interface InstrumentProps {
     onTerminalPointerDown?: (id: string, type: string) => void;
     onTerminalPointerUp?: (id: string, type: string) => void;
     onTerminalHover?: (id: string | null) => void;
+    onTerminalDoubleClick?: (id: string, type: string) => void;
     updateProperties: (id: string, props: any) => void;
     onInstrumentDoubleClick?: (instrumentId: string) => void;
     showWirePanel?: boolean;
@@ -26,6 +27,8 @@ interface InstrumentProps {
     onWireDisconnect?: (connectionId: string) => void;
     onDrag?: (id: string, x: number, y: number) => void;
     onDragEndLive?: (id: string) => void;
+    activeConnectionFromId?: string | null;
+    currentHoveredTerminalId?: string | null;
 }
 
 const InstrumentComponent: React.FC<InstrumentProps> = ({
@@ -39,6 +42,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     onTerminalPointerDown,
     onTerminalPointerUp,
     onTerminalHover,
+    onTerminalDoubleClick,
     updateProperties,
     onInstrumentDoubleClick,
     showWirePanel,
@@ -47,6 +51,8 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     onWireDisconnect,
     onDrag,
     onDragEndLive,
+    activeConnectionFromId,
+    currentHoveredTerminalId,
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -197,12 +203,18 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
         setContextMenu(null);
     };
 
+    const dragControls = useDragControls();
+
     return (
         <motion.div
             drag
+            dragControls={dragControls}
+            dragListener={false}
             dragMomentum={false}
             dragElastic={0}
-            onDragStart={() => setIsDragging(true)}
+            onDragStart={(e) => {
+                setIsDragging(true);
+            }}
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             initial={false}
@@ -224,24 +236,52 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onContextMenu={handleContextMenu}
-            className="absolute cursor-grab active:cursor-grabbing"
+            className="absolute"
             style={{ touchAction: 'none' } as any}
         >
-            <div className="relative group" onClick={handleInstrumentClick} onDoubleClick={handleInstrumentDoubleClick}>
-                {/* Drag Handle Indicator */}
-                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-slate-700/30 rounded-full opacity-0 group-hover:opacity-100 transition-all ${isDragging ? 'opacity-0 scale-50' : 'scale-100'}`} />
+            <div className="relative group" onDoubleClick={handleInstrumentDoubleClick}>
+                {/* Drag Handle & Main Interaction Area */}
+                <div 
+                    className="cursor-grab active:cursor-grabbing"
+                    onPointerDown={(e) => {
+                        // Only start drag on left click or touch
+                        if (e.button === 0 || e.pointerType !== 'mouse') {
+                            dragControls.start(e);
+                        }
+                    }}
+                    onClick={handleInstrumentClick}
+                >
+                    {/* Drag Handle Indicator */}
+                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-slate-700/30 rounded-full opacity-0 group-hover:opacity-100 transition-all ${isDragging ? 'opacity-0 scale-50' : 'scale-100'}`} />
 
-                {/* Instrument Visual */}
-                <InstrumentVisuals
-                    type={type}
-                    properties={properties}
-                    isHovered={isHovered}
-                    onPropertyChange={(props: any) => updateProperties(id, props)}
-                />
+                    {/* Instrument Visual */}
+                    <InstrumentVisuals
+                        type={type}
+                        properties={properties}
+                        isHovered={isHovered}
+                        onPropertyChange={(props: any) => updateProperties(id, props)}
+                    />
+
+                    {/* Label */}
+                    <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                        {name}
+                    </div>
+
+                    {/* Scale Indicator Badge (visible when not hovered, for meters only) */}
+                    {currentScaleLabel && (
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-500/20 border border-blue-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-300 pointer-events-none select-none">
+                            {currentScaleLabel}
+                        </div>
+                    )}
+                </div>
 
                 {/* Terminals */}
                 {terminals.map((t) => {
                     const isMechanicalTerminal = t.type === 'input' || t.type === 'output';
+                    const isSource = activeConnectionFromId === t.id;
+                    const isTarget = currentHoveredTerminalId === t.id;
+                    const isPotentialTarget = activeConnectionFromId && !isSource;
+
                     return (
                         <button
                             key={t.id}
@@ -260,12 +300,24 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                                 e.stopPropagation();
                                 if (onTerminalPointerUp) onTerminalPointerUp(t.id, t.type);
                             }}
-                            className={`absolute w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 z-20 ${isMechanicalTerminal
-                                ? 'bg-amber-700 border-amber-600 shadow-[0_0_8px_rgba(180,130,80,0.4)]'
-                                : t.type === 'positive'
-                                    ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
-                                    : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
-                                }`}
+                            onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                if (onTerminalDoubleClick) onTerminalDoubleClick(t.id, t.type);
+                            }}
+                            className={`absolute w-5 h-5 rounded-full border-2 transition-all duration-200 z-20 
+                                ${isMechanicalTerminal
+                                    ? 'bg-amber-700 border-amber-600 shadow-[0_0_8px_rgba(180,130,80,0.4)]'
+                                    : t.type === 'positive'
+                                        ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
+                                        : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
+                                } 
+                                ${onTerminalHover && 'hover:scale-125 cursor-pointer'} 
+                                ${connectedState.connectedTerminalIds.has(t.id) ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900' : ''}
+                                ${isSource ? 'animate-pulse scale-110 ring-4 ring-blue-500/50' : ''}
+                                ${isTarget ? 'scale-150 ring-4 ring-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.8)]' : ''}
+                                ${isPotentialTarget && !isTarget ? 'ring-2 ring-blue-400/30' : ''}
+                            `}
                             style={{
                                 left: t.position.x,
                                 top: t.position.y,
@@ -281,17 +333,6 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                     );
                 })}
 
-                {/* Label */}
-                <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-                    {name}
-                </div>
-
-                {/* Scale Indicator Badge (visible when not hovered, for meters only) */}
-                {currentScaleLabel && (
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-500/20 border border-blue-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-300 pointer-events-none select-none">
-                        {currentScaleLabel}
-                    </div>
-                )}
             </div>
 
             {/* Context Menu Portal / Overlay */}
@@ -431,6 +472,8 @@ export const Instrument = React.memo(InstrumentComponent, (prev, next) => {
         prev.position.y === next.position.y &&
         (prev.terminals || []).length === (next.terminals || []).length &&
         JSON.stringify(prev.properties) === JSON.stringify(next.properties) &&
-        prev.showWirePanel === next.showWirePanel
+        prev.showWirePanel === next.showWirePanel &&
+        prev.activeConnectionFromId === next.activeConnectionFromId &&
+        prev.currentHoveredTerminalId === next.currentHoveredTerminalId
     );
 });

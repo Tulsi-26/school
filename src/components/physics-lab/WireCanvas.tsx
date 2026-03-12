@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+
 import { Connection, Instrument } from '@/context/PhysicsLabContext';
 
 interface WireCanvasProps {
@@ -11,7 +12,13 @@ interface WireCanvasProps {
     dragOffsets?: Record<string, { x: number, y: number }>;
 }
 
-export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConnection, instruments, showCurrentFlow, dragOffsets = {} }) => {
+export interface WireCanvasHandle {
+    updateActivePath: (start: { x: number, y: number }, end: { x: number, y: number }) => void;
+}
+
+export const WireCanvas = React.forwardRef<WireCanvasHandle, WireCanvasProps>(({ connections, activeConnection, instruments, showCurrentFlow, dragOffsets = {} }, ref) => {
+    const activePathRef = React.useRef<SVGPathElement>(null);
+
     // Create a lookup map for terminals to speed up getTerminalPos
     const terminalMap = React.useMemo(() => {
         const map = new Map<string, { instrument: Instrument; terminal: any }>();
@@ -36,23 +43,36 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
         };
     }, [terminalMap, dragOffsets]);
 
-    const WirePath = React.memo(({ start, end, color, animated, showCurrentFlow }: { 
-        start: { x: number, y: number }, 
-        end: { x: number, y: number }, 
-        color: string, 
-        animated?: boolean,
-        showCurrentFlow?: boolean
-    }) => {
+    const getPathData = (start: { x: number, y: number }, end: { x: number, y: number }) => {
         const dx = end.x - start.x;
         const dy = end.y - start.y;
         const midX = start.x + dx / 2;
         const midY = start.y + dy / 2 + Math.abs(dx) / 10 + 20;
+        return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+    };
 
-        const pathData = `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+    React.useImperativeHandle(ref, () => ({
+        updateActivePath: (start, end) => {
+            if (activePathRef.current) {
+                activePathRef.current.setAttribute('d', getPathData(start, end));
+            }
+        }
+    }));
+
+    const WirePath = React.memo(({ start, end, color, animated, showCurrentFlow, isStatic = true }: { 
+        start: { x: number, y: number }, 
+        end: { x: number, y: number }, 
+        color: string, 
+        animated?: boolean,
+        showCurrentFlow?: boolean,
+        isStatic?: boolean
+    }) => {
+        const pathData = getPathData(start, end);
 
         return (
             <g>
                 <path
+                    ref={isStatic ? undefined : activePathRef}
                     d={pathData}
                     fill="none"
                     stroke={color}
@@ -141,10 +161,12 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
             {activeConnection && (() => {
                 const start = getTerminalPos(activeConnection.from);
                 if (start) {
-                    return <WirePath start={start} end={activeConnection.to} color="#3b82f6" />;
+                    return <WirePath start={start} end={activeConnection.to} color="#3b82f6" isStatic={false} />;
                 }
                 return null;
             })()}
         </svg>
     );
-};
+});
+
+WireCanvas.displayName = 'WireCanvas';

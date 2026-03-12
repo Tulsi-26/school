@@ -36,13 +36,16 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
     const workspaceRef = useRef<HTMLDivElement>(null);
+    const wireCanvasRef = useRef<any>(null);
     const lastReadingsRef = useRef<Record<string, number>>({});
-    const [isConnecting, setIsConnecting] = useState<{ from: string, type: string, timestamp: number } | null>(null);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [isConnecting, setIsConnecting] = useState<{ from: string, type: string, timestamp: number, initialPos?: { x: number, y: number } } | null>(null);
     const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [dragOffsets, setDragOffsets] = useState<Record<string, { x: number, y: number }>>({});
     const [hoveredTerminal, setHoveredTerminal] = useState<string | null>(null);
+    const [viewOffset, setViewOffset] = useState({ x: 0, y: 0 });
+    const [isPanning, setIsPanning] = useState(false);
+    const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
     const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
@@ -68,8 +71,9 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         };
         const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
 
-        const x = e.clientX - rect.left - (dim.w / 2); // Dynamic Center offset
-        const y = e.clientY - rect.top - (dim.h / 2);
+        // Adjust for viewOffset during drop
+        const x = e.clientX - rect.left - (dim.w / 2) - viewOffset.x;
+        const y = e.clientY - rect.top - (dim.h / 2) - viewOffset.y;
 
         // Snap to grid
         const finalX = snapToGrid(x);
@@ -110,14 +114,25 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         setIsDragOver(false);
     };
 
-
     const handleTerminalPointerDown = useCallback((terminalId: string, type: string) => {
         if (isConnecting && isConnecting.from !== terminalId) {
             const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
             addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
             setIsConnecting(null);
         } else {
-            setIsConnecting({ from: terminalId, type, timestamp: Date.now() });
+            const instrument = instruments.find(inst => inst.terminals.some(t => t.id === terminalId));
+            let initialPos = { x: 0, y: 0 };
+            if (instrument) {
+                const terminal = instrument.terminals.find(t => t.id === terminalId);
+                if (terminal) {
+                    const offset = dragOffsets[instrument.id] || { x: 0, y: 0 };
+                    initialPos = {
+                        x: instrument.position.x + terminal.position.x + offset.x,
+                        y: instrument.position.y + terminal.position.y + offset.y
+                    };
+                }
+            }
+            setIsConnecting({ from: terminalId, type, timestamp: Date.now(), initialPos });
         }
     }, [isConnecting, addConnection, experimentId]);
 
@@ -139,6 +154,21 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
     const handleTerminalHover = useCallback((terminalId: string | null) => {
         setHoveredTerminal(terminalId);
     }, []);
+
+    const handleTerminalDoubleClick = useCallback((terminalId: string, type: string) => {
+        const instrument = instruments.find(inst => inst.terminals.some(t => t.id === terminalId));
+        if (instrument) {
+            const terminal = instrument.terminals.find(t => t.id === terminalId);
+            if (terminal) {
+                const offset = dragOffsets[instrument.id] || { x: 0, y: 0 };
+                const startPos = {
+                    x: instrument.position.x + terminal.position.x + offset.x,
+                    y: instrument.position.y + terminal.position.y + offset.y
+                };
+                setIsConnecting({ from: terminalId, type, timestamp: Date.now(), initialPos: startPos });
+            }
+        }
+    }, [instruments, dragOffsets]);
 
     const handleInstrumentDoubleClick = useCallback((instrumentId: string) => {
         setWirePanelInstrumentId((prev) => prev === instrumentId ? null : instrumentId);
@@ -163,21 +193,18 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         updateInstrumentPosition(id, snappedX, snappedY);
     }, [snapToGrid, updateInstrumentPosition]);
 
-    const handlePropertyUpdate = useCallback((id: string, props: any) => {
-        updateInstrumentProperties(id, props);
-    }, [updateInstrumentProperties]);
-
     const handleDrag = useCallback((id: string, x: number, y: number) => {
-        // Use requestAnimationFrame for smoother updates and to avoid React batching bottlenecks
+        if (!activeDragId) setActiveDragId(id);
         window.requestAnimationFrame(() => {
             setDragOffsets(prev => {
                 if (prev[id]?.x === x && prev[id]?.y === y) return prev;
                 return { ...prev, [id]: { x, y } };
             });
         });
-    }, []);
+    }, [activeDragId]);
 
     const handleDragEndLive = useCallback((id: string) => {
+        setActiveDragId(null);
         setDragOffsets(prev => {
             const next = { ...prev };
             delete next[id];
@@ -191,25 +218,82 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         }
     }, [wirePanelInstrumentId]);
 
-    const handleWorkspacePointerUp = useCallback(() => {
-        if (isConnecting && !hoveredTerminal) {
-             const elapsed = Date.now() - (isConnecting.timestamp || 0);
-             if (elapsed > 300) {
-                 setIsConnecting(null);
+    const handleWorkspacePointerDown = (e: React.PointerEvent) => {
+        // Start panning if clicking the middle mouse button or Alt+Click
+        if (e.button === 1 || (e.button === 0 && e.altKey)) {
+            if (e.button === 1) e.preventDefault();
+            setIsPanning(true);
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }
+    };
+
+    const handleWorkspacePointerUp = useCallback((e: React.PointerEvent) => {
+        if (isPanning) {
+            setIsPanning(false);
+            e.currentTarget.releasePointerCapture(e.pointerId);
+            return;
+        }
+
+        if (isConnecting) {
+             if (hoveredTerminal && hoveredTerminal !== isConnecting.from) {
+                const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
+                addConnection(isConnecting.from, hoveredTerminal, isMechanicsExp ? 'rope' : 'wire');
+                setIsConnecting(null);
+             } else {
+                const elapsed = Date.now() - (isConnecting.timestamp || 0);
+                if (elapsed > 300) {
+                    setIsConnecting(null);
+                }
              }
         }
-    }, [isConnecting, hoveredTerminal]);
+    }, [isConnecting, hoveredTerminal, addConnection, experimentId, isPanning]);
 
     const handleMouseMove = (e: React.MouseEvent) => {
+        if (isPanning) {
+            setViewOffset(prev => ({
+                x: prev.x + e.movementX,
+                y: prev.y + e.movementY
+            }));
+            return;
+        }
+
         if (!isConnecting || !workspaceRef.current) return;
         
         const rect = workspaceRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        let mouseX = e.clientX - rect.left - viewOffset.x;
+        let mouseY = e.clientY - rect.top - viewOffset.y;
         
-        // Only update if the position actually changed significantly (e.g., > 1px)
-        // or just update directly if already connecting
-        setMousePos({ x, y });
+        let startPos = { x: 0, y: 0 };
+        const instrument = instruments.find(inst => inst.terminals.some(t => t.id === isConnecting.from));
+        if (instrument) {
+            const terminal = instrument.terminals.find(t => t.id === isConnecting.from);
+            if (terminal) {
+                const offset = dragOffsets[instrument.id] || { x: 0, y: 0 };
+                startPos = {
+                    x: instrument.position.x + terminal.position.x + offset.x,
+                    y: instrument.position.y + terminal.position.y + offset.y
+                };
+            }
+        }
+
+        let endX = mouseX;
+        let endY = mouseY;
+
+        if (hoveredTerminal) {
+            for (const inst of instruments) {
+                const terminal = inst.terminals.find(t => t.id === hoveredTerminal);
+                if (terminal) {
+                    const offset = dragOffsets[inst.id] || { x: 0, y: 0 };
+                    endX = inst.position.x + terminal.position.x + offset.x;
+                    endY = inst.position.y + terminal.position.y + offset.y;
+                    break;
+                }
+            }
+        }
+        
+        if (wireCanvasRef.current) {
+            wireCanvasRef.current.updateActivePath(startPos, { x: endX, y: endY });
+        }
     };
 
     // Circuit validation
@@ -225,9 +309,6 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         }
     }, [instruments, connections, experimentId, setValidationState]);
 
-    // Extract simulation-relevant values as primitives to avoid infinite loops.
-    // The old code had instruments in the dependency array AND called updateInstrumentProperties
-    // (which modifies instruments), creating: useEffect runs → setInstruments → useEffect runs → ...
     const simInputs = useMemo(() => {
         const battery = instruments.find(i => i.type === 'battery');
         const resistor = instruments.find(i => i.type === 'resistor');
@@ -262,116 +343,46 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         };
     }, [instruments]);
 
-    // Simulation integration — uses extracted primitive values to avoid dependency on instruments object
     useEffect(() => {
         if (experimentId === 'ohm-law') {
-            const result = calculateOhmLaw(
-                simInputs.voltage,
-                simInputs.resistance,
-                simInputs.rheostatR,
-                simInputs.switchClosed,
-                connections,
-                instruments
-            );
-
+            const result = calculateOhmLaw(simInputs.voltage, simInputs.resistance, simInputs.rheostatR, simInputs.switchClosed, connections, instruments);
             setSimulationResults(result);
-
-            // Update instrument readings only when values actually change
             simInputs.meterIds.forEach(({ id, type }: { id: string, type: string }) => {
                 let newReading: number | string = 0;
-                if (type === 'ammeter') {
-                    newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
-                } else if (type === 'voltmeter') {
-                    newReading = (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0;
-                }
-                const key = `${id}-reading`;
-                if (lastReadingsRef.current[key] !== Number(newReading)) {
-                    lastReadingsRef.current[key] = Number(newReading);
+                if (type === 'ammeter') newReading = (result.isValid && result.isClosed) ? (result.current * 1000).toFixed(2) : 0;
+                else if (type === 'voltmeter') newReading = (result.isValid && result.isClosed) ? result.voltage.toFixed(2) : 0;
+                if (lastReadingsRef.current[`${id}-reading`] !== Number(newReading)) {
+                    lastReadingsRef.current[`${id}-reading`] = Number(newReading);
                     updateInstrumentProperties(id, { reading: newReading });
                 }
             });
         } else if (experimentId === 'wheatstone-bridge') {
             const battery = instruments.find(i => i.type === 'battery');
             const sw = instruments.find(i => i.type === 'switch');
-            const p = instruments.find(i => i.id === 'p');
-            const q = instruments.find(i => i.id === 'q');
-            const r = instruments.find(i => i.id === 'r');
-            const s = instruments.find(i => i.id === 's');
-
-            const result = calculateWheatstoneBridge(
-                p?.properties.resistance || 100,
-                q?.properties.resistance || 100,
-                r?.properties.resistance || 100,
-                s?.properties.resistance || 100,
-                battery?.properties.voltage || 9,
-                sw?.properties.closed || false,
-                connections
-            );
-
+            const result = calculateWheatstoneBridge(simInputs.pR, simInputs.qR, simInputs.rR, simInputs.sR, battery?.properties.voltage || 9, sw?.properties.closed || false, connections);
             setSimulationResults(result);
-
-            // Update Galvanometer
             const galvanometer = instruments.find(i => i.type === 'galvanometer');
-            if (galvanometer) {
-                updateInstrumentProperties(galvanometer.id, { reading: result.isClosed && result.isValid ? result.galvanometerReading : 0 });
-            }
+            if (galvanometer) updateInstrumentProperties(galvanometer.id, { reading: result.isClosed && result.isValid ? result.galvanometerReading : 0 });
         } else if (experimentId === 'reflection-refraction') {
             const object = instruments.find(i => i.type === 'block');
-            const lenses = instruments
-                .filter(i => i.type === 'lens')
-                .map(l => ({
-                    position: l.position,
-                    focalLength: l.properties.focalLength,
-                    type: l.properties.type
-                }));
-
+            const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));
             if (object && lenses.length > 0) {
                 const initialRay = { origin: { x: object.position.x + 50, y: 0 }, angle: 0 };
                 const path = traceRayThroughComponents(initialRay, lenses);
                 const firstLensY = lenses[0].position.y;
-                const rays = path.map((r, i) => ({
-                    ...r,
-                    origin: { x: r.origin.x, y: firstLensY + 100 + r.origin.y },
-                    length: i < path.length - 1 ? (path[i + 1].origin.x - r.origin.x) : 800
-                }));
+                const rays = path.map((r, i) => ({ ...r, origin: { x: r.origin.x, y: firstLensY + 100 + r.origin.y }, length: i < path.length - 1 ? (path[i + 1].origin.x - r.origin.x) : 800 }));
                 setSimulationResults({ rays, isValid: true, isClosed: true });
             }
         } else if (experimentId === 'newton-second-law') {
             const m1 = instruments.find(i => i.name.includes('M1'));
             const m2 = instruments.find(i => i.name.includes('M2'));
-
             if (m1 && m2) {
-                const result = calculateMechanicsSimulation(
-                    m1.properties.mass,
-                    m2.properties.mass,
-                    0 // static for now
-                );
-
-                // Generate vectors for visualization (Weight and Accel)
+                const result = calculateMechanicsSimulation(m1.properties.mass, m2.properties.mass, 0);
                 const vectors = [
-                    {
-                        origin: { x: m1.position.x + 50, y: m1.position.y + 50 },
-                        direction: { x: 0, y: 40 },
-                        label: 'W1',
-                        color: 'text-red-400'
-                    },
-                    {
-                        origin: { x: m2.position.x + 50, y: m2.position.y + 50 },
-                        direction: { x: 0, y: 40 },
-                        label: 'W2',
-                        color: 'text-red-400'
-                    }
+                    { origin: { x: m1.position.x + 50, y: m1.position.y + 50 }, direction: { x: 0, y: 40 }, label: 'W1', color: 'text-red-400' },
+                    { origin: { x: m2.position.x + 50, y: m2.position.y + 50 }, direction: { x: 0, y: 40 }, label: 'W2', color: 'text-red-400' }
                 ];
-
-                if (result.acceleration > 0) {
-                    vectors.push({
-                        origin: { x: (m1.position.x + m2.position.x) / 2 + 50, y: 50 },
-                        direction: { x: 0, y: -30 },
-                        label: 'a',
-                        color: 'text-emerald-400'
-                    });
-                }
-
+                if (result.acceleration > 0) vectors.push({ origin: { x: (m1.position.x + m2.position.x) / 2 + 50, y: 50 }, direction: { x: 0, y: -30 }, label: 'a', color: 'text-emerald-400' });
                 setSimulationResults({ ...result, vectors, isValid: true, isClosed: true });
             }
         }
@@ -386,6 +397,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onMouseMove={handleMouseMove}
+            onPointerDown={handleWorkspacePointerDown}
             onPointerUp={handleWorkspacePointerUp}
             onClick={handleWorkspaceClick}
             className={`w-full h-full relative cursor-crosshair overflow-hidden transition-colors duration-300 ${isDragOver ? 'bg-blue-500/5' : ''}`}
@@ -415,8 +427,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
             {/* Snap Grid Overlay */}
             {snapEnabled && (
-                <div className="absolute inset-0 pointer-events-none z-0">
-                    {/* Grid dots at snap intersections */}
+                <div className="absolute inset-0 pointer-events-none z-0" style={{ transform: `translate(${viewOffset.x % SNAP_SIZE}px, ${viewOffset.y % SNAP_SIZE}px)` }}>
                     <svg className="w-full h-full opacity-20">
                         <defs>
                             <pattern id="snapGrid" width={SNAP_SIZE} height={SNAP_SIZE} patternUnits="userSpaceOnUse">
@@ -428,69 +439,75 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 </div>
             )}
 
-            {/* Optical Bench Ruler */}
-            {experimentId === 'reflection-refraction' && (
-                <div className="absolute bottom-8 inset-x-12 h-10 border-t-2 border-slate-700/50 flex items-start pointer-events-none">
-                    {Array.from({ length: 21 }).map((_, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center">
-                            <div className="w-0.5 h-3 bg-slate-700/50"></div>
-                            <span className="text-[9px] font-mono text-slate-600 mt-1">{i * 5}cm</span>
-                        </div>
-                    ))}
-                    <div className="absolute top-[-2px] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
-                </div>
-            )}
-
-            {/* Table Visual */}
-            <div className="absolute inset-x-8 bottom-0 h-4 bg-slate-800/50 rounded-t-2xl border-t border-slate-700"></div>
-
-            {/* Wires with current flow animation */}
-            <WireCanvas
-                connections={connections}
-                instruments={instruments}
-                activeConnection={isConnecting ? { from: isConnecting.from, to: mousePos } : null}
-                showCurrentFlow={isCurrentFlowing}
-                dragOffsets={dragOffsets}
-            />
-
-            {/* Optics Visualization */}
-            {showVisuals && experimentId === 'reflection-refraction' && simulationResults.rays && (
-                <RayCanvas rays={simulationResults.rays} />
-            )}
-
-            {/* Mechanics Visualization */}
-            {showVisuals && experimentId === 'newton-second-law' && simulationResults.vectors && (
-                <VectorCanvas vectors={simulationResults.vectors} />
-            )}
-
-            {/* Instruments */}
-            {instruments.map((inst) => (
-                <Instrument
-                    key={inst.id}
-                    id={inst.id}
-                    type={inst.type}
-                    name={inst.name}
-                    position={inst.position}
-                    properties={inst.properties}
-                    terminals={inst.terminals}
-                    onPositionChange={handlePositionChange}
-                    onTerminalPointerDown={handleTerminalPointerDown}
-                    onTerminalPointerUp={handleTerminalPointerUp}
-                    onTerminalHover={handleTerminalHover}
-                    onInstrumentDoubleClick={handleInstrumentDoubleClick}
-                    showWirePanel={wirePanelInstrumentId === inst.id}
-                    onWirePanelClose={handleWirePanelClose}
-                    onWireConnect={handleWireConnect}
-                    onWireDisconnect={handleWireDisconnect}
-                    updateProperties={updateInstrumentProperties}
-                    onDrag={handleDrag}
-                    onDragEndLive={handleDragEndLive}
+            <div className="absolute inset-0 z-10" style={{ transform: `translate(${viewOffset.x}px, ${viewOffset.y}px)` }}>
+                {/* Wires with current flow animation */}
+                <WireCanvas
+                    ref={wireCanvasRef}
+                    connections={connections}
+                    instruments={instruments}
+                    activeConnection={isConnecting ? { from: isConnecting.from, to: isConnecting.initialPos || { x: 0, y: 0 } } : null}
+                    showCurrentFlow={isCurrentFlowing}
+                    dragOffsets={dragOffsets}
                 />
-            ))}
+
+                {/* Optics Visualization */}
+                {showVisuals && experimentId === 'reflection-refraction' && simulationResults.rays && (
+                    <RayCanvas rays={simulationResults.rays} />
+                )}
+
+                {/* Mechanics Visualization */}
+                {showVisuals && experimentId === 'newton-second-law' && simulationResults.vectors && (
+                    <VectorCanvas vectors={simulationResults.vectors} />
+                )}
+
+                {/* Snapping Ghost */}
+                {activeDragId && dragOffsets[activeDragId] && (() => {
+                    const inst = instruments.find(i => i.id === activeDragId);
+                    if (!inst) return null;
+                    const ghostX = snapToGrid(inst.position.x + dragOffsets[activeDragId].x);
+                    const ghostY = snapToGrid(inst.position.y + dragOffsets[activeDragId].y);
+                    return (
+                        <div className="absolute pointer-events-none opacity-30 scale-95 transition-all duration-75 border-2 border-blue-400/50 rounded-lg overflow-hidden"
+                            style={{ left: ghostX, top: ghostY, width: 'fit-content', height: 'fit-content' }}>
+                            <div className="grayscale opacity-50 scale-90">
+                                <Instrument id={`${inst.id}-ghost`} type={inst.type} name={inst.name} position={{ x: 0, y: 0 }} properties={inst.properties} terminals={inst.terminals} onPositionChange={() => {}} updateProperties={() => {}} />
+                            </div>
+                        </div>
+                    );
+                })()}
+
+                {/* Instruments */}
+                {instruments.map((inst) => (
+                    <Instrument
+                        key={inst.id}
+                        id={inst.id}
+                        type={inst.type}
+                        name={inst.name}
+                        position={inst.position}
+                        properties={inst.properties}
+                        terminals={inst.terminals}
+                        onPositionChange={handlePositionChange}
+                        onTerminalPointerDown={handleTerminalPointerDown}
+                        onTerminalPointerUp={handleTerminalPointerUp}
+                        onTerminalHover={handleTerminalHover}
+                        onTerminalDoubleClick={handleTerminalDoubleClick}
+                        onInstrumentDoubleClick={handleInstrumentDoubleClick}
+                        showWirePanel={wirePanelInstrumentId === inst.id}
+                        onWirePanelClose={handleWirePanelClose}
+                        onWireConnect={handleWireConnect}
+                        onWireDisconnect={handleWireDisconnect}
+                        updateProperties={updateInstrumentProperties}
+                        onDrag={handleDrag}
+                        onDragEndLive={handleDragEndLive}
+                        activeConnectionFromId={isConnecting?.from}
+                        currentHoveredTerminalId={hoveredTerminal}
+                    />
+                ))}
+            </div>
 
             {/* Success Notification */}
             {simulationResults.isValid && simulationResults.isClosed && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4 z-[100]">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
                     <span className="text-sm font-bold uppercase tracking-wider">
                         {experimentId === 'ohm-law' && 'Ohmic conduction detected'}
@@ -503,7 +520,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
             {/* Hint / Warning Notification */}
             {!simulationResults.isValid && simulationResults.hint && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-6 py-3 rounded-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom-4 z-[100]">
                     <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                     <span className="text-sm font-bold uppercase tracking-wider">
                         {simulationResults.hint}
@@ -513,8 +530,9 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
             {/* Connection Indicator */}
             {isConnecting && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold animate-pulse uppercase tracking-widest">
-                    {experimentId === 'newton-second-law' ? 'Attaching rope...' : `Connecting ${isConnecting.type} terminal...`}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-xs font-bold animate-pulse uppercase tracking-widest z-[100] flex flex-col items-center gap-1 backdrop-blur-sm">
+                    <span>{experimentId === 'newton-second-law' ? 'Attaching rope...' : `Connecting ${isConnecting.type} terminal...`}</span>
+                    <span className="text-[9px] opacity-70 font-medium normal-case">Release or Click over another terminal to connect</span>
                 </div>
             )}
         </div>
