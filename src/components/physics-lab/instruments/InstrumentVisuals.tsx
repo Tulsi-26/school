@@ -66,18 +66,99 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             return <Voltmeter reading={properties.reading || 0} scale={properties.scale || 100} unit={properties.unit || 'V'} isHovered={isHovered} />;
 
         case 'resistor':
+            // Helper to get color code for 4-band resistor
+            const getResistorColors = (val: number) => {
+                const colors = ['black', 'brown', 'red', 'orange', 'yellow', 'green', 'blue', 'violet', 'gray', 'white'];
+                const hexColors: Record<string, string> = {
+                    black: '#171717', brown: '#78350f', red: '#dc2626', orange: '#ea580c', 
+                    yellow: '#facc15', green: '#16a34a', blue: '#2563eb', violet: '#9333ea', 
+                    gray: '#9ca3af', white: '#f9fafb', gold: '#ca8a04'
+                };
+
+                let str = val.toString();
+                let first = parseInt(str[0]) || 0;
+                let second = parseInt(str[1]) || 0;
+                let multiplier = Math.max(0, str.length - 2);
+                
+                // For values < 10, handle separately
+                if (val < 10) {
+                    first = 0;
+                    second = val;
+                    multiplier = 0; // Black
+                } else if (val >= 10 && val < 100) {
+                    first = parseInt(str[0]);
+                    second = parseInt(str[1]);
+                    multiplier = 0;
+                }
+
+                return [
+                    hexColors[colors[first]] || '#78350f', 
+                    hexColors[colors[second]] || '#171717', 
+                    hexColors[colors[multiplier]] || '#171717', 
+                    hexColors['gold'] // Tolerance 5%
+                ];
+            };
+
+            const bands = getResistorColors(properties.resistance || 0);
+
             return (
-                <div className={`relative w-32 h-16 bg-slate-700/40 rounded-full border-2 border-slate-600/50 flex items-center justify-center p-2 ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="w-full flex justify-around items-center h-4 opacity-70">
-                        <div className="w-1.5 h-full bg-blue-500"></div>
-                        <div className="w-1.5 h-full bg-slate-400"></div>
-                        <div className="w-1.5 h-full bg-red-400"></div>
-                        <div className="w-1.5 h-full bg-yellow-400"></div>
-                    </div>
+                <div className={`relative w-40 h-24 flex items-center justify-center ${isHovered ? activeGlow : glowShadow}`}>
+                    
+                    <svg className="absolute inset-0 w-full h-full drop-shadow-lg pointer-events-none" viewBox="0 0 160 96">
+                        <defs>
+                            <clipPath id="resistor-body-clip">
+                                <path d="M 40 30 C 48 30, 50 35, 55 35 L 105 35 C 110 35, 112 30, 120 30 A 12 18 0 0 1 120 66 C 112 66, 110 61, 105 61 L 55 61 C 50 61, 48 66, 40 66 A 12 18 0 0 1 40 30 Z" />
+                            </clipPath>
+                            <linearGradient id="resistorShading" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#000000" stopOpacity="0.5" />
+                                <stop offset="12%" stopColor="#ffffff" stopOpacity="0.4" />
+                                <stop offset="25%" stopColor="#ffffff" stopOpacity="0.95" />
+                                <stop offset="38%" stopColor="#ffffff" stopOpacity="0.1" />
+                                <stop offset="55%" stopColor="#000000" stopOpacity="0.0" />
+                                <stop offset="75%" stopColor="#000000" stopOpacity="0.3" />
+                                <stop offset="90%" stopColor="#000000" stopOpacity="0.75" />
+                                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.2" />
+                            </linearGradient>
+                        </defs>
+
+                        {/* Wire Caps (Where wire enters the ceramic body) */}
+                        <path d="M 28 44 L 21 46 L 21 50 L 28 52 Z" fill="#b08d6a" />
+                        <path d="M 132 44 L 139 46 L 139 50 L 132 52 Z" fill="#b08d6a" />
+
+                        {/* Wires */}
+                        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+                            {/* Shadow */}
+                            <path d="M 22 48 L 12 48 Q 6 48 6 54 L 6 85 M 138 48 L 148 48 Q 154 48 154 54 L 154 85" stroke="rgba(0,0,0,0.25)" strokeWidth="5" transform="translate(1, 2)" />
+                            {/* Base dark wire */}
+                            <path d="M 22 48 L 12 48 Q 6 48 6 54 L 6 85 M 138 48 L 148 48 Q 154 48 154 54 L 154 85" stroke="#64748b" strokeWidth="4" />
+                            {/* Medium layer */}
+                            <path d="M 22 48 L 12 48 Q 6 48 6 54 L 6 85 M 138 48 L 148 48 Q 154 48 154 54 L 154 85" stroke="#94a3b8" strokeWidth="2" />
+                            {/* Highlight */}
+                            <path d="M 22 48 L 12 48 Q 6 48 6 54 L 6 85 M 138 48 L 148 48 Q 154 48 154 54 L 154 85" stroke="#f1f5f9" strokeWidth="1" transform="translate(-0.5, -0.5)" />
+                        </g>
+
+                        {/* Resistor Body Group */}
+                        <g clipPath="url(#resistor-body-clip)">
+                            {/* Base Color (Tan/Beige) */}
+                            <rect x="0" y="0" width="160" height="96" fill="#d2b48c" />
+                            
+                            {/* Color Bands */}
+                            <rect x="35" y="0" width="8" height="96" fill={bands[0]} />
+                            <rect x="62" y="0" width="8" height="96" fill={bands[1]} />
+                            <rect x="85" y="0" width="8" height="96" fill={bands[2]} />
+                            <rect x="115" y="0" width="8" height="96" fill={bands[3]} />
+
+                            {/* Shading Overlay */}
+                            <rect x="0" y="0" width="160" height="96" fill="url(#resistorShading)" />
+                        </g>
+
+                        {/* Edge Outline for crispness */}
+                        <path d="M 40 30 C 48 30, 50 35, 55 35 L 105 35 C 110 35, 112 30, 120 30 A 12 18 0 0 1 120 66 C 112 66, 110 61, 105 61 L 55 61 C 50 61, 48 66, 40 66 A 12 18 0 0 1 40 30 Z" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="0.75" />
+                    </svg>
 
                     {/* Value Badge (Appears on Hover) */}
                     {isHovered && (
-                        <div className="absolute -top-10 bg-slate-800 text-slate-200 text-xs font-mono font-bold px-2 py-1 rounded shadow-lg border border-slate-600 whitespace-nowrap z-50">
+                        <div className="absolute -top-6 bg-slate-800 text-slate-200 text-xs font-mono font-bold px-2 py-1 rounded shadow-lg border border-slate-600 whitespace-nowrap z-50">
                             {properties.resistance} Ω
                         </div>
                     )}
@@ -85,70 +166,297 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'rheostat':
+            const maxR = properties.maxResistance || 100;
+            const currentR = properties.resistance || 0;
+            const sliderX = (currentR / maxR) * 170; // 170 is the track width
+
             return (
-                <div className={`relative w-[260px] h-[120px] ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="absolute inset-x-2 bottom-1 h-[14px] bg-gradient-to-b from-slate-900 to-black rounded-sm border border-slate-700"></div>
+                <div className={`relative w-[320px] h-[150px] select-none ${isHovered ? activeGlow : glowShadow}`}>
+                    {/* Main Base Shadow */}
+                    <div className="absolute inset-x-8 bottom-2 h-3 bg-black/20 blur-md rounded-full"></div>
 
-                    <div className="absolute left-1 top-[22px] w-[28px] h-[82px] bg-gradient-to-b from-slate-700 to-slate-900 rounded-sm border border-slate-600"></div>
-                    <div className="absolute right-1 top-[22px] w-[28px] h-[82px] bg-gradient-to-b from-slate-700 to-slate-900 rounded-sm border border-slate-600"></div>
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 320 150">
+                        <defs>
+                            <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#94a3b8"/>
+                                <stop offset="10%" stopColor="#ffffff"/>
+                                <stop offset="25%" stopColor="#e2e8f0"/>
+                                <stop offset="40%" stopColor="#cbd5e1"/>
+                                <stop offset="55%" stopColor="#475569"/>
+                                <stop offset="70%" stopColor="#0f172a"/>
+                                <stop offset="85%" stopColor="#94a3b8"/>
+                                <stop offset="100%" stopColor="#f8fafc"/>
+                            </linearGradient>
+                            <linearGradient id="ceramic" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#d6d3d1"/>
+                                <stop offset="15%" stopColor="#f5f5f4"/>
+                                <stop offset="40%" stopColor="#fafaf9"/>
+                                <stop offset="70%" stopColor="#d6d3d1"/>
+                                <stop offset="100%" stopColor="#a8a29e"/>
+                            </linearGradient>
+                            <linearGradient id="rod" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#cbd5e1"/>
+                                <stop offset="30%" stopColor="#ffffff"/>
+                                <stop offset="70%" stopColor="#94a3b8"/>
+                                <stop offset="100%" stopColor="#475569"/>
+                            </linearGradient>
+                            <pattern id="coilPattern" x="0" y="0" width="2.5" height="70" patternUnits="userSpaceOnUse">
+                                <rect x="0" y="0" width="1.5" height="70" fill="#a1a1aa"/>
+                                <rect x="1.5" y="0" width="1" height="70" fill="#71717a"/>
+                            </pattern>
+                            <linearGradient id="coilShade" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#000" stopOpacity="0.5"/>
+                                <stop offset="20%" stopColor="#fff" stopOpacity="0.2"/>
+                                <stop offset="40%" stopColor="#fff" stopOpacity="0.5"/>
+                                <stop offset="60%" stopColor="#000" stopOpacity="0.1"/>
+                                <stop offset="80%" stopColor="#000" stopOpacity="0.4"/>
+                                <stop offset="100%" stopColor="#000" stopOpacity="0.7"/>
+                            </linearGradient>
+                        </defs>
 
-                    <div className="absolute left-[25px] right-[25px] top-[28px] h-[10px] rounded bg-gradient-to-b from-slate-200 to-slate-500 border border-slate-500"></div>
+                        {/* Left Stand */}
+                        <path d="M 15 140 L 55 140 L 45 80 L 25 80 Z" fill="#171717"/>
+                        <rect x="31" y="15" width="8" height="65" fill="#262626"/>
+                        <circle cx="35" cy="80" r="35" fill="#171717"/>
+                        <circle cx="35" cy="80" r="28" fill="#262626"/>
+                        <path d="M 35 80 L 35 52 M 35 80 L 11 94 M 35 80 L 59 94" stroke="#171717" strokeWidth="6" strokeLinecap="round"/>
+                        <circle cx="35" cy="80" r="6" fill="#94a3b8"/>
 
-                    <div className="absolute left-[28px] right-[28px] top-[45px] h-[32px] rounded-full bg-gradient-to-b from-slate-500 to-slate-800 border border-slate-700 overflow-hidden">
-                        <div className="absolute inset-0 opacity-45 bg-[repeating-linear-gradient(90deg,rgba(226,232,240,0.25)_0px,rgba(226,232,240,0.25)_1px,transparent_2px,transparent_4px)]"></div>
-                    </div>
+                        {/* Right Stand */}
+                        <path d="M 265 140 L 305 140 L 295 80 L 275 80 Z" fill="#171717"/>
+                        <rect x="281" y="15" width="8" height="65" fill="#262626"/>
+                        <circle cx="285" cy="80" r="35" fill="#171717"/>
+                        <circle cx="285" cy="80" r="28" fill="#262626"/>
+                        <path d="M 285 80 L 285 52 M 285 80 L 261 94 M 285 80 L 309 94" stroke="#171717" strokeWidth="6" strokeLinecap="round"/>
+                        <circle cx="285" cy="80" r="6" fill="#94a3b8"/>
 
+                        {/* Ceramic Core */}
+                        <rect x="35" y="45" width="250" height="70" fill="url(#ceramic)"/>
+
+                        {/* Coil Base Pattern */}
+                        <rect x="75" y="45" width="170" height="70" fill="url(#coilPattern)"/>
+                        
+                        {/* Coil 3D Shading Overlay */}
+                        <rect x="75" y="45" width="170" height="70" fill="url(#coilShade)"/>
+
+                        {/* Chrome Bands */}
+                        <rect x="60" y="45" width="15" height="70" fill="url(#chrome)"/>
+                        <rect x="245" y="45" width="15" height="70" fill="url(#chrome)"/>
+
+                        {/* Left Terminal */}
+                        <path d="M 60 115 L 75 115 L 70 135 L 55 135 Z" fill="url(#chrome)"/>
+                        <circle cx="62" cy="125" r="5" fill="#facc15"/>
+                        <circle cx="62" cy="125" r="2" fill="#b45309"/>
+
+                        {/* Right Terminal */}
+                        <path d="M 245 115 L 260 115 L 265 135 L 250 135 Z" fill="url(#chrome)"/>
+                        <circle cx="258" cy="125" r="5" fill="#facc15"/>
+                        <circle cx="258" cy="125" r="2" fill="#b45309"/>
+
+                        {/* Top Rod */}
+                        <rect x="25" y="20" width="270" height="8" fill="url(#rod)"/>
+                        
+                        {/* End Screws */}
+                        <circle cx="25" cy="24" r="5" fill="#94a3b8"/>
+                        <circle cx="295" cy="24" r="5" fill="#94a3b8"/>
+                    </svg>
+
+                    {/* Sliding Jockey (Slider) */}
                     <motion.div
                         drag="x"
-                        dragConstraints={{ left: 0, right: 162 }}
+                        dragConstraints={{ left: 0, right: 170 }}
                         dragElastic={0}
                         dragMomentum={false}
-                        onDrag={(e, info) => {
+                        onDragEnd={(e, info) => {
+                            const container = (e.currentTarget as HTMLElement).parentElement;
+                            if (!container) return;
+                            const rect = container.getBoundingClientRect();
+                            const relativeX = info.point.x - rect.left - 50 - 25; // 50 left offset, 25 slider center
+                            const percent = Math.max(0, Math.min(1, relativeX / 170));
                             if (onPropertyChange) {
-                                const maxR = properties.maxResistance || 100;
-                                const newR = Math.round((info.point.x / 162) * maxR);
-                                onPropertyChange({ resistance: Math.max(0, Math.min(maxR, newR)) });
+                                onPropertyChange({ resistance: Math.round(percent * maxR) });
                             }
                         }}
-                        className="absolute left-[49px] top-[28px] w-[22px] h-[46px] cursor-ew-resize"
-                        style={{ x: (properties.resistance / (properties.maxResistance || 100)) * 162 } as any}
+                        style={{ x: sliderX } as any}
+                        className="absolute left-[50px] top-[10px] w-[50px] h-[55px] cursor-ew-resize z-20"
                     >
-                        <div className="w-full h-full bg-gradient-to-b from-slate-700 to-slate-900 border border-slate-600 rounded-sm shadow-lg"></div>
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 bg-red-900/70 rounded"></div>
+                        <svg viewBox="0 0 50 55" className="w-full h-full drop-shadow-xl pointer-events-none">
+                            {/* Top block */}
+                            <path d="M 5 0 L 45 0 C 48 0, 50 2, 50 5 L 50 18 C 50 20, 48 22, 45 22 L 5 22 C 2 22, 0 20, 0 18 L 0 5 C 0 2, 2 0, 5 0 Z" fill="#171717"/>
+                            {/* Bevel highlight */}
+                            <path d="M 5 1 L 45 1" stroke="#3f3f46" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                            
+                            {/* Middle descending part */}
+                            <path d="M 12 22 L 38 22 L 30 45 L 20 45 Z" fill="#171717"/>
+                            
+                            {/* Copper Contact */}
+                            <path d="M 22 45 L 28 45 L 25 53 Z" fill="#fbbf24"/>
+                            <path d="M 25 45 L 25 53" stroke="#b45309" strokeWidth="1" fill="none"/>
+                            
+                            {/* Top blue label */}
+                            <rect x="13" y="4" width="24" height="10" fill="#1e40af" rx="1"/>
+                            <rect x="14" y="5" width="22" height="8" fill="#3b82f6" rx="0.5"/>
+                            <text x="25" y="11" fill="#ffffff" fontSize="5" fontFamily="sans-serif" textAnchor="middle" fontWeight="bold">RHEOSTAT</text>
+
+                            {/* Side grips */}
+                            <rect x="4" y="5" width="2" height="12" fill="#262626" rx="1"/>
+                            <rect x="8" y="5" width="2" height="12" fill="#262626" rx="1"/>
+                            <rect x="40" y="5" width="2" height="12" fill="#262626" rx="1"/>
+                            <rect x="44" y="5" width="2" height="12" fill="#262626" rx="1"/>
+                        </svg>
                     </motion.div>
 
-                    <div className="absolute left-[8px] top-[72px] w-[10px] h-[10px] rounded-full bg-gradient-to-b from-slate-300 to-slate-600 border border-slate-600"></div>
-                    <div className="absolute right-[8px] top-[72px] w-[10px] h-[10px] rounded-full bg-gradient-to-b from-red-400 to-red-700 border border-red-900"></div>
-
-                    <div className="absolute left-2 top-2 bg-slate-950/75 text-[9px] font-mono text-blue-200 px-2 py-0.5 rounded">
-                        Rheostat
-                    </div>
-                    <div className="absolute right-2 top-2 bg-slate-950/75 text-[9px] font-mono text-slate-200 px-2 py-0.5 rounded">
-                        {properties.resistance} ohm
+                    {/* Labels */}
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-1 bg-slate-800/80 px-2 py-0.5 rounded shadow text-[9px] font-mono text-slate-200 uppercase tracking-widest pointer-events-none">
+                        {currentR} Ω / {maxR} Ω
                     </div>
                 </div>
             );
 
         case 'switch':
             return (
-                <div className={`relative w-[140px] h-[95px] ${isHovered ? activeGlow : glowShadow}`}>
-                    <div className="absolute inset-x-2 bottom-2 h-[54px] rounded bg-gradient-to-b from-slate-900 to-black border border-slate-700"></div>
+                <div className={`relative w-[160px] h-[110px] ${isHovered ? activeGlow : glowShadow}`}>
+                    <svg className="absolute inset-0 w-full h-full drop-shadow-xl" viewBox="0 0 160 110">
+                        <defs>
+                            <linearGradient id="baseGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#262626"/>
+                                <stop offset="100%" stopColor="#0a0a0a"/>
+                            </linearGradient>
+                            <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#fef08a"/>
+                                <stop offset="25%" stopColor="#eab308"/>
+                                <stop offset="50%" stopColor="#ca8a04"/>
+                                <stop offset="80%" stopColor="#a16207"/>
+                                <stop offset="100%" stopColor="#854d0e"/>
+                            </linearGradient>
+                            <linearGradient id="brassHighlight" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="rgba(255,255,255,0.4)"/>
+                                <stop offset="50%" stopColor="rgba(255,255,255,0)"/>
+                                <stop offset="100%" stopColor="rgba(0,0,0,0.3)"/>
+                            </linearGradient>
+                            <linearGradient id="terminalScrew" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#f1f5f9"/>
+                                <stop offset="30%" stopColor="#94a3b8"/>
+                                <stop offset="70%" stopColor="#475569"/>
+                                <stop offset="100%" stopColor="#1e293b"/>
+                            </linearGradient>
+                            <pattern id="knurl" x="0" y="0" width="2" height="10" patternUnits="userSpaceOnUse">
+                                <rect x="0" y="0" width="1" height="10" fill="#1e293b"/>
+                                <rect x="1" y="0" width="1" height="10" fill="#0f172a"/>
+                            </pattern>
+                        </defs>
 
-                    <div className="absolute left-[26px] top-[37px] w-[36px] h-[22px] rounded-sm bg-gradient-to-b from-yellow-300 to-yellow-500 border border-yellow-700"></div>
-                    <div className="absolute right-[26px] top-[37px] w-[36px] h-[22px] rounded-sm bg-gradient-to-b from-yellow-300 to-yellow-500 border border-yellow-700"></div>
+                        {/* Bakelite Base */}
+                        <rect x="10" y="25" width="140" height="75" rx="4" fill="url(#baseGrad)" stroke="#171717" strokeWidth="2"/>
+                        <rect x="12" y="27" width="136" height="71" rx="3" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
 
-                    <div className="absolute left-[34px] top-[31px] w-[16px] h-[12px] rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500"></div>
-                    <div className="absolute right-[34px] top-[31px] w-[16px] h-[12px] rounded-full bg-gradient-to-b from-slate-100 to-slate-400 border border-slate-500"></div>
+                        {/* Left Brass Block */}
+                        <g transform="translate(30, 45)">
+                            {/* Block base */}
+                            <rect x="0" y="0" width="40" height="20" fill="url(#brass)"/>
+                            {/* Bevels */}
+                            <path d="M 0 0 L 40 0 L 38 2 L 2 2 Z" fill="#fef08a" opacity="0.8"/>
+                            <path d="M 0 20 L 40 20 L 38 18 L 2 18 Z" fill="#713f12" opacity="0.8"/>
+                            {/* Angled cut for plug */}
+                            <path d="M 40 0 L 30 10 L 40 20 Z" fill="#854d0e"/>
+                            <path d="M 40 0 L 30 10 L 40 20 Z" fill="url(#brassHighlight)"/>
+                            {/* Terminal post base */}
+                            <rect x="8" y="-12" width="14" height="12" fill="url(#brass)" rx="1"/>
+                            <rect x="8" y="-12" width="14" height="12" fill="url(#brassHighlight)" rx="1"/>
+                        </g>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[22px] w-[20px] h-[24px] rounded bg-gradient-to-b from-slate-700 to-slate-900 border border-slate-600"></div>
-                    <motion.div
-                        animate={{ rotate: properties.closed ? 0 : -25 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 14 }}
-                        className="absolute left-1/2 top-[42px] -translate-x-1/2 origin-top w-[5px] h-[24px] rounded bg-gradient-to-b from-amber-100 to-amber-400 border border-amber-500"
-                    ></motion.div>
+                        {/* Right Brass Block */}
+                        <g transform="translate(90, 45)">
+                            {/* Block base */}
+                            <rect x="0" y="0" width="40" height="20" fill="url(#brass)"/>
+                            {/* Bevels */}
+                            <path d="M 0 0 L 40 0 L 38 2 L 2 2 Z" fill="#fef08a" opacity="0.8"/>
+                            <path d="M 0 20 L 40 20 L 38 18 L 2 18 Z" fill="#713f12" opacity="0.8"/>
+                            {/* Angled cut for plug */}
+                            <path d="M 0 0 L 10 10 L 0 20 Z" fill="#ca8a04"/>
+                            <path d="M 0 0 L 10 10 L 0 20 Z" fill="url(#brassHighlight)"/>
+                            {/* Terminal post base */}
+                            <rect x="18" y="-12" width="14" height="12" fill="url(#brass)" rx="1"/>
+                            <rect x="18" y="-12" width="14" height="12" fill="url(#brassHighlight)" rx="1"/>
+                        </g>
 
-                    <div className="absolute left-[58px] top-[66px] text-[8px] font-bold text-emerald-400">
-                        {properties.closed ? 'ON' : 'OFF'}
+                        {/* Left Terminal Screw */}
+                        <g transform="translate(32, 12)">
+                            {/* Threaded rod */}
+                            <rect x="10" y="8" width="6" height="14" fill="#94a3b8"/>
+                            {Array.from({length: 6}).map((_,i) => (
+                                <line key={i} x1="10" y1={9+i*2} x2="16" y2={10+i*2} stroke="#475569" strokeWidth="1"/>
+                            ))}
+                            {/* Knurled nut */}
+                            <path d="M 4 4 Q 13 -2 22 4 L 20 12 Q 13 14 6 12 Z" fill="url(#terminalScrew)"/>
+                            <path d="M 4 4 Q 13 -2 22 4 L 20 12 Q 13 14 6 12 Z" fill="url(#knurl)" opacity="0.6"/>
+                            <ellipse cx="13" cy="4" rx="9" ry="3" fill="#cbd5e1" stroke="#64748b"/>
+                            <ellipse cx="13" cy="4" rx="6" ry="2" fill="#0f172a"/>
+                        </g>
+
+                        {/* Right Terminal Screw */}
+                        <g transform="translate(102, 12)">
+                            {/* Threaded rod */}
+                            <rect x="10" y="8" width="6" height="14" fill="#94a3b8"/>
+                            {Array.from({length: 6}).map((_,i) => (
+                                <line key={i} x1="10" y1={9+i*2} x2="16" y2={10+i*2} stroke="#475569" strokeWidth="1"/>
+                            ))}
+                            {/* Knurled nut */}
+                            <path d="M 4 4 Q 13 -2 22 4 L 20 12 Q 13 14 6 12 Z" fill="url(#terminalScrew)"/>
+                            <path d="M 4 4 Q 13 -2 22 4 L 20 12 Q 13 14 6 12 Z" fill="url(#knurl)" opacity="0.6"/>
+                            <ellipse cx="13" cy="4" rx="9" ry="3" fill="#cbd5e1" stroke="#64748b"/>
+                            <ellipse cx="13" cy="4" rx="6" ry="2" fill="#0f172a"/>
+                        </g>
+
+                    </svg>
+
+                    {/* The Plug (Animates in/out) */}
+                    <motion.div 
+                        initial={false}
+                        animate={{ 
+                            y: properties.closed ? 0 : -35,
+                            opacity: properties.closed ? 1 : 0.8,
+                            scale: properties.closed ? 1 : 1.05
+                        }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className="absolute top-[8px] left-1/2 -translate-x-1/2 w-[34px] h-[65px] z-20 pointer-events-none drop-shadow-2xl"
+                    >
+                        <svg viewBox="0 0 34 65" className="w-full h-full overflow-visible">
+                            <defs>
+                                <linearGradient id="plugBrass" x1="0" y1="0" x2="1" y2="0">
+                                    <stop offset="0%" stopColor="#ca8a04"/>
+                                    <stop offset="50%" stopColor="#fef08a"/>
+                                    <stop offset="100%" stopColor="#854d0e"/>
+                                </linearGradient>
+                            </defs>
+                            
+                            {/* Brass pin */}
+                            <path d="M 12 35 L 22 35 L 20 60 Q 17 62 14 60 Z" fill="url(#plugBrass)"/>
+                            
+                            {/* Plastic Handle */}
+                            {/* Shadow beneath top handle */}
+                            <ellipse cx="17" cy="38" rx="14" ry="6" fill="#000" opacity="0.5"/>
+                            
+                            <g transform="rotate(-15, 17, 20)">
+                                {/* Side walls of handle */}
+                                <path d="M 4 10 L 4 35 C 4 38, 30 38, 30 35 L 30 10 Z" fill="#171717"/>
+                                {/* Vertical ridges */}
+                                {Array.from({length: 12}).map((_,i) => (
+                                    <rect key={i} x={6 + i*2} y="10" width="1" height="26" fill="#262626"/>
+                                ))}
+                                {/* Top cap of handle */}
+                                <ellipse cx="17" cy="10" rx="13" ry="5" fill="#0a0a0a" stroke="#262626" strokeWidth="1"/>
+                                <ellipse cx="17" cy="10" rx="9" ry="3" fill="#000"/>
+                            </g>
+                        </svg>
+                    </motion.div>
+
+                    {/* Status LED/Indicator (Optional, for visual clarity) */}
+                    <div className="absolute left-[70px] top-[90px] flex items-center gap-1.5 opacity-60">
+                        <div className={`w-1.5 h-1.5 rounded-full ${properties.closed ? 'bg-emerald-500 shadow-[0_0_5px_#10b981]' : 'bg-red-500 shadow-[0_0_5px_#ef4444]'}`}></div>
+                        <span className="text-[7px] font-bold tracking-widest text-slate-300">
+                            {properties.closed ? 'CLOSED' : 'OPEN'}
+                        </span>
                     </div>
                 </div>
             );

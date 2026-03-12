@@ -8,44 +8,61 @@ interface WireCanvasProps {
     activeConnection: { from: string, to: { x: number, y: number } } | null;
     instruments: Instrument[];
     showCurrentFlow?: boolean;
+    dragOffsets?: Record<string, { x: number, y: number }>;
 }
 
-export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConnection, instruments, showCurrentFlow }) => {
-    // Helper to find terminal position
-    const getTerminalPos = (terminalId: string) => {
-        for (const inst of instruments) {
-            const terminal = inst.terminals.find(t => t.id === terminalId);
-            if (terminal) {
-                return {
-                    x: inst.position.x + terminal.position.x,
-                    y: inst.position.y + terminal.position.y
-                };
-            }
-        }
-        return null;
-    };
+export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConnection, instruments, showCurrentFlow, dragOffsets = {} }) => {
+    // Create a lookup map for terminals to speed up getTerminalPos
+    const terminalMap = React.useMemo(() => {
+        const map = new Map<string, { instrument: Instrument; terminal: any }>();
+        instruments.forEach(inst => {
+            inst.terminals.forEach(t => {
+                map.set(t.id, { instrument: inst, terminal: t });
+            });
+        });
+        return map;
+    }, [instruments]);
 
-    const drawWire = (start: { x: number, y: number }, end: { x: number, y: number }, color: string, key: string, animated?: boolean) => {
+    // Optimized helper to find terminal position
+    const getTerminalPos = React.useCallback((terminalId: string) => {
+        const entry = terminalMap.get(terminalId);
+        if (!entry) return null;
+
+        const { instrument: inst, terminal } = entry;
+        const offset = dragOffsets[inst.id] || { x: 0, y: 0 };
+        return {
+            x: inst.position.x + terminal.position.x + offset.x,
+            y: inst.position.y + terminal.position.y + offset.y
+        };
+    }, [terminalMap, dragOffsets]);
+
+    const WirePath = React.memo(({ start, end, color, animated, showCurrentFlow }: { 
+        start: { x: number, y: number }, 
+        end: { x: number, y: number }, 
+        color: string, 
+        animated?: boolean,
+        showCurrentFlow?: boolean
+    }) => {
         const dx = end.x - start.x;
         const dy = end.y - start.y;
         const midX = start.x + dx / 2;
-        const midY = start.y + dy / 2 + Math.abs(dx) / 10 + 20; // Slight curve downwards
+        const midY = start.y + dy / 2 + Math.abs(dx) / 10 + 20;
+
+        const pathData = `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
 
         return (
-            <g key={key}>
+            <g>
                 <path
-                    d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                    d={pathData}
                     fill="none"
                     stroke={color}
                     strokeWidth="3"
                     strokeLinecap="round"
                     filter="url(#glow)"
-                    className="transition-all duration-300"
                 />
-                {/* Animated current flow particles */}
                 {animated && showCurrentFlow && (
                     <path
-                        d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                        d={pathData}
                         fill="none"
                         stroke="#60a5fa"
                         strokeWidth="2"
@@ -57,19 +74,23 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
                 )}
             </g>
         );
-    };
+    });
 
-    const drawRope = (start: { x: number, y: number }, end: { x: number, y: number }, color: string, key: string) => {
-        // Rope hangs with gravity — use a catenary-like curve (quadratic Bezier sagging downward)
+    const RopePath = React.memo(({ start, end, color }: {
+        start: { x: number, y: number },
+        end: { x: number, y: number },
+        color: string
+    }) => {
         const dx = end.x - start.x;
         const dist = Math.sqrt(dx * dx + (end.y - start.y) ** 2);
-        const sag = Math.min(dist * 0.15, 40); // Proportional sag, capped
+        const sag = Math.min(dist * 0.15, 40);
         const midX = (start.x + end.x) / 2;
         const midY = Math.max(start.y, end.y) + sag;
 
+        const pathData = `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+
         return (
-            <g key={key}>
-                {/* Rope shadow */}
+            <g>
                 <path
                     d={`M ${start.x} ${start.y} Q ${midX} ${midY + 2} ${end.x} ${end.y}`}
                     fill="none"
@@ -77,17 +98,15 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
                     strokeWidth="5"
                     strokeLinecap="round"
                 />
-                {/* Main rope */}
                 <path
-                    d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                    d={pathData}
                     fill="none"
                     stroke={color}
                     strokeWidth="3"
                     strokeLinecap="round"
                 />
-                {/* Rope texture highlight */}
                 <path
-                    d={`M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`}
+                    d={pathData}
                     fill="none"
                     stroke="rgba(255,255,255,0.15)"
                     strokeWidth="1"
@@ -96,7 +115,7 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
                 />
             </g>
         );
-    };
+    });
 
     return (
         <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0">
@@ -107,24 +126,22 @@ export const WireCanvas: React.FC<WireCanvasProps> = ({ connections, activeConne
                 </filter>
             </defs>
 
-            {/* Existing connections */}
             {connections.map((conn, idx) => {
                 const start = getTerminalPos(conn.from);
                 const end = getTerminalPos(conn.to);
                 if (start && end) {
                     if (conn.connectionType === 'rope') {
-                        return drawRope(start, end, conn.color, `rope-${conn.id}-${idx}`);
+                        return <RopePath key={`rope-${conn.id}-${idx}`} start={start} end={end} color={conn.color} />;
                     }
-                    return drawWire(start, end, conn.color, `wire-${conn.id}-${idx}`, true);
+                    return <WirePath key={`wire-${conn.id}-${idx}`} start={start} end={end} color={conn.color} animated showCurrentFlow={showCurrentFlow} />;
                 }
                 return null;
             })}
 
-            {/* Active drafting wire */}
             {activeConnection && (() => {
                 const start = getTerminalPos(activeConnection.from);
                 if (start) {
-                    return drawWire(start, activeConnection.to, '#3b82f6', 'drafting');
+                    return <WirePath start={start} end={activeConnection.to} color="#3b82f6" />;
                 }
                 return null;
             })()}

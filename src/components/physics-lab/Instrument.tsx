@@ -15,14 +15,17 @@ interface InstrumentProps {
     properties: Record<string, any>;
     terminals: any[];
     onPositionChange: (id: string, x: number, y: number) => void;
-    onTerminalClick: (id: string, type: string) => void;
-    onTerminalDoubleClick: (id: string, type: string) => void;
+    onTerminalPointerDown?: (id: string, type: string) => void;
+    onTerminalPointerUp?: (id: string, type: string) => void;
+    onTerminalHover?: (id: string | null) => void;
     updateProperties: (id: string, props: any) => void;
     onInstrumentDoubleClick?: (instrumentId: string) => void;
     showWirePanel?: boolean;
     onWirePanelClose?: () => void;
     onWireConnect?: (fromTerminalId: string, toTerminalId: string) => void;
     onWireDisconnect?: (connectionId: string) => void;
+    onDrag?: (id: string, x: number, y: number) => void;
+    onDragEndLive?: (id: string) => void;
 }
 
 const InstrumentComponent: React.FC<InstrumentProps> = ({
@@ -33,14 +36,17 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     properties,
     terminals = [], // Default to empty array
     onPositionChange,
-    onTerminalClick,
-    onTerminalDoubleClick,
+    onTerminalPointerDown,
+    onTerminalPointerUp,
+    onTerminalHover,
     updateProperties,
     onInstrumentDoubleClick,
     showWirePanel,
     onWirePanelClose,
     onWireConnect,
     onWireDisconnect,
+    onDrag,
+    onDragEndLive,
 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -93,6 +99,11 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
     const handleDragEnd = (_e: any, info: any) => {
         setIsDragging(false);
         onPositionChange(id, position.x + info.offset.x, position.y + info.offset.y);
+        if (onDragEndLive) onDragEndLive(id);
+    };
+
+    const handleDrag = (_e: any, info: any) => {
+        if (onDrag) onDrag(id, info.offset.x, info.offset.y);
     };
 
     const handleInstrumentClick = () => {
@@ -192,18 +203,23 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
             dragMomentum={false}
             dragElastic={0}
             onDragStart={() => setIsDragging(true)}
+            onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             initial={false}
             animate={isDragging ? undefined : {
                 x: position.x,
                 y: position.y,
                 scale: isHovered ? 1.02 : 1,
-                transition: { type: 'spring', stiffness: 350, damping: 30 }
+                rotate: 0,
+                transition: { type: 'tween', duration: 0.15, ease: 'easeOut' }
             }}
             whileDrag={{
-                scale: 1.05,
-                zIndex: 100,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(59,130,246,0.2)"
+                scale: 1.02,
+                rotate: 0,
+                zIndex: 1000,
+                cursor: "grabbing",
+                filter: "drop-shadow(0 15px 30px rgba(0,0,0,0.3))",
+                transition: { duration: 0.1 }
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -229,14 +245,20 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                     return (
                         <button
                             key={t.id}
-                            onClick={(e) => {
+                            onPointerDown={(e) => {
                                 e.stopPropagation();
-                                onTerminalClick(t.id, t.type);
+                                e.currentTarget.releasePointerCapture(e.pointerId);
+                                if (onTerminalPointerDown) onTerminalPointerDown(t.id, t.type);
                             }}
-                            onDoubleClick={(e) => {
+                            onPointerEnter={() => {
+                                if (onTerminalHover) onTerminalHover(t.id);
+                            }}
+                            onPointerLeave={() => {
+                                if (onTerminalHover) onTerminalHover(null);
+                            }}
+                            onPointerUp={(e) => {
                                 e.stopPropagation();
-                                e.preventDefault();
-                                onTerminalDoubleClick(t.id, t.type);
+                                if (onTerminalPointerUp) onTerminalPointerUp(t.id, t.type);
                             }}
                             className={`absolute w-4 h-4 rounded-full border-2 transition-transform hover:scale-125 z-20 ${isMechanicalTerminal
                                 ? 'bg-amber-700 border-amber-600 shadow-[0_0_8px_rgba(180,130,80,0.4)]'

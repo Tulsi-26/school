@@ -28,31 +28,27 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         addConnection,
         removeConnection,
         simulationResults,
-        setSimulationResults
+        setSimulationResults,
+        setValidationState
     } = usePhysicsLab();
 
     const [showVisuals, setShowVisuals] = useState(true);
     const [snapEnabled, setSnapEnabled] = useState(true);
     const [workspaceRect, setWorkspaceRect] = useState<DOMRect | null>(null);
-    const [validationErrors, setValidationErrors] = useState<any[]>([]);
-    const [validationSuggestions, setValidationSuggestions] = useState<string[]>([]);
-    const [circuitIsValid, setCircuitIsValid] = useState(false);
     const workspaceRef = useRef<HTMLDivElement>(null);
     const lastReadingsRef = useRef<Record<string, number>>({});
-    const [isConnecting, setIsConnecting] = useState<{ from: string, type: string } | null>(null);
+    const [isConnecting, setIsConnecting] = useState<{ from: string, type: string, timestamp: number } | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [wirePanelInstrumentId, setWirePanelInstrumentId] = useState<string | null>(null);
-
-    const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
-        setValidationErrors(errors);
-        setValidationSuggestions(suggestions);
-        setCircuitIsValid(isValid);
-    }, []);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [dragOffsets, setDragOffsets] = useState<Record<string, { x: number, y: number }>>({});
+    const [hoveredTerminal, setHoveredTerminal] = useState<string | null>(null);
 
     const snapToGrid = (val: number) => snapEnabled ? Math.round(val / SNAP_SIZE) * SNAP_SIZE : val;
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
+        setIsDragOver(false);
         if (!workspaceRef.current) return;
 
         const data = e.dataTransfer.getData('physics-instrument');
@@ -62,13 +58,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const rect = workspaceRef.current.getBoundingClientRect();
 
         const typeDimensions: Record<string, { w: number, h: number }> = {
-            battery: { w: 280, h: 160 },
-            ammeter: { w: 200, h: 250 },
-            voltmeter: { w: 200, h: 250 },
-            resistor: { w: 160, h: 60 },
-            rheostat: { w: 260, h: 120 },
-            switch: { w: 180, h: 120 },
-            galvanometer: { w: 288, h: 340 },
+            battery: { w: 220, h: 130 },
+            ammeter: { w: 288, h: 256 },
+            voltmeter: { w: 288, h: 256 },
+            resistor: { w: 160, h: 96 },
+            rheostat: { w: 320, h: 150 },
+            switch: { w: 140, h: 95 },
+            galvanometer: { w: 288, h: 256 },
         };
         const dim = typeDimensions[instData.type] || { w: 100, h: 100 };
 
@@ -80,13 +76,13 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const finalY = snapToGrid(y);
 
         const terminalLayouts: Record<string, { x: number; y: number }[]> = {
-            battery: [{ x: 122, y: 110 }, { x: 156, y: 110 }],
-            ammeter: [{ x: 44, y: 224 }, { x: 180, y: 224 }],
-            voltmeter: [{ x: 102, y: 272 }, { x: 186, y: 272 }],
-            resistor: [{ x: 8, y: 30 }, { x: 152, y: 30 }],
-            rheostat: [{ x: 12, y: 77 }, { x: 248, y: 77 }],
-            switch: [{ x: 57, y: 20 }, { x: 123, y: 20 }],
-            galvanometer: [{ x: 44, y: 224 }, { x: 180, y: 224 }], // Assuming uses a Meter or similar
+            battery: [{ x: 88, y: 109 }, { x: 128, y: 109 }],
+            ammeter: [{ x: 112, y: 260 }, { x: 176, y: 260 }],
+            voltmeter: [{ x: 112, y: 260 }, { x: 176, y: 260 }],
+            resistor: [{ x: 15, y: 85 }, { x: 145, y: 85 }],
+            rheostat: [{ x: 62, y: 125 }, { x: 258, y: 125 }],
+            switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
+            galvanometer: [{ x: 112, y: 260 }, { x: 176, y: 260 }], 
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
@@ -107,21 +103,41 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragOver(false);
     };
 
 
-    const handleTerminalClick = useCallback((terminalId: string, type: string) => {
+    const handleTerminalPointerDown = useCallback((terminalId: string, type: string) => {
+        if (isConnecting && isConnecting.from !== terminalId) {
+            const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
+            addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
+            setIsConnecting(null);
+        } else {
+            setIsConnecting({ from: terminalId, type, timestamp: Date.now() });
+        }
+    }, [isConnecting, addConnection, experimentId]);
+
+    const handleTerminalPointerUp = useCallback((terminalId: string, type: string) => {
         if (isConnecting) {
             if (isConnecting.from !== terminalId) {
                 const isMechanicsExp = MECHANICS_EXPERIMENT_IDS.includes(experimentId);
                 addConnection(isConnecting.from, terminalId, isMechanicsExp ? 'rope' : 'wire');
+                setIsConnecting(null);
+            } else {
+                const elapsed = Date.now() - isConnecting.timestamp;
+                if (elapsed > 300) {
+                    setIsConnecting(null);
+                }
             }
-            setIsConnecting(null);
         }
     }, [isConnecting, addConnection, experimentId]);
 
-    const handleTerminalDoubleClick = useCallback((terminalId: string, type: string) => {
-        setIsConnecting({ from: terminalId, type });
+    const handleTerminalHover = useCallback((terminalId: string | null) => {
+        setHoveredTerminal(terminalId);
     }, []);
 
     const handleInstrumentDoubleClick = useCallback((instrumentId: string) => {
@@ -151,40 +167,63 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         updateInstrumentProperties(id, props);
     }, [updateInstrumentProperties]);
 
+    const handleDrag = useCallback((id: string, x: number, y: number) => {
+        // Use requestAnimationFrame for smoother updates and to avoid React batching bottlenecks
+        window.requestAnimationFrame(() => {
+            setDragOffsets(prev => {
+                if (prev[id]?.x === x && prev[id]?.y === y) return prev;
+                return { ...prev, [id]: { x, y } };
+            });
+        });
+    }, []);
+
+    const handleDragEndLive = useCallback((id: string) => {
+        setDragOffsets(prev => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
+    }, []);
+
     const handleWorkspaceClick = useCallback(() => {
         if (wirePanelInstrumentId) {
             setWirePanelInstrumentId(null);
         }
     }, [wirePanelInstrumentId]);
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (workspaceRef.current) {
-            const rect = workspaceRef.current.getBoundingClientRect();
-            setMousePos({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            });
+    const handleWorkspacePointerUp = useCallback(() => {
+        if (isConnecting && !hoveredTerminal) {
+             const elapsed = Date.now() - (isConnecting.timestamp || 0);
+             if (elapsed > 300) {
+                 setIsConnecting(null);
+             }
         }
+    }, [isConnecting, hoveredTerminal]);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isConnecting || !workspaceRef.current) return;
+        
+        const rect = workspaceRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Only update if the position actually changed significantly (e.g., > 1px)
+        // or just update directly if already connecting
+        setMousePos({ x, y });
     };
 
     // Circuit validation
     useEffect(() => {
         if (experimentId === 'ohm-law') {
             const validation = validateOhmLawCircuit(instruments, connections);
-            setValidationErrors(validation.errors);
-            setValidationSuggestions(validation.suggestions);
-            setCircuitIsValid(validation.isValid);
+            setValidationState(validation.errors, validation.suggestions, validation.isValid);
         } else if (experimentId === 'wheatstone-bridge') {
             const validation = validateWheatstoneBridge(instruments, connections);
-            setValidationErrors(validation.errors);
-            setValidationSuggestions(validation.suggestions);
-            setCircuitIsValid(validation.isValid);
+            setValidationState(validation.errors, validation.suggestions, validation.isValid);
         } else {
-            setValidationErrors([]);
-            setValidationSuggestions([]);
-            setCircuitIsValid(true);
+            setValidationState([], [], true);
         }
-    }, [instruments, connections, experimentId]);
+    }, [instruments, connections, experimentId, setValidationState]);
 
     // Extract simulation-relevant values as primitives to avoid infinite loops.
     // The old code had instruments in the dependency array AND called updateInstrumentProperties
@@ -345,9 +384,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             ref={workspaceRef}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
             onMouseMove={handleMouseMove}
+            onPointerUp={handleWorkspacePointerUp}
             onClick={handleWorkspaceClick}
-            className="w-full h-full relative cursor-crosshair overflow-hidden"
+            className={`w-full h-full relative cursor-crosshair overflow-hidden transition-colors duration-300 ${isDragOver ? 'bg-blue-500/5' : ''}`}
         >
             {/* Lab HUD */}
             <div className="absolute top-4 left-4 z-50 flex gap-2">
@@ -387,15 +428,6 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 </div>
             )}
 
-            {/* Circuit Validation Feedback */}
-            {instruments.length > 0 && (experimentId === 'ohm-law' || experimentId === 'wheatstone-bridge') && (
-                <CircuitFeedback
-                    errors={validationErrors}
-                    suggestions={validationSuggestions}
-                    isValid={circuitIsValid}
-                />
-            )}
-
             {/* Optical Bench Ruler */}
             {experimentId === 'reflection-refraction' && (
                 <div className="absolute bottom-8 inset-x-12 h-10 border-t-2 border-slate-700/50 flex items-start pointer-events-none">
@@ -418,6 +450,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                 instruments={instruments}
                 activeConnection={isConnecting ? { from: isConnecting.from, to: mousePos } : null}
                 showCurrentFlow={isCurrentFlowing}
+                dragOffsets={dragOffsets}
             />
 
             {/* Optics Visualization */}
@@ -441,14 +474,17 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
                     properties={inst.properties}
                     terminals={inst.terminals}
                     onPositionChange={handlePositionChange}
-                    onTerminalClick={handleTerminalClick}
-                    onTerminalDoubleClick={handleTerminalDoubleClick}
+                    onTerminalPointerDown={handleTerminalPointerDown}
+                    onTerminalPointerUp={handleTerminalPointerUp}
+                    onTerminalHover={handleTerminalHover}
                     onInstrumentDoubleClick={handleInstrumentDoubleClick}
                     showWirePanel={wirePanelInstrumentId === inst.id}
                     onWirePanelClose={handleWirePanelClose}
                     onWireConnect={handleWireConnect}
                     onWireDisconnect={handleWireDisconnect}
                     updateProperties={updateInstrumentProperties}
+                    onDrag={handleDrag}
+                    onDragEndLive={handleDragEndLive}
                 />
             ))}
 

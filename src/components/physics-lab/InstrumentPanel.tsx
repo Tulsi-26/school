@@ -48,6 +48,20 @@ export const InstrumentPanel: React.FC<{ experimentId: string }> = ({ experiment
 
     const handleDragStart = (e: React.DragEvent, inst: any) => {
         e.dataTransfer.setData('physics-instrument', JSON.stringify(inst));
+        
+        // Create a custom, nice-looking drag ghost image
+        const ghost = document.createElement('div');
+        ghost.className = 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-2xl border-2 border-blue-400 pointer-events-none fixed top-[-1000px] left-[-1000px] z-[9999] flex items-center justify-center';
+        ghost.style.width = '160px';
+        ghost.innerHTML = `Drop ${inst.name}`;
+        document.body.appendChild(ghost);
+        
+        e.dataTransfer.setDragImage(ghost, 80, 20); // Center the ghost on the mouse
+        
+        // Cleanup ghost element after drag starts
+        setTimeout(() => {
+            if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        }, 100);
     };
 
     return (
