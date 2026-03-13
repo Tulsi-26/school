@@ -47,11 +47,14 @@ export async function GET(
     };
 
     // Calculate financial breakdown
+    const totalDue = school.feeRecords.reduce((acc, curr) => acc + curr.totalAmount, 0);
+    const totalPaid = school.feeRecords.reduce((acc, curr) => acc + curr.amountPaid, 0);
+    
     const financials = {
-      totalDue: school.feeRecords.reduce((acc, curr) => acc + curr.totalAmount, 0),
-      totalPaid: school.feeRecords.reduce((acc, curr) => acc + curr.amountPaid, 0),
+      totalDue,
+      totalPaid,
+      totalPending: totalDue - totalPaid,
     };
-    financials["totalPending"] = financials.totalDue - financials.totalPaid;
 
     return NextResponse.json({
       ...school,
