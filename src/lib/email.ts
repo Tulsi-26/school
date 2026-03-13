@@ -1,9 +1,25 @@
 import { Resend } from "resend";
+import fs from "fs";
+import path from "path";
 
 const resendApiKey = process.env.RESEND_API_KEY;
-const emailFrom = process.env.EMAIL_FROM ?? "Product Team <noreply@flavidairysolution.com>";
+const emailFrom = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
+
+function fileLog(message: string, data?: any) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] ${message} ${data ? JSON.stringify(data, null, 2) : ""}\n`;
+  try {
+    fs.appendFileSync(path.join(process.cwd(), "email-debug.log"), logMessage);
+  } catch (err) {
+    console.error("Failed to write to log file:", err);
+  }
+}
+
+fileLog("Email module initialized. API Key present: " + !!resendApiKey);
+fileLog("From Address: " + emailFrom);
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
+if (!resend) fileLog("ERROR: Resend client NOT initialized!");
 
 function getAppBaseUrl() {
   return (
@@ -21,40 +37,56 @@ type EmailPayload = {
 
 async function sendEmail(payload: EmailPayload) {
   if (!resend) {
-    console.warn(
-      "[email] RESEND_API_KEY is not configured. Email would have been sent:",
-      payload
-    );
+    fileLog("WARNING: RESEND_API_KEY is not configured. Email would have been sent:", payload);
     return;
   }
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: emailFrom,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
     });
+    fileLog("Resend response:", result);
+    
+    if (result.error) {
+      fileLog("ERROR: Resend API returned an error:", result.error);
+    } else {
+      fileLog("Resend successfully accepted the email. ID: " + result.data?.id);
+    }
   } catch (error) {
-    console.error("[email] Failed to send email via Resend:", {
-      payload,
-      error,
-    });
+    fileLog("CRITICAL ERROR: Failed to send email via Resend (thrown):", error);
     throw error;
   }
 }
 
 export async function sendVerificationEmail(email: string, token: string) {
+  fileLog("Triggered: sendVerificationEmail to " + email);
   const verificationUrl = `${getAppBaseUrl()}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "Verify your email address",
+    subject: "Verify your email address - ShikshaFinder",
     html: `
-      <h2>Verify your account</h2>
-      <p>Click the button below to verify your email.</p>
-      <p><a href="${verificationUrl}">Verify email</a></p>
-      <p>If the button above does not work, copy and paste this URL into your browser:</p>
-      <p>${verificationUrl}</p>
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #1e293b; margin-bottom: 16px;">Verify your account</h2>
+        <p style="color: #475569; font-size: 16px; line-height: 1.5;">
+          Thank you for signing up for <strong>ShikshaFinder</strong>. Please click the button below to verify your email address and activate your account.
+        </p>
+        <div style="margin: 32px 0; text-align: center;">
+          <a href="${verificationUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">Verify Email Address</a>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">
+          If the button above doesn't work, you can copy and paste this link into your browser:
+        </p>
+        <p style="color: #2563eb; font-size: 14px; word-break: break-all;">
+          ${verificationUrl}
+        </p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          &copy; ${new Date().getFullYear()} ShikshaFinder. All rights reserved.
+        </p>
+      </div>
     `,
   });
 }

@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Database, Clock, Trash2 } from '@/lib/icons';
+import { Beaker, Zap, ArrowRight, Star, TrendingUp, BookOpen, Search, Filter, ShieldCheck, Database, Clock, Trash2, UserPlus } from '@/lib/icons';
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
+import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import type { SavedSession } from '@/context/PhysicsLabContext';
@@ -127,9 +128,18 @@ function PhysicsLabDashboardContent() {
                         <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6" style={{ color: 'var(--lab-text)' }}>
                             Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Physics</span> via Experimentation
                         </h1>
-                        <p className="text-xl max-w-2xl leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
+                        <p className="text-xl max-w-2xl leading-relaxed mb-8" style={{ color: 'var(--lab-text-secondary)' }}>
                             Master complex concepts through immersive, hands-on simulations. Build circuits, collect real-time data, and visualize the laws of nature.
                         </p>
+
+                        {session?.user?.role === "OWNER" && (
+                             <Link href="/dashboard/teachers/invite">
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-12 px-6 rounded-xl shadow-lg shadow-blue-500/20">
+                                    <UserPlus className="w-5 h-5" />
+                                    Invite Teacher
+                                </Button>
+                             </Link>
+                        )}
                     </motion.div>
                 </div>
 

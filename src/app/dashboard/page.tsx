@@ -87,7 +87,7 @@ export default function TeacherDashboard() {
       router.push("/signin");
       return;
     }
-    if (session.user.role !== "TEACHER" && session.user.role !== "ADMIN") {
+    if (session.user.role !== "TEACHER" && session.user.role !== "ADMIN" && session.user.role !== "OWNER") {
       router.push("/");
       return;
     }

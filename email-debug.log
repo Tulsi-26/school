@@ -1,0 +1,32 @@
+[2026-03-13T11:00:30.533Z] Email module initialized. API Key present: true 
+[2026-03-13T11:00:30.548Z] From Address: mySmartLab <software@mysmartlab.com> 
+[2026-03-13T11:00:42.590Z] Triggered: sendVerificationEmail to shsolanki141+last@gmail.com 
+[2026-03-13T11:00:44.256Z] Resend response: {
+  "data": null,
+  "error": {
+    "statusCode": 403,
+    "message": "The mysmartlab.com domain is not verified. Please, add and verify your domain on https://resend.com/domains",
+    "name": "validation_error"
+  },
+  "headers": {
+    "cf-cache-status": "DYNAMIC",
+    "cf-ray": "9dba895ced9f8489-BOM",
+    "connection": "keep-alive",
+    "content-encoding": "br",
+    "content-type": "application/json",
+    "date": "Fri, 13 Mar 2026 11:00:43 GMT",
+    "ratelimit-limit": "2",
+    "ratelimit-policy": "2;w=1",
+    "ratelimit-remaining": "1",
+    "ratelimit-reset": "1",
+    "server": "cloudflare",
+    "transfer-encoding": "chunked",
+    "x-resend-daily-quota": "0",
+    "x-resend-monthly-quota": "0"
+  }
+}
+[2026-03-13T11:00:44.270Z] ERROR: Resend API returned an error: {
+  "statusCode": 403,
+  "message": "The mysmartlab.com domain is not verified. Please, add and verify your domain on https://resend.com/domains",
+  "name": "validation_error"
+}
