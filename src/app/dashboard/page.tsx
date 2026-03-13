@@ -174,7 +174,7 @@ export default function TeacherDashboard() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-            {session?.user.role === "OWNER" ? "Owner" : "Teacher"}{" "}
+            {session?.user?.role === "OWNER" ? "Owner" : "Teacher"}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
               Dashboard
             </span>
