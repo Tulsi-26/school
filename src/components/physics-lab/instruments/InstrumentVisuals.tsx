@@ -6,6 +6,7 @@ import { Battery } from './Battery';
 import { Ammeter } from './Ammeter';
 import { Voltmeter } from './Voltmeter';
 import { Galvanometer } from './Galvanometer';
+import { Rheostat } from './Rheostat';
 
 interface InstrumentVisualsProps {
     type: string;
@@ -168,151 +169,13 @@ export const InstrumentVisuals: React.FC<InstrumentVisualsProps> = ({
             );
 
         case 'rheostat':
-            const maxR = properties.maxResistance || 100;
-            const currentR = properties.resistance || 0;
-            const sliderX = (currentR / maxR) * 170; // 170 is the track width
-
             return (
-                <div ref={rheostatContainerRef} className={`relative w-[320px] h-[150px] select-none ${isHovered ? activeGlow : glowShadow}`}>
-                    {/* Main Base Shadow */}
-                    <div className="absolute inset-x-8 bottom-2 h-3 bg-black/20 blur-md rounded-full"></div>
-
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 320 150">
-                        <defs>
-                            <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#94a3b8"/>
-                                <stop offset="10%" stopColor="#ffffff"/>
-                                <stop offset="25%" stopColor="#e2e8f0"/>
-                                <stop offset="40%" stopColor="#cbd5e1"/>
-                                <stop offset="55%" stopColor="#475569"/>
-                                <stop offset="70%" stopColor="#0f172a"/>
-                                <stop offset="85%" stopColor="#94a3b8"/>
-                                <stop offset="100%" stopColor="#f8fafc"/>
-                            </linearGradient>
-                            <linearGradient id="ceramic" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#d6d3d1"/>
-                                <stop offset="15%" stopColor="#f5f5f4"/>
-                                <stop offset="40%" stopColor="#fafaf9"/>
-                                <stop offset="70%" stopColor="#d6d3d1"/>
-                                <stop offset="100%" stopColor="#a8a29e"/>
-                            </linearGradient>
-                            <linearGradient id="rod" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#cbd5e1"/>
-                                <stop offset="30%" stopColor="#ffffff"/>
-                                <stop offset="70%" stopColor="#94a3b8"/>
-                                <stop offset="100%" stopColor="#475569"/>
-                            </linearGradient>
-                            <pattern id="coilPattern" x="0" y="0" width="2.5" height="70" patternUnits="userSpaceOnUse">
-                                <rect x="0" y="0" width="1.5" height="70" fill="#a1a1aa"/>
-                                <rect x="1.5" y="0" width="1" height="70" fill="#71717a"/>
-                            </pattern>
-                            <linearGradient id="coilShade" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#000" stopOpacity="0.5"/>
-                                <stop offset="20%" stopColor="#fff" stopOpacity="0.2"/>
-                                <stop offset="40%" stopColor="#fff" stopOpacity="0.5"/>
-                                <stop offset="60%" stopColor="#000" stopOpacity="0.1"/>
-                                <stop offset="80%" stopColor="#000" stopOpacity="0.4"/>
-                                <stop offset="100%" stopColor="#000" stopOpacity="0.7"/>
-                            </linearGradient>
-                        </defs>
-
-                        {/* Left Stand */}
-                        <path d="M 15 140 L 55 140 L 45 80 L 25 80 Z" fill="#171717"/>
-                        <rect x="31" y="15" width="8" height="65" fill="#262626"/>
-                        <circle cx="35" cy="80" r="35" fill="#171717"/>
-                        <circle cx="35" cy="80" r="28" fill="#262626"/>
-                        <path d="M 35 80 L 35 52 M 35 80 L 11 94 M 35 80 L 59 94" stroke="#171717" strokeWidth="6" strokeLinecap="round"/>
-                        <circle cx="35" cy="80" r="6" fill="#94a3b8"/>
-
-                        {/* Right Stand */}
-                        <path d="M 265 140 L 305 140 L 295 80 L 275 80 Z" fill="#171717"/>
-                        <rect x="281" y="15" width="8" height="65" fill="#262626"/>
-                        <circle cx="285" cy="80" r="35" fill="#171717"/>
-                        <circle cx="285" cy="80" r="28" fill="#262626"/>
-                        <path d="M 285 80 L 285 52 M 285 80 L 261 94 M 285 80 L 309 94" stroke="#171717" strokeWidth="6" strokeLinecap="round"/>
-                        <circle cx="285" cy="80" r="6" fill="#94a3b8"/>
-
-                        {/* Ceramic Core */}
-                        <rect x="35" y="45" width="250" height="70" fill="url(#ceramic)"/>
-
-                        {/* Coil Base Pattern */}
-                        <rect x="75" y="45" width="170" height="70" fill="url(#coilPattern)"/>
-                        
-                        {/* Coil 3D Shading Overlay */}
-                        <rect x="75" y="45" width="170" height="70" fill="url(#coilShade)"/>
-
-                        {/* Chrome Bands */}
-                        <rect x="60" y="45" width="15" height="70" fill="url(#chrome)"/>
-                        <rect x="245" y="45" width="15" height="70" fill="url(#chrome)"/>
-
-                        {/* Left Terminal */}
-                        <path d="M 60 115 L 75 115 L 70 135 L 55 135 Z" fill="url(#chrome)"/>
-                        <circle cx="62" cy="125" r="5" fill="#facc15"/>
-                        <circle cx="62" cy="125" r="2" fill="#b45309"/>
-
-                        {/* Right Terminal */}
-                        <path d="M 245 115 L 260 115 L 265 135 L 250 135 Z" fill="url(#chrome)"/>
-                        <circle cx="258" cy="125" r="5" fill="#facc15"/>
-                        <circle cx="258" cy="125" r="2" fill="#b45309"/>
-
-                        {/* Top Rod */}
-                        <rect x="25" y="20" width="270" height="8" fill="url(#rod)"/>
-                        
-                        {/* End Screws */}
-                        <circle cx="25" cy="24" r="5" fill="#94a3b8"/>
-                        <circle cx="295" cy="24" r="5" fill="#94a3b8"/>
-                    </svg>
-
-                    {/* Sliding Jockey (Slider) */}
-                    <motion.div
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 170 }}
-                        dragElastic={0}
-                        dragMomentum={false}
-                        onDragEnd={(e, info) => {
-                            const container = rheostatContainerRef.current;
-                            if (!container) return;
-                            const rect = container.getBoundingClientRect();
-                            const relativeX = info.point.x - rect.left - 50 - 25; // 50 left offset, 25 slider center
-                            const percent = Math.max(0, Math.min(1, relativeX / 170));
-                            if (onPropertyChange) {
-                                onPropertyChange({ resistance: Math.round(percent * maxR) });
-                            }
-                        }}
-                        style={{ x: sliderX } as any}
-                        className="absolute left-[50px] top-[10px] w-[50px] h-[55px] cursor-ew-resize z-20"
-                    >
-                        <svg viewBox="0 0 50 55" className="w-full h-full drop-shadow-xl pointer-events-none">
-                            {/* Top block */}
-                            <path d="M 5 0 L 45 0 C 48 0, 50 2, 50 5 L 50 18 C 50 20, 48 22, 45 22 L 5 22 C 2 22, 0 20, 0 18 L 0 5 C 0 2, 2 0, 5 0 Z" fill="#171717"/>
-                            {/* Bevel highlight */}
-                            <path d="M 5 1 L 45 1" stroke="#3f3f46" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-                            
-                            {/* Middle descending part */}
-                            <path d="M 12 22 L 38 22 L 30 45 L 20 45 Z" fill="#171717"/>
-                            
-                            {/* Copper Contact */}
-                            <path d="M 22 45 L 28 45 L 25 53 Z" fill="#fbbf24"/>
-                            <path d="M 25 45 L 25 53" stroke="#b45309" strokeWidth="1" fill="none"/>
-                            
-                            {/* Top blue label */}
-                            <rect x="13" y="4" width="24" height="10" fill="#1e40af" rx="1"/>
-                            <rect x="14" y="5" width="22" height="8" fill="#3b82f6" rx="0.5"/>
-                            <text x="25" y="11" fill="#ffffff" fontSize="5" fontFamily="sans-serif" textAnchor="middle" fontWeight="bold">RHEOSTAT</text>
-
-                            {/* Side grips */}
-                            <rect x="4" y="5" width="2" height="12" fill="#262626" rx="1"/>
-                            <rect x="8" y="5" width="2" height="12" fill="#262626" rx="1"/>
-                            <rect x="40" y="5" width="2" height="12" fill="#262626" rx="1"/>
-                            <rect x="44" y="5" width="2" height="12" fill="#262626" rx="1"/>
-                        </svg>
-                    </motion.div>
-
-                    {/* Labels */}
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-1 bg-slate-800/80 px-2 py-0.5 rounded shadow text-[9px] font-mono text-slate-200 uppercase tracking-widest pointer-events-none">
-                        {currentR} Ω / {maxR} Ω
-                    </div>
-                </div>
+                <Rheostat 
+                    resistance={properties.resistance || 0}
+                    maxResistance={properties.maxResistance || 100}
+                    isHovered={isHovered}
+                    onPropertyChange={onPropertyChange}
+                />
             );
 
         case 'switch':

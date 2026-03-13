@@ -84,19 +84,24 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             ammeter: [{ x: 112, y: 260 }, { x: 176, y: 260 }],
             voltmeter: [{ x: 112, y: 260 }, { x: 176, y: 260 }],
             resistor: [{ x: 15, y: 85 }, { x: 145, y: 85 }],
-            rheostat: [{ x: 62, y: 125 }, { x: 258, y: 125 }],
+            rheostat: [{ x: 67, y: 125 }, { x: 252, y: 125 }, { x: 75, y: 27 }],
             switch: [{ x: 42, y: 37 }, { x: 98, y: 37 }],
             galvanometer: [{ x: 112, y: 260 }, { x: 176, y: 260 }], 
         };
 
         const layout = terminalLayouts[instData.type] || [{ x: 0, y: 40 }, { x: 80, y: 40 }];
         const isMechanical = MECHANICAL_INSTRUMENT_TYPES.includes(instData.type);
-        const terminals = layout.map((pos, idx) => ({
-            id: `${instData.type}-t${idx + 1}-${Date.now()}`,
-            parentId: '',
-            type: isMechanical ? (idx === 0 ? 'input' : 'output') : (idx === 0 ? 'positive' : 'negative'),
-            position: pos,
-        })) as any[];
+        const terminals = layout.map((pos, idx) => {
+            let type = isMechanical ? (idx === 0 ? 'input' : 'output') : (idx === 0 ? 'positive' : 'negative');
+            // For rheostat, terminal 3 (slider) is also positive/distinct
+            if (instData.type === 'rheostat' && idx === 2) type = 'positive';
+            return {
+                id: `${instData.type}-t${idx + 1}-${Date.now()}`,
+                parentId: '',
+                type,
+                position: pos,
+            };
+        }) as any[];
 
         addInstrument({
             ...instData,

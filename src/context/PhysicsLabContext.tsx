@@ -147,7 +147,31 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const updateInstrumentProperties = useCallback((id: string, properties: Record<string, any>) => {
         setInstruments((prev) =>
-            prev.map((inst) => (inst.id === id ? { ...inst, properties: { ...inst.properties, ...properties } } : inst))
+            prev.map((inst) => {
+                if (inst.id === id) {
+                    let updatedInst = { ...inst, properties: { ...inst.properties, ...properties } };
+                    
+                    // Logic for Rheostat terminal movement (Movable Slider Terminal)
+                    if (inst.type === 'rheostat' && properties.resistance !== undefined) {
+                        const maxR = updatedInst.properties.maxResistance || 100;
+                        const trackWidth = 170;
+                        const trackStart = 75;
+                        const sliderX = (properties.resistance / maxR) * trackWidth + trackStart;
+                        
+                        if (updatedInst.terminals && updatedInst.terminals.length >= 3) {
+                            updatedInst.terminals = updatedInst.terminals.map((t, idx) => {
+                                if (idx === 2) {
+                                    return { ...t, position: { ...t.position, x: sliderX } };
+                                }
+                                return t;
+                            });
+                        }
+                    }
+                    
+                    return updatedInst;
+                }
+                return inst;
+            })
         );
     }, []);
 

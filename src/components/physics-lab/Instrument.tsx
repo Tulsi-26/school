@@ -263,8 +263,13 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                     />
 
                     {/* Label */}
-                    <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1 rounded shadow-xl text-[10px] uppercase font-bold tracking-tighter text-slate-300 pointer-events-none ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-                        {name}
+                    <div className={`absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap transition-all bg-slate-900/90 border border-slate-700/50 px-3 py-1.5 rounded-lg shadow-2xl text-[10px] uppercase font-bold tracking-tight text-slate-100 pointer-events-none flex flex-col items-center gap-0.5 ${isHovered && !isDragging && !contextMenu ? 'opacity-100 translate-y-0 scale-110' : 'opacity-0 translate-y-2 scale-90'}`}>
+                        <span>{name}</span>
+                        {isMeter && properties.reading !== undefined && (
+                            <span className="text-[9px] text-blue-400 font-mono">
+                                {Number(properties.reading).toFixed(2)} {properties.unit}
+                            </span>
+                        )}
                     </div>
 
                     {/* Scale Indicator Badge (visible when not hovered, for meters only) */}

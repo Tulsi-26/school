@@ -136,7 +136,8 @@ const OhmProcedure = () => (
                 "Connect the Resistor terminal 2 to the Rheostat.",
                 "Complete the circuit via the Switch back to the Battery negative.",
                 "Connect the Voltmeter in parallel with the Resistor.",
-                "Close the switch and adjust the rheostat to get different readings."
+                "Close the switch and adjust the rheostat to get different readings.",
+                "Go to 'DATA' tab (Table Icon) and click 'RECORD READING' for each position."
             ].map((step, i) => (
                 <li key={i} className="flex gap-4">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
@@ -316,8 +317,8 @@ const Observation = ({ experimentId }: { experimentId: string }) => {
         let rows = [];
 
         if (experimentId === 'ohm-law') {
-            headers = ["Serial No.", "Voltage (V)", "Current (A)", "Resistance (Ohm)"];
-            rows = observations.map((o, i) => [i + 1, o.v, o.i, o.r]);
+            headers = ["Serial No.", "Voltage (V)", "Current (A)", "Total Resistance (Ω)", "Rheostat (Ω)"];
+            rows = observations.map((o, i) => [i + 1, o.v, o.i, o.r, o.rheostatR]);
         } else {
             headers = ["Serial No.", "P/Q Ratio", "R (Ohm)", "Deflection"];
             rows = observations.map((o, i) => [i + 1, (o.p / o.q), o.r, o.reading]);
@@ -367,7 +368,8 @@ const Observation = ({ experimentId }: { experimentId: string }) => {
                                 <th className="p-3 border-b border-slate-700">Serial No.</th>
                                 <th className="p-3 border-b border-slate-700">Voltage (V)</th>
                                 <th className="p-3 border-b border-slate-700">Current (A)</th>
-                                <th className="p-3 border-b border-slate-700">R = V/I (Ω)</th>
+                                <th className="p-3 border-b border-slate-700">Rheostat (Ω)</th>
+                                <th className="p-3 border-b border-slate-700 text-right">R = V/I (Ω)</th>
                             </tr>
                         ) : (
                             <tr>
@@ -391,7 +393,8 @@ const Observation = ({ experimentId }: { experimentId: string }) => {
                                     <>
                                         <td className="p-3 text-blue-300">{obs.v?.toFixed(2)}</td>
                                         <td className="p-3 text-emerald-300">{obs.i?.toFixed(4)}</td>
-                                        <td className="p-3 font-mono text-slate-400">{obs.r?.toFixed(2)}</td>
+                                        <td className="p-3 text-amber-400 font-medium">{obs.rheostatR?.toFixed(1)}</td>
+                                        <td className="p-3 font-mono text-slate-400 text-right">{obs.r?.toFixed(2)}</td>
                                     </>
                                 ) : (
                                     <>
@@ -463,16 +466,18 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
                                 .join(' ')}
                         />
                     )}
-                    {observations.map((obs: any, i) => (
-                        <circle
-                            key={i}
-                            cx={(obs.i / maxI) * 100}
-                            cy={100 - (obs.v / maxV) * 100}
-                            r="1.5"
-                            fill="#3b82f6"
-                            className="drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]"
-                        />
-                    ))}
+                    {observations
+                        .filter((obs: any) => typeof obs.i === 'number' && typeof obs.v === 'number')
+                        .map((obs: any, i) => (
+                            <circle
+                                key={i}
+                                cx={(obs.i / maxI) * 100}
+                                cy={100 - (obs.v / maxV) * 100}
+                                r="1.5"
+                                fill="#3b82f6"
+                                className="drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]"
+                            />
+                        ))}
                 </svg>
             </div>
             <p className="text-[9px] text-slate-500 italic text-center">

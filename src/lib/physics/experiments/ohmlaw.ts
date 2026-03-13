@@ -4,6 +4,10 @@ export interface CircuitState {
     current: number;
     isClosed: boolean;
     isValid: boolean;
+    v?: number;
+    i?: number;
+    r?: number;
+    rheostatR?: number;
     hint?: string;
 }
 
@@ -15,14 +19,12 @@ export const calculateOhmLaw = (
     connections: any[],
     instruments: any[]
 ): CircuitState => {
-    const totalResistance = baseResistance + rheostatResistance;
-
     if (!isSwitchClosed) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: false, isValid: false, hint: "Switch is open." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: false, isValid: false, hint: "Switch is open." };
     }
 
     if (connections.length < 5) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Circuit is incomplete. Connect all components." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Circuit is incomplete. Connect all components." };
     }
 
     // Graph Construction
@@ -46,7 +48,7 @@ export const calculateOhmLaw = (
         instrumentMap.set(inst.id, inst);
 
         // Only components that allow current to flow through them should have internal edges
-        if (['resistor', 'rheostat', 'ammeter', 'switch', 'battery'].includes(inst.type)) {
+        if (['resistor', 'ammeter', 'switch', 'galvanometer'].includes(inst.type)) {
             if (inst.terminals && inst.terminals.length >= 2) {
                 const t1 = inst.terminals[0].id;
                 const t2 = inst.terminals[1].id;
@@ -59,18 +61,33 @@ export const calculateOhmLaw = (
                     adjList.get(t2)!.push(t1);
                 }
             }
+        } else if (inst.type === 'rheostat') {
+            if (inst.terminals && inst.terminals.length >= 3) {
+                const t1 = inst.terminals[0].id; // End A
+                const t2 = inst.terminals[1].id; // End B
+                const t3 = inst.terminals[2].id; // Slider
+
+                ensureNode(t1);
+                ensureNode(t2);
+                ensureNode(t3);
+
+                // Internal paths between all terminals for a rheostat
+                adjList.get(t1)!.push(t2, t3);
+                adjList.get(t2)!.push(t1, t3);
+                adjList.get(t3)!.push(t1, t2);
+            }
         }
     });
 
     // Find battery terminals
     const battery = instruments.find(i => i.type === 'battery');
-    if (!battery) return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Battery is missing." };
+    if (!battery) return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Battery is missing." };
 
     const batPositive = battery.terminals.find((t: any) => t.type === 'positive')?.id || battery.terminals[0]?.id;
     const batNegative = battery.terminals.find((t: any) => t.type === 'negative')?.id || battery.terminals[1]?.id;
 
     if (!batPositive || !batNegative || !adjList.has(batPositive)) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Battery not connected properly." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Battery not connected properly." };
     }
 
     // Pathfinding (BFS) from battery positive to battery negative
@@ -100,7 +117,7 @@ export const calculateOhmLaw = (
     }
 
     if (!validPathFound) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Circuit is completely broken. No path back to the battery." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Circuit is completely broken. No path back to the battery." };
     }
 
     // Analyze components in the path (excluding voltmeter, which should be parallel)
@@ -118,11 +135,11 @@ export const calculateOhmLaw = (
     }
 
     if (!componentsInPath.has('ammeter')) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Ammeter is missing or bypassed." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Ammeter is missing or bypassed." };
     }
 
     if (componentsInPath.has('voltmeter')) {
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter is connected in series. It must be in parallel across the resistor." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter is connected in series. It must be in parallel across the resistor." };
     }
 
     // Check voltmeter is in parallel specifically across the resistor
@@ -152,19 +169,51 @@ export const calculateOhmLaw = (
 
     if (!isVoltmeterCorrect) {
         if (!voltmeter) {
-            return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter is missing." };
+            return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter is missing." };
         }
-        return { voltage: 0, resistance: totalResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter must be connected in parallel directly across the resistor." };
+        return { voltage: 0, resistance: baseResistance + rheostatResistance, current: 0, isClosed: true, isValid: false, hint: "Voltmeter must be connected in parallel directly across the resistor." };
     }
 
     // If we reach here, circuit is correct enough for simulation
-    const current = batteryVoltage / totalResistance;
+    
+    // Dynamic rheostat resistance based on connected terminals
+    let effectiveRheostatR = 0;
+    const rheostat = instruments.find(i => i.type === 'rheostat');
+    if (rheostat && rheostat.terminals.length >= 3) {
+        const t1 = rheostat.terminals[0].id; // End A
+        const t2 = rheostat.terminals[1].id; // End B
+        const t3 = rheostat.terminals[2].id; // Slider
+
+        const inPath = (tid: string) => foundPath.includes(tid);
+        const currentR = rheostat.properties.resistance || 0;
+        const maxR = rheostat.properties.maxResistance || 100;
+
+        if (inPath(t1) && inPath(t3)) {
+            effectiveRheostatR = currentR;
+        } else if (inPath(t2) && inPath(t3)) {
+            effectiveRheostatR = maxR - currentR;
+        } else if (inPath(t1) && inPath(t2)) {
+            effectiveRheostatR = maxR;
+        } else {
+            // Default to the provided value if path detection is ambiguous
+            effectiveRheostatR = rheostatResistance;
+        }
+    } else {
+        effectiveRheostatR = rheostatResistance;
+    }
+
+    const totalRes = baseResistance + effectiveRheostatR;
+    const current = totalRes > 0 ? batteryVoltage / totalRes : 0;
     const voltageAcrossResistor = current * baseResistance;
 
     return {
         voltage: voltageAcrossResistor,
-        resistance: totalResistance,
+        resistance: totalRes,
         current: current,
+        v: voltageAcrossResistor,
+        i: current,
+        r: totalRes,
+        rheostatR: effectiveRheostatR,
         isClosed: true,
         isValid: true,
     };

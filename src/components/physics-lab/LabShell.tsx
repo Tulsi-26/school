@@ -35,6 +35,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const [showGuide, setShowGuide] = useState(false);
     const [showRotateOverlay, setShowRotateOverlay] = useState(false);
     const [guideWidth, setGuideWidth] = useState(384);
+    const [instrumentWidth, setInstrumentWidth] = useState(320);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +70,30 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
         document.body.style.cursor = 'col-resize';
         document.body.classList.add('select-none');
     }, [guideWidth]);
+
+    const startLeftResize = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startWidth = instrumentWidth;
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const maxW = window.innerWidth * 0.5;
+            const newWidth = startWidth + (moveEvent.clientX - startX);
+            setInstrumentWidth(Math.max(280, Math.min(newWidth, maxW)));
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.style.cursor = 'default';
+            document.body.classList.remove('select-none');
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.classList.add('select-none');
+    }, [instrumentWidth]);
 
     // Track visit and set active experiment
     useEffect(() => {
@@ -144,7 +169,20 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             style={{ backgroundColor: 'var(--lab-bg)', color: 'var(--lab-text)' }}
         >
             {/* Left Sidebar - Instruments (desktop only) */}
-            <aside className="hidden xl:flex w-80 flex-col shrink-0" style={{ backgroundColor: 'var(--lab-sidebar)', borderRight: '1px solid var(--lab-border)' }}>
+            <aside 
+                className="hidden xl:flex flex-col shrink-0 relative" 
+                style={{ 
+                    width: instrumentWidth,
+                    backgroundColor: 'var(--lab-sidebar)', 
+                    borderRight: '1px solid var(--lab-border)' 
+                }}
+            >
+                {/* Resizer Handle */}
+                <div
+                    className="absolute right-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
+                    onMouseDown={startLeftResize}
+                />
+
                 <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                     <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
                     <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full uppercase font-medium tracking-wider">
