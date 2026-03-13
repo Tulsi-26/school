@@ -20,7 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.role !== "TEACHER" && user.role !== "ADMIN") {
+    if (user.role !== "TEACHER" && user.role !== "ADMIN" && user.role !== "OWNER") {
       return NextResponse.json(
         { error: "Only teachers and admins can access the dashboard" },
         { status: 403 }

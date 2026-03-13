@@ -15,16 +15,20 @@ enum UserRole {
   STUDENT
   TEACHER
   ADMIN
+  OWNER
 }
 
 model Organization {
   id          String   @id @default(cuid()) @map("_id")
   name        String
   slug        String   @unique
+  code        String?  @unique
   description String?
+  ownerId     String?  // The user who owns the organization
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   members     User[]
+  invitations Invitation[]
   labReports  LabReport[]
 }
 
@@ -34,7 +38,11 @@ model User {
   email                String                @unique
   image                String?
   passwordHash         String?
+  phone                String?
   role                 UserRole              @default(STUDENT)
+  position             String?
+  address              String?
+  bio                  String?
   emailVerified        DateTime?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
@@ -150,4 +158,22 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+model Invitation {
+  id             String    @id @default(cuid()) @map("_id")
+  organizationId String
+  email          String
+  tokenHash      String    @unique
+  role           UserRole  @default(TEACHER)
+  invitedBy      String    // User ID who sent the invite
+  expiresAt      DateTime
+  isUsed         Boolean   @default(false)
+  acceptedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
 }

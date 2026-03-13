@@ -1,5 +1,6 @@
 // Local lucide-react shim: individual imports to avoid Turbopack HMR barrel export issues
 // @ts-nocheck
+export { default as AlignLeft } from "lucide-react/dist/esm/icons/align-left";
 export { default as AlertTriangle } from "lucide-react/dist/esm/icons/triangle-alert";
 export { default as ArrowLeft } from "lucide-react/dist/esm/icons/arrow-left";
 export { default as ArrowRight } from "lucide-react/dist/esm/icons/arrow-right";
@@ -11,6 +12,7 @@ export { default as Beaker } from "lucide-react/dist/esm/icons/beaker";
 export { default as Book } from "lucide-react/dist/esm/icons/book";
 export { default as BookOpen } from "lucide-react/dist/esm/icons/book-open";
 export { default as BrainCog } from "lucide-react/dist/esm/icons/brain-cog";
+export { default as Briefcase } from "lucide-react/dist/esm/icons/briefcase";
 export { default as Building2 } from "lucide-react/dist/esm/icons/building-2";
 export { default as Cable } from "lucide-react/dist/esm/icons/cable";
 export { default as Check } from "lucide-react/dist/esm/icons/check";
@@ -55,8 +57,10 @@ export { default as ListOrdered } from "lucide-react/dist/esm/icons/list-ordered
 export { default as Loader2 } from "lucide-react/dist/esm/icons/loader-circle";
 export { default as Loader2Icon } from "lucide-react/dist/esm/icons/loader-circle";
 export { default as Magnet } from "lucide-react/dist/esm/icons/magnet";
+export { default as Mail } from "lucide-react/dist/esm/icons/mail";
 export { default as MailCheck } from "lucide-react/dist/esm/icons/mail-check";
 export { default as MailWarning } from "lucide-react/dist/esm/icons/mail-warning";
+export { default as MapPin } from "lucide-react/dist/esm/icons/map-pin";
 export { default as Maximize } from "lucide-react/dist/esm/icons/maximize";
 export { default as Menu } from "lucide-react/dist/esm/icons/menu";
 export { default as Mic } from "lucide-react/dist/esm/icons/mic";
@@ -71,6 +75,7 @@ export { default as PenTool } from "lucide-react/dist/esm/icons/pen-tool";
 export { default as Pin } from "lucide-react/dist/esm/icons/pin";
 export { default as Play } from "lucide-react/dist/esm/icons/play";
 export { default as PlayCircle } from "lucide-react/dist/esm/icons/circle-play";
+export { default as Phone } from "lucide-react/dist/esm/icons/phone";
 export { default as Plus } from "lucide-react/dist/esm/icons/plus";
 export { default as Quote } from "lucide-react/dist/esm/icons/quote";
 export { default as RotateCcw } from "lucide-react/dist/esm/icons/rotate-ccw";
@@ -81,6 +86,7 @@ export { default as Settings } from "lucide-react/dist/esm/icons/settings";
 export { default as Settings2 } from "lucide-react/dist/esm/icons/settings-2";
 export { default as ShieldCheck } from "lucide-react/dist/esm/icons/shield-check";
 export { default as ShoppingBag } from "lucide-react/dist/esm/icons/shopping-bag";
+export { default as School } from "lucide-react/dist/esm/icons/school";
 export { default as Smartphone } from "lucide-react/dist/esm/icons/smartphone";
 export { default as Sparkles } from "lucide-react/dist/esm/icons/sparkles";
 export { default as SparklesIcon } from "lucide-react/dist/esm/icons/sparkles";
@@ -94,11 +100,15 @@ export { default as TrendingUp } from "lucide-react/dist/esm/icons/trending-up";
 export { default as TriangleAlertIcon } from "lucide-react/dist/esm/icons/triangle-alert";
 export { default as Trophy } from "lucide-react/dist/esm/icons/trophy";
 export { default as Unplug } from "lucide-react/dist/esm/icons/unplug";
+export { default as User } from "lucide-react/dist/esm/icons/user";
 export { default as Users } from "lucide-react/dist/esm/icons/users";
+export { default as UserCheck } from "lucide-react/dist/esm/icons/user-check";
+export { default as UserPlus } from "lucide-react/dist/esm/icons/user-plus";
 export { default as Wallet } from "lucide-react/dist/esm/icons/wallet";
 export { default as X } from "lucide-react/dist/esm/icons/x";
 export { default as XCircle } from "lucide-react/dist/esm/icons/circle-x";
 export { default as XIcon } from "lucide-react/dist/esm/icons/x";
+export { default as Link } from "lucide-react/dist/esm/icons/link";
 export { default as Zap } from "lucide-react/dist/esm/icons/zap";
 
 // Re-export the type

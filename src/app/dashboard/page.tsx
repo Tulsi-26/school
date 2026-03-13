@@ -13,6 +13,7 @@ import {
   Loader2,
   ArrowRight,
   Clock,
+  Link as LinkIcon,
 } from "@/lib/icons";
 
 import { Navbar } from "@/components/ui/navbar";
@@ -62,7 +63,7 @@ interface DashboardData {
 }
 
 export default function TeacherDashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,6 +126,7 @@ export default function TeacherDashboard() {
       setOrgName("");
       setOrgDesc("");
       fetchDashboard();
+      update();
     } catch {
       setError("Failed to create organization");
     } finally {
@@ -172,7 +174,7 @@ export default function TeacherDashboard() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-            Teacher{" "}
+            {session?.user.role === "OWNER" ? "Owner" : "Teacher"}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
               Dashboard
             </span>
@@ -323,6 +325,12 @@ export default function TeacherDashboard() {
                     )}
                     Add
                   </Button>
+                  <Link href="/dashboard/teachers/invite">
+                    <Button variant="outline" className="border-slate-700 text-white hover:bg-slate-800">
+                      <LinkIcon className="mr-2 w-4 h-4" />
+                      Invite Link
+                    </Button>
+                  </Link>
                 </div>
                 {memberMessage && (
                   <p className="mt-3 text-sm text-slate-400">{memberMessage}</p>

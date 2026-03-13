@@ -95,9 +95,10 @@ export default function Home() {
                     Enter Virtual Lab
                   </Button>
                 </Link>
-                <Link href="#demo-video">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-10 h-16 bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-slate-50 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95">
-                    <Play className="w-5 h-5 fill-slate-700" /> Watch Demo
+                <Link href="/signup">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-10 h-16 bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-slate-50 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group">
+                    <Zap className="w-5 h-5 text-blue-600" />
+                    Join for Free
                   </Button>
                 </Link>
               </motion.div>

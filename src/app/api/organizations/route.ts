@@ -89,18 +89,27 @@ export async function POST(request: Request) {
       slug = `${baseSlug}-${counter}`;
     }
 
-    const org = await prisma.organization.create({
-      data: {
-        name: parsed.data.name,
-        slug,
-        description: parsed.data.description ?? null,
-      },
-    });
+    const org = await prisma.$transaction(async (tx) => {
+      // Generate a 6-character school code (e.g. ABC123)
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // Make the creator an admin and attach them to the org
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { organizationId: org.id, role: "ADMIN" },
+      const newOrg = await tx.organization.create({
+        data: {
+          name: parsed.data.name,
+          slug,
+          code,
+          description: parsed.data.description ?? null,
+          ownerId: user.id,
+        },
+      });
+
+      // Make the creator the owner and attach them to the org
+      await tx.user.update({
+        where: { id: user.id },
+        data: { organizationId: newOrg.id, role: "OWNER" },
+      });
+
+      return newOrg;
     });
 
     return NextResponse.json({ organization: org }, { status: 201 });

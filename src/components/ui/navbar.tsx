@@ -69,18 +69,31 @@ export function Navbar() {
                                         <div className="flex flex-col space-y-1">
                                             <p className="text-sm font-medium leading-none">{session.user?.name}</p>
                                             <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                                            {session.user?.role === "OWNER" && (
+                                                <p className="text-[10px] uppercase tracking-wider font-bold text-blue-600 mt-1">School Owner</p>
+                                            )}
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                    <Link href="/dashboard/profile">
+                                        <DropdownMenuItem className="cursor-pointer">
+                                            Profile
+                                        </DropdownMenuItem>
+                                    </Link>
                                     <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
                                         Log out
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <Link href="/signin">
-                                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">Sign In</Button>
-                            </Link>
+                            <div className="flex items-center space-x-2">
+                                <Link href="/signin">
+                                    <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">Sign In</Button>
+                                </Link>
+                                <Link href="/signup">
+                                    <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-5">Sign Up</Button>
+                                </Link>
+                            </div>
                         )}
                     </div>
                     <div className="flex items-center md:hidden">
@@ -129,9 +142,14 @@ export function Navbar() {
                                     Log out
                                 </Button>
                             ) : (
-                                <Link href="/signin" className="w-full">
-                                    <Button variant="ghost" className="w-full justify-start text-slate-600">Sign In</Button>
-                                </Link>
+                                <div className="flex flex-col gap-2">
+                                    <Link href="/signin" className="w-full">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-600">Sign In</Button>
+                                    </Link>
+                                    <Link href="/signup" className="w-full">
+                                        <Button className="w-full bg-slate-900 text-white">Sign Up</Button>
+                                    </Link>
+                                </div>
                             )}
                             <Link href="/physics-lab" className="w-full">
                                 <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white gap-2">

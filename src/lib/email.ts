@@ -73,4 +73,30 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     `,
   });
 }
-
+export async function sendInvitationEmail(email: string, inviteLink: string, organizationName: string, role: string) {
+  await sendEmail({
+    to: email,
+    subject: `Invitation to join ${organizationName} on ShikshaFinder`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #1e293b; margin-bottom: 16px;">You've been invited!</h2>
+        <p style="color: #475569; font-size: 16px; line-height: 1.5;">
+          You have been invited to join <strong>${organizationName}</strong> as a <strong>${role.toLowerCase()}</strong> on ShikshaFinder.
+        </p>
+        <div style="margin: 32px 0; text-align: center;">
+          <a href="${inviteLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">Accept Invitation</a>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">
+          This invitation will expire in 7 days. If the button above doesn't work, you can copy and paste this link into your browser:
+        </p>
+        <p style="color: #2563eb; font-size: 14px; word-break: break-all;">
+          ${inviteLink}
+        </p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          &copy; ${new Date().getFullYear()} ShikshaFinder. All rights reserved.
+        </p>
+      </div>
+    `,
+  });
+}
