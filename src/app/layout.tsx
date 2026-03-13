@@ -4,6 +4,7 @@ import { Poppins, JetBrains_Mono, Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { OrganizationStatusGuard } from "@/components/OrganizationStatusGuard"
 
 import "./globals.css"
 
@@ -59,7 +60,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            <OrganizationStatusGuard>
+              {children}
+            </OrganizationStatusGuard>
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

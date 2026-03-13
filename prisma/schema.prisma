@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -16,6 +16,7 @@ enum UserRole {
   TEACHER
   ADMIN
   OWNER
+  SUPER_ADMIN
 }
 
 model Organization {
@@ -24,12 +25,45 @@ model Organization {
   slug        String   @unique
   code        String?  @unique
   description String?
+  isActive    Boolean  @default(true)
   ownerId     String?  // The user who owns the organization
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   members     User[]
   invitations Invitation[]
   labReports  LabReport[]
+  feeRecords  FeeRecord[]
+  projects    Project[]
+}
+
+model FeeRecord {
+  id               String       @id @default(cuid()) @map("_id")
+  studentId        String
+  studentName      String
+  amountPaid       Float
+  totalAmount      Float
+  status           String       // "PAID", "PARTIAL", "PENDING"
+  dueDate          DateTime?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([studentId])
+}
+
+model Project {
+  id               String       @id @default(cuid()) @map("_id")
+  title            String
+  description      String?
+  status           String       // "ACTIVE", "COMPLETED", "ARCHIVED"
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([organizationId])
 }
 
 model User {

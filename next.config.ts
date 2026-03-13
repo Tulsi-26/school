@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     "mongodb",
     "@prisma/client",
   ],
-  transpilePackages: [".prisma", "lucide-react"],
+  transpilePackages: ["lucide-react"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
