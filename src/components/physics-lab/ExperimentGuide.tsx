@@ -526,9 +526,18 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
             </div>
 
             <div 
-                onClick={() => observations.length >= 2 && setIsFull(true)}
-                className={`relative aspect-[4/3] w-full bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xl group transition-all ${observations.length >= 2 ? 'cursor-pointer hover:ring-4 ring-blue-500/20 active:scale-[0.98]' : ''}`}
+                className={`relative aspect-[4/3] w-full bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xl group transition-all hover:ring-4 ring-blue-500/20 active:scale-[0.98]`}
             >
+                {/* Clickable Overlay */}
+                <div 
+                    onClick={() => {
+                        console.log("Graph Clicked - Opening Popup");
+                        setIsFull(true);
+                    }} 
+                    className="absolute inset-0 z-[50] cursor-pointer" 
+                    title="Click to expand graph"
+                />
+
                 <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="bg-slate-900/80 backdrop-blur-md p-1.5 rounded-lg text-white">
                         <Maximize size={14} />
