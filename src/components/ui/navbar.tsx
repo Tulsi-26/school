@@ -13,11 +13,16 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
+import { useLanguage } from "@/context/LanguageContext"
+import { Globe } from "@/lib/icons"
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
     const { data: session } = useSession()
+    const { language, setLanguage, t } = useLanguage()
 
     return (
         <nav className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -35,25 +40,40 @@ export function Navbar() {
                         </Link>
                         <div className="hidden md:ml-10 md:flex md:space-x-1">
                             <Link href="/physics-lab" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
-                                Experiments
+                                {t('nav.experiments')}
                             </Link>
                             <Link href="/lab-reports" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
-                                Lab Reports
+                                {t('nav.labReports')}
                             </Link>
                             <Link href="/dashboard" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
-                                Dashboard
+                                {t('nav.dashboard')}
                             </Link>
                             <Link href="/docs" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
-                                Docs
+                                {t('nav.docs')}
                             </Link>
                         </div>
                     </div>
                     <div className="hidden md:flex items-center space-x-3">
                         <Link href="/physics-lab">
                             <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white border-0 shadow-lg shadow-blue-500/20 gap-2">
-                                <Beaker className="w-4 h-4" /> Open Lab
+                                <Beaker className="w-4 h-4" /> {t('nav.openLab')}
                             </Button>
                         </Link>
+
+                        {/* Language Switcher */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="w-10 h-10 text-slate-600">
+                                    <Globe className="w-5 h-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>
+                                    <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="gu">ગુજરાતી</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         {session ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -77,21 +97,21 @@ export function Navbar() {
                                     <DropdownMenuSeparator />
                                     <Link href="/dashboard/profile">
                                         <DropdownMenuItem className="cursor-pointer">
-                                            Profile
+                                            {t('nav.profile')}
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
-                                        Log out
+                                        {t('nav.logOut')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
                             <div className="flex items-center space-x-2">
                                 <Link href="/signin">
-                                    <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">Sign In</Button>
+                                    <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">{t('nav.signIn')}</Button>
                                 </Link>
                                 <Link href="/signup">
-                                    <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-5">Sign Up</Button>
+                                    <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-5">{t('nav.signUp')}</Button>
                                 </Link>
                             </div>
                         )}
@@ -125,35 +145,48 @@ export function Navbar() {
                             </div>
                         )}
                         <Link href="/physics-lab" className="block px-3 py-2.5 rounded-lg text-base font-medium text-blue-600 hover:bg-blue-50">
-                            Experiments
+                            {t('nav.experiments')}
                         </Link>
                         <Link href="/lab-reports" className="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50">
-                            Lab Reports
+                            {t('nav.labReports')}
                         </Link>
                         <Link href="/dashboard" className="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50">
-                            Dashboard
+                            {t('nav.dashboard')}
                         </Link>
                         <Link href="/docs" className="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50">
-                            Docs
+                            {t('nav.docs')}
                         </Link>
+                        <div className="flex items-center gap-4 px-3 py-2 border-y border-slate-100 my-2">
+                             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('nav.language')}</span>
+                             <div className="flex gap-2">
+                                 <button 
+                                    onClick={() => setLanguage('en')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-full border ${language === 'en' ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600'}`}
+                                 >EN</button>
+                                 <button 
+                                    onClick={() => setLanguage('gu')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-full border ${language === 'gu' ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600'}`}
+                                 >GU</button>
+                             </div>
+                        </div>
                         <div className="pt-4 flex flex-col gap-2 border-t border-slate-200 mt-2">
                             {session ? (
                                 <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => signOut()}>
-                                    Log out
+                                    {t('nav.logOut')}
                                 </Button>
                             ) : (
                                 <div className="flex flex-col gap-2">
                                     <Link href="/signin" className="w-full">
-                                        <Button variant="ghost" className="w-full justify-start text-slate-600">Sign In</Button>
+                                        <Button variant="ghost" className="w-full justify-start text-slate-600">{t('nav.signIn')}</Button>
                                     </Link>
                                     <Link href="/signup" className="w-full">
-                                        <Button className="w-full bg-slate-900 text-white">Sign Up</Button>
+                                        <Button className="w-full bg-slate-900 text-white">{t('nav.signUp')}</Button>
                                     </Link>
                                 </div>
                             )}
                             <Link href="/physics-lab" className="w-full">
                                 <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white gap-2">
-                                    <Beaker className="w-4 h-4" /> Open Lab
+                                    <Beaker className="w-4 h-4" /> {t('nav.openLab')}
                                 </Button>
                             </Link>
                         </div>

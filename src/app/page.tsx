@@ -8,12 +8,15 @@ import { Footer } from "@/components/ui/footer"
 import { Card } from "@/components/ui/card"
 import { motion, Variants } from "framer-motion"
 import dynamic from "next/dynamic"
+import { useLanguage } from "@/context/LanguageContext"
+
 const Hero3D = dynamic(() => import("@/components/hero-3d").then((mod) => mod.Hero3D), {
   ssr: false,
   loading: () => <div className="absolute inset-0 -z-10 bg-slate-50/50" />
 })
 
 export default function Home() {
+  const { t } = useLanguage();
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -74,31 +77,31 @@ export default function Home() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
-                The Future of STEM Education
+                {t('landing.hero.badge')}
               </motion.div>
 
               <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]">
-                Master Physics <br />
+                {t('landing.hero.title1')} <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 animate-gradient-x drop-shadow-sm">
-                  Through Discovery.
+                  {t('landing.hero.title2')}
                 </span>
               </motion.h1>
 
               <motion.p variants={itemVariants} className="mt-4 text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-                Step into an interactive virtual laboratory. Build circuits, trace rays, and explore the laws of nature with precision simulations.
+                {t('landing.hero.description')}
               </motion.p>
 
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-center gap-6">
                 <Link href="/physics-lab">
                   <Button size="lg" className="w-full sm:w-auto text-lg px-10 h-16 bg-blue-600 hover:bg-blue-700 shadow-2xl shadow-blue-500/30 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group">
                     <Beaker className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                    Enter Virtual Lab
+                    {t('landing.hero.enterLab')}
                   </Button>
                 </Link>
                 <Link href="/signup">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-10 h-16 bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-slate-50 rounded-2xl gap-3 transition-all hover:scale-105 active:scale-95 group">
                     <Zap className="w-5 h-5 text-blue-600" />
-                    Join for Free
+                    {t('landing.hero.joinFree')}
                   </Button>
                 </Link>
               </motion.div>
@@ -153,10 +156,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { val: "100%", label: "Curriculum Aligned", icon: Check, color: "blue" },
-                { val: "4+", label: "Physics Domains", icon: Globe, color: "indigo" },
-                { val: "Real-time", label: "Simulation Engine", icon: Zap, color: "cyan" },
-                { val: "24/7", label: "Accessible Anywhere", icon: Clock, color: "violet" }
+                { val: "100%", label: t('landing.stats.curriculum'), icon: Check, color: "blue" },
+                { val: "4+", label: t('landing.stats.domains'), icon: Globe, color: "indigo" },
+                { val: "Real-time", label: t('landing.stats.engine'), icon: Zap, color: "cyan" },
+                { val: "24/7", label: t('landing.stats.accessible'), icon: Clock, color: "violet" }
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -201,32 +204,32 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="text-center mb-24 max-w-3xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
-                Explore Diverse <br /> <span className="text-blue-600">Learning Domains</span>
+                {t('landing.domains.title')} <br /> <span className="text-blue-600">{t('landing.domains.subTitle')}</span>
               </h2>
               <p className="text-lg text-slate-500 font-medium">
-                From subatomic particles to celestial mechanics, our laboratory covers the entire spectrum of high-school and undergraduate physics.
+                {t('landing.domains.description')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Electricity & Magnetism",
-                  desc: "Design complex circuits with real-world instruments. Master Ohm’s Law, Wheatstone Bridge, and RLC series.",
+                  title: t('landing.domains.electricity.title'),
+                  desc: t('landing.domains.electricity.desc'),
                   icon: Zap,
                   color: "from-amber-400 to-orange-500",
                   img: "⚡"
                 },
                 {
-                  title: "Optics & Light",
-                  desc: "Trace laser rays through lenses, prisms, and mirrors. Visualize refraction and discover image formation properties.",
+                  title: t('landing.domains.optics.title'),
+                  desc: t('landing.domains.optics.desc'),
                   icon: Lightbulb,
                   color: "from-cyan-400 to-blue-500",
                   img: "🔭"
                 },
                 {
-                  title: "Classical Mechanics",
-                  desc: "Investigate forces, torque, and motion. Conduct virtual Atwood machine experiments and verify Newton's Laws.",
+                  title: t('landing.domains.mechanics.title'),
+                  desc: t('landing.domains.mechanics.desc'),
                   icon: Clock,
                   color: "from-emerald-400 to-teal-500",
                   img: "⚙️"
@@ -248,7 +251,7 @@ export default function Home() {
                     <h3 className="text-2xl font-black text-slate-900 mb-4">{domain.title}</h3>
                     <p className="text-slate-500 font-medium leading-relaxed mb-8">{domain.desc}</p>
                     <Link href="/physics-lab" className="flex items-center gap-2 text-blue-600 font-bold hover:gap-3 transition-all">
-                      Browse Experiments <ArrowRight className="w-4 h-4" />
+                      {t('landing.domains.browse')} <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Card>
                 </motion.div>
@@ -270,23 +273,23 @@ export default function Home() {
                   whileInView={{ opacity: 1, x: 0 }}
                   className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight"
                 >
-                  Designed for the <br /> <span className="text-blue-400 font-serif italic font-medium">Digital-First</span> Generation
+                  {t('landing.why.titleLine1')} <br /> <span className="text-blue-400 font-serif italic font-medium">{t('landing.why.titleLine2')}</span> {t('landing.why.titleLine3')}
                 </motion.h2>
                 <div className="space-y-10">
                   {[
                     {
-                      title: "Risk-Free Exploration",
-                      desc: "Experiments that are dangerous or expensive in real life are now completely safe and infinitely repeatable.",
+                      title: t('landing.why.riskFree.title'),
+                      desc: t('landing.why.riskFree.desc'),
                       icon: Microscope
                     },
                     {
-                      title: "Intelligent Feedback",
-                      desc: "Our engine detects circuit errors and provides real-time hints, acting like a private tutor at every step.",
+                      title: t('landing.why.feedback.title'),
+                      desc: t('landing.why.feedback.desc'),
                       icon: BookOpen
                     },
                     {
-                      title: "Automated Lab Reports",
-                      desc: "Focus on the science, not the formatting. Generate professional lab reports with your observations instantly.",
+                      title: t('landing.why.reports.title'),
+                      desc: t('landing.why.reports.desc'),
                       icon: PenTool
                     }
                   ].map((feat, i) => (
@@ -317,7 +320,7 @@ export default function Home() {
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3">
                       <Zap className="w-8 h-8 text-amber-500 animate-pulse" />
-                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Live Calculation</span>
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">{t('landing.features.calculation')}</span>
                       <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
@@ -329,7 +332,7 @@ export default function Home() {
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 translate-y-8">
                       <Beaker className="w-8 h-8 text-blue-500" />
-                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Experiment State</span>
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">{t('landing.features.state')}</span>
                       <div className="flex gap-1">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                         <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" />
@@ -338,12 +341,12 @@ export default function Home() {
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 -translate-y-4">
                       < Microscope className="w-8 h-8 text-emerald-500" />
-                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Circuit Valid</span>
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">{t('landing.features.valid')}</span>
                       <Check className="w-6 h-6 text-emerald-500" />
                     </Card>
                     <Card className="bg-slate-900/80 border-slate-700 p-6 flex flex-col items-center gap-3 translate-y-4">
                       <Lightbulb className="w-8 h-8 text-purple-500" />
-                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">Ray Tracing</span>
+                      <span className="text-slate-200 font-bold text-xs uppercase tracking-tighter">{t('landing.features.rayTracing')}</span>
                       <div className="w-full flex justify-center py-1">
                         <div className="w-12 h-12 bg-white/5 rounded-full border border-white/10 flex items-center justify-center">
                           <div className="w-px h-8 bg-blue-400 rotate-45" />
@@ -371,34 +374,34 @@ export default function Home() {
                 viewport={{ once: true }}
               >
                 <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1 text-xs font-bold text-blue-600 mb-4 uppercase tracking-widest">
-                  Scientific Impact
+                  {t('landing.testimonials.badge')}
                 </div>
-                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">Empowering Learners <span className="text-blue-600">Globally</span></h2>
-                <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Join thousands of students and educators transforming the STEM experience through active experimentation.</p>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">{t('landing.testimonials.title')} <span className="text-blue-600">{t('landing.testimonials.titleSpan')}</span></h2>
+                <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto">{t('landing.testimonials.description')}</p>
               </motion.div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
               {[
                 {
-                  quote: "This lab turned complex circuit diagrams into something I could actually see and play with. My grades improved within weeks!",
-                  author: "Sarah J.",
-                  role: "High School Student",
-                  status: "Verified Learner"
+                  quote: t('landing.testimonials.quote1'),
+                  author: t('landing.testimonials.author1'),
+                  role: t('landing.testimonials.role1'),
+                  status: t('landing.testimonials.status1')
                 },
                 {
-                  quote: "As a teacher, PhysicsLab has been a lifesaver for remote learning. It’s the most accurate web-based simulation I've used.",
-                  author: "Dr. Marcus V.",
-                  role: "Physics Professor",
-                  status: "Expert Educator"
+                  quote: t('landing.testimonials.quote2'),
+                  author: t('landing.testimonials.author2'),
+                  role: t('landing.testimonials.role2'),
+                  status: t('landing.testimonials.status2')
                 },
                 {
-                  quote: "The ray tracing visualization is simply stunning. It's so much easier to explain focal lengths when you can actually see the rays bend.",
-                  author: "Elena R.",
-                  role: "Science Educator",
-                  status: "Curriculum Lead"
+                  quote: t('landing.testimonials.quote3'),
+                  author: t('landing.testimonials.author3'),
+                  role: t('landing.testimonials.role3'),
+                  status: t('landing.testimonials.status3')
                 }
-              ].map((t, i) => (
+              ].map((item, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 30 }}
@@ -413,19 +416,19 @@ export default function Home() {
                     <div className="flex justify-between items-start mb-8">
                       <Quote className="w-12 h-12 text-blue-100 group-hover:text-blue-200 transition-colors" />
                       <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
-                        {t.status}
+                        {item.status}
                       </div>
                     </div>
 
-                    <p className="text-slate-700 font-bold italic mb-10 leading-relaxed text-lg">"{t.quote}"</p>
+                    <p className="text-slate-700 font-bold italic mb-10 leading-relaxed text-lg">"{item.quote}"</p>
                     
                     <div className="flex items-center gap-4 mt-auto">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 flex items-center justify-center font-black text-slate-400 border border-white shadow-sm group-hover:from-blue-100 group-hover:to-blue-50 group-hover:text-blue-500 transition-all duration-500">
-                        {t.author.charAt(0)}
+                        {item.author.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-black text-slate-900 leading-tight">{t.author}</div>
-                        <div className="text-xs font-bold text-blue-600 tracking-wide">{t.role}</div>
+                        <div className="font-black text-slate-900 leading-tight">{item.author}</div>
+                        <div className="text-xs font-bold text-blue-600 tracking-wide">{item.role}</div>
                       </div>
                     </div>
                   </Card>
@@ -473,31 +476,31 @@ export default function Home() {
                   transition={{ delay: 0.2 }}
                   className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1.5 text-xs font-bold text-blue-300 mb-8 uppercase tracking-[0.2em]"
                 >
-                  Ready to explore?
+                  {t('landing.cta.badge')}
                 </motion.div>
 
                 <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
-                  Start Your <br />
+                  {t('landing.cta.title1')} <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-                    Virtual Experiment
+                    {t('landing.cta.title2')}
                   </span> <br />
-                  Today.
+                  {t('landing.cta.title3')}
                 </h2>
                 
                 <p className="text-xl text-slate-400 mb-14 max-w-2xl mx-auto font-medium leading-relaxed">
-                  Join the digital frontier of STEM education. No physical equipment required—just curiosity and a browser.
+                  {t('landing.cta.description')}
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-6">
                   <Link href="/physics-lab">
                     <Button size="lg" className="h-18 px-12 text-lg font-black bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-[0_20px_40px_-10px_rgba(37,99,235,0.5)] transition-all hover:scale-105 active:scale-95 group/btn">
-                      Get Started Free
+                      {t('landing.cta.getStarted')}
                       <Zap className="ml-2 w-5 h-5 fill-current group-hover/btn:animate-bounce" />
                     </Button>
                   </Link>
                   <Link href="/docs">
                     <Button size="lg" className="h-18 px-12 text-lg font-black bg-white text-blue-900 hover:bg-slate-100 rounded-2xl shadow-[0_20px_40px_-10px_rgba(255,255,255,0.2)] transition-all hover:scale-105 active:scale-95 group/guide">
-                      Explore the Guide
+                      {t('landing.cta.exploreGuide')}
                       <BookOpen className="ml-2 w-5 h-5 fill-current group-hover/guide:animate-pulse" />
                     </Button>
                   </Link>

@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { Loader2 } from "@/lib/icons";
 import { FcGoogle } from "react-icons/fc";
+import { useLanguage } from "@/context/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,19 +29,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const signinSchema = z.object({
-  email: z.string().email("Please enter a valid email."),
-  password: z.string().min(8, "Passwords must be at least 8 characters."),
-});
-
-type SigninValues = z.infer<typeof signinSchema>;
+type SigninValues = z.infer<ReturnType<typeof getSigninSchema>>;
 type PendingAction = "signin" | "forgot" | "resend" | null;
 
+const getSigninSchema = (t: (key: string) => string) => z.object({
+  email: z.string().email(t('auth.signin.errors.invalidEmail')),
+  password: z.string().min(8, t('auth.signin.errors.passwordLength')),
+});
+
 export default function SigninPage() {
+  const { t } = useLanguage();
   const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const router = useRouter();
+
+  const signinSchema = getSigninSchema(t);
 
   const form = useForm<SigninValues>({
     resolver: zodResolver(signinSchema),
@@ -56,7 +60,7 @@ export default function SigninPage() {
       await fn();
     } catch (error) {
       console.error(error);
-      setServerError("Something went wrong. Please try again.");
+      setServerError(t('auth.signin.errors.generic'));
     } finally {
       setPendingAction(null);
     }
@@ -78,7 +82,7 @@ export default function SigninPage() {
         return;
       }
 
-      setServerMessage("Signed in successfully.");
+      setServerMessage(t('auth.signin.messages.signinSuccess'));
       form.reset({ email: values.email, password: "" });
       router.push("/");
     });
@@ -96,7 +100,7 @@ export default function SigninPage() {
     const email = form.getValues("email");
 
     if (!email) {
-      setServerError("Enter your email address first.");
+      setServerError(t('auth.signin.errors.missingEmail'));
       return;
     }
 
@@ -109,12 +113,12 @@ export default function SigninPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setServerError(data.error ?? "Unable to start password reset.");
+        setServerError(data.error ?? t('auth.signin.errors.forgotFail'));
         return;
       }
 
       setServerMessage(
-        data.message ?? "Check your inbox for the reset instructions."
+        data.message ?? t('auth.signin.messages.resetSent')
       );
     });
   };
@@ -125,7 +129,7 @@ export default function SigninPage() {
     const email = form.getValues("email");
 
     if (!email) {
-      setServerError("Enter your email address first.");
+      setServerError(t('auth.signin.errors.missingEmail'));
       return;
     }
 
@@ -138,12 +142,12 @@ export default function SigninPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setServerError(data.error ?? "Unable to resend the verification link.");
+        setServerError(data.error ?? t('auth.signin.errors.resendFail'));
         return;
       }
 
       setServerMessage(
-        data.message ?? "If the account exists, we just sent a new link."
+        data.message ?? t('auth.signin.messages.resendSent')
       );
     });
   };
@@ -154,9 +158,9 @@ export default function SigninPage() {
     <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#0f172a,_#020617)] px-4 py-12 text-white">
       <Card className="w-full max-w-md border-slate-800/70 bg-slate-950/60 text-white backdrop-blur">
         <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
+          <CardTitle>{t('auth.signin.title')}</CardTitle>
           <CardDescription className="text-slate-400">
-            Enter your credentials to jump back into your workspace.
+            {t('auth.signin.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -167,13 +171,13 @@ export default function SigninPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('auth.signin.email')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
                         autoComplete="email"
-                        placeholder="noreply@flavidairysolution.com"
+                        placeholder={t('auth.signin.emailPlaceholder')}
                         className="bg-slate-900/60"
                       />
                     </FormControl>
@@ -187,13 +191,13 @@ export default function SigninPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('auth.signin.password')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="password"
                         autoComplete="current-password"
-                        placeholder="••••••••"
+                        placeholder={t('auth.signin.passwordPlaceholder')}
                         className="bg-slate-900/60"
                       />
                     </FormControl>
@@ -210,7 +214,7 @@ export default function SigninPage() {
                 {isPending("signin") && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Sign in
+                {t('auth.signin.button')}
               </Button>
             </form>
           </Form>
@@ -219,7 +223,7 @@ export default function SigninPage() {
             <div className="flex items-center gap-4">
               <span className="h-px flex-1 bg-slate-800" />
               <span className="text-xs uppercase tracking-widest text-slate-500">
-                or
+                {t('auth.signin.or')}
               </span>
               <span className="h-px flex-1 bg-slate-800" />
             </div>
@@ -230,7 +234,7 @@ export default function SigninPage() {
               onClick={handleGoogleSignIn}
             >
               <FcGoogle className="mr-2 h-5 w-5" />
-              Continue with Google
+              {t('auth.signin.google')}
             </Button>
           </div>
 
@@ -241,7 +245,7 @@ export default function SigninPage() {
               className="text-slate-300 transition hover:text-white"
               disabled={isPending("forgot")}
             >
-              {isPending("forgot") ? "Sending reset link..." : "Forgot password?"}
+              {isPending("forgot") ? t('auth.signin.sendingReset') : t('auth.signin.forgotPassword')}
             </button>
             <button
               type="button"
@@ -250,8 +254,8 @@ export default function SigninPage() {
               disabled={isPending("resend")}
             >
               {isPending("resend")
-                ? "Resending verification..."
-                : "Resend verification email"}
+                ? t('auth.signin.resending')
+                : t('auth.signin.resendEmail')}
             </button>
           </div>
 
@@ -268,12 +272,12 @@ export default function SigninPage() {
           )}
 
           <p className="text-center text-sm text-slate-400">
-            Need an account?{" "}
+            {t('auth.signin.needAccount')}{" "}
             <Link
               href="/signup"
               className="font-medium text-white underline-offset-4 hover:underline"
             >
-              Create one
+              {t('auth.signin.createOne')}
             </Link>
           </p>
         </CardContent>

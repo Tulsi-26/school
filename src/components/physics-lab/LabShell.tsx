@@ -8,10 +8,19 @@ import { ExperimentGuide } from '@/components/physics-lab/ExperimentGuide';
 import { GamificationPanel, useGamification } from '@/components/physics-lab/GamificationPanel';
 import {
     ChevronRight, Home, Beaker, RotateCcw, ShieldCheck,
-    Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone, Save, Loader2, Check
+    Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone, Save, Loader2, Check, Globe
 } from '@/lib/icons';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
 
 const experimentNames: Record<string, string> = {
     'ohm-law': "Ohm's Law Verification",
@@ -27,7 +36,13 @@ interface LabShellProps {
 export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const { resetLab, setActiveExperimentId, masteredExperiments, toggleMastery: toggleContextMastery, saveExperiment, isSaving, lastSavedAt } = usePhysicsLab();
     const { completeExperiment } = useGamification();
-    const experimentName = experimentNames[experimentId] || experimentId;
+    const { language, setLanguage, t } = useLanguage();
+    
+    // Check if translation exists, otherwise fallback to default record
+    const experimentName = t(`experiments.${experimentId}.title`) !== `experiments.${experimentId}.title` 
+        ? t(`experiments.${experimentId}.title`) 
+        : (experimentNames[experimentId] || experimentId);
+
     const isMastered = masteredExperiments.includes(experimentId);
     const { theme, setTheme } = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -184,9 +199,9 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 />
 
                 <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
-                    <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
+                    <h2 className="font-bold text-lg tracking-tight">{t('common.instruments')}</h2>
                     <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full uppercase font-medium tracking-wider">
-                        Physics Lab
+                        {t('common.labName')}
                     </span>
                 </div>
                 <InstrumentPanel experimentId={experimentId} />
@@ -213,7 +228,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         style={{ color: 'var(--lab-text-muted)' }}
                     >
                         <Home className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Labs</span>
+                        <span className="hidden sm:inline">{t('nav.experiments')}</span>
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5" style={{ color: 'var(--lab-border)' }} />
                     <div className="flex items-center gap-2 text-sm font-bold text-blue-400 truncate">
@@ -242,20 +257,39 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                             onClick={toggleFullscreen}
                             className="p-1.5 rounded-lg transition-all hover:opacity-80"
                             style={{ color: 'var(--lab-text-secondary)' }}
-                            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                            title={isFullscreen ? t('common.exitFullscreen') : t('common.fullscreen')}
                         >
                             {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
                         </button>
+
+                        {/* Language switcher for quick access */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                                    style={{ color: 'var(--lab-text-secondary)' }}
+                                    title="Switch Language"
+                                >
+                                    <Globe size={16} />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-200">
+                                <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>
+                                    <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="gu">ગુજરાતી</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
                         {/* Open guide drawer (tablet/mobile) */}
                         <button
                             onClick={() => setShowGuide(true)}
                             className="xl:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
                             style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
-                            title="Open Guide"
+                            title={t('common.guide')}
                         >
                             <BookOpen className="w-3.5 h-3.5" />
-                            Guide
+                            {t('common.guide')}
                         </button>
 
                         {/* Mark as completed */}
@@ -269,7 +303,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         >
                             <RotateCcw className={`w-3.5 h-3.5 ${isMastered ? 'hidden' : ''}`} />
                             <ShieldCheck className={`w-3.5 h-3.5 ${!isMastered ? 'hidden' : ''}`} />
-                            {isMastered ? 'Completed' : 'Mark as Completed'}
+                            {isMastered ? t('common.completed') : t('common.markCompleted')}
                         </button>
 
                         {/* Save experiment to database */}
@@ -291,7 +325,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                                 <Save className="w-3.5 h-3.5" />
                             )}
                             <span className="hidden sm:inline">
-                                {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save'}
+                                {isSaving ? t('common.saving') : saveSuccess ? t('common.saved') : t('common.save')}
                             </span>
                         </button>
 
@@ -306,7 +340,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                             style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                         >
                             <RotateCcw className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Reset Lab</span>
+                            <span className="hidden sm:inline">{t('common.reset')}</span>
                         </button>
                     </div>
                 </div>
@@ -330,7 +364,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 />
 
                 <div className="p-4 border-b border-slate-800">
-                    <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
+                    <h2 className="font-bold text-lg tracking-tight">{t('common.guide')}</h2>
                 </div>
                 <ExperimentGuide experimentId={experimentId} />
             </aside>
@@ -340,7 +374,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px]">
                     <aside className="h-full w-[min(24rem,88vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderRight: '1px solid var(--lab-border)' }}>
                         <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
-                            <h2 className="font-bold text-lg tracking-tight">Instruments</h2>
+                            <h2 className="font-bold text-lg tracking-tight">{t('common.instruments')}</h2>
                             <button
                                 onClick={() => setShowInstruments(false)}
                                 className="p-2 rounded-lg" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
@@ -358,7 +392,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px] flex justify-end">
                     <aside className="h-full w-[min(30rem,92vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderLeft: '1px solid var(--lab-border)' }}>
                         <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
-                            <h2 className="font-bold text-lg tracking-tight">Experiment Guide</h2>
+                            <h2 className="font-bold text-lg tracking-tight">{t('common.guide')}</h2>
                             <button
                                 onClick={() => setShowGuide(false)}
                                 className="p-2 rounded-lg" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}

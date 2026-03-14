@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { Loader2, Eye, EyeOff, Zap } from "@/lib/icons";
 import { FcGoogle } from "react-icons/fc";
+import { useLanguage } from "@/context/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,32 +36,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const signupSchema = z.object({
+const getSignupSchema = (t: (key: string) => string) => z.object({
   fullName: z
     .string()
-    .min(2, "Full name must have at least 2 characters.")
-    .max(60, "Full name must be shorter than 60 characters."),
-  email: z.string().email("Please enter a valid email."),
+    .min(2, t('auth.signup.errors.nameMin'))
+    .max(60, t('auth.signup.errors.nameMax')),
+  email: z.string().email(t('auth.signup.errors.invalidEmail')),
   phone: z.string().optional(),
-  password: z.string().min(8, "Passwords must be at least 8 characters."),
-  confirmPassword: z.string().min(8, "Confirm password must match."),
+  password: z.string().min(8, t('auth.signup.errors.passwordLength')),
+  confirmPassword: z.string().min(8, t('auth.signup.errors.confirmPasswordLength')),
   role: z.enum(["STUDENT", "TEACHER", "OWNER"]),
   intent: z.enum(["create", "join"]),
   organizationName: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: t('auth.signup.errors.passwordMismatch'),
   path: ["confirmPassword"],
 }).refine((data) => {
   if (data.intent === "create" && (!data.organizationName || data.organizationName.trim() === "")) return false;
   return true;
 }, {
-  message: "Organization name is required",
+  message: t('auth.signup.errors.orgNameRequired'),
   path: ["organizationName"],
 });
 
-type SignupValues = z.infer<typeof signupSchema>;
+type SignupValues = z.infer<ReturnType<typeof getSignupSchema>>;
 
 export default function SignupPage() {
+  const { t } = useLanguage();
+  const signupSchema = getSignupSchema(t);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,18 +100,18 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setServerError(data.error ?? "Unable to create your account.");
+        setServerError(data.error ?? t('auth.signup.errors.signupFail'));
         return;
       }
 
       setServerMessage(
         data.message ??
-          "Account created. Check your email for the verification link."
+          t('auth.signup.messages.success')
       );
       form.reset();
     } catch (error) {
       console.error(error);
-      setServerError("Unexpected error. Please try again.");
+      setServerError(t('auth.signup.errors.generic'));
     } finally {
       setIsSubmitting(false);
     }
@@ -125,8 +128,8 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-16 text-slate-900">
       <div className="w-full max-w-lg space-y-8">
         <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Create Account</h1>
-          <p className="text-slate-500 font-medium">Sign up to get started</p>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">{t('auth.signup.title')}</h1>
+          <p className="text-slate-500 font-medium">{t('auth.signup.description')}</p>
         </div>
 
         <Form {...form}>
@@ -137,7 +140,7 @@ export default function SignupPage() {
               name="intent"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel className="text-slate-900 font-bold">I want to:</FormLabel>
+                  <FormLabel className="text-slate-900 font-bold">{t('auth.signup.intent')}</FormLabel>
                   <FormControl>
                     <div className="flex gap-4">
                       <Button
@@ -149,7 +152,7 @@ export default function SignupPage() {
                         }`}
                         onClick={() => field.onChange("create")}
                       >
-                        Create Organization
+                        {t('auth.signup.createOrg')}
                       </Button>
                       <Button
                         type="button"
@@ -160,7 +163,7 @@ export default function SignupPage() {
                         }`}
                         onClick={() => field.onChange("join")}
                       >
-                        Join Organization
+                        {t('auth.signup.joinOrg')}
                       </Button>
                     </div>
                   </FormControl>
@@ -176,11 +179,11 @@ export default function SignupPage() {
                 name="organizationName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-900 font-bold">Organization Name *</FormLabel>
+                    <FormLabel className="text-slate-900 font-bold">{t('auth.signup.orgName')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Enter your organization name"
+                        placeholder={t('auth.signup.orgPlaceholder')}
                         className="h-14 bg-white border-slate-200 rounded-xl focus:ring-slate-950 focus:border-slate-950"
                       />
                     </FormControl>
@@ -197,11 +200,11 @@ export default function SignupPage() {
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-900 font-bold">Full Name *</FormLabel>
+                    <FormLabel className="text-slate-900 font-bold">{t('auth.signup.fullName')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="John Doe"
+                        placeholder={t('auth.signup.fullNamePlaceholder')}
                         className="h-14 bg-white border-slate-200 rounded-xl"
                       />
                     </FormControl>
@@ -216,12 +219,12 @@ export default function SignupPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-900 font-bold">Email *</FormLabel>
+                    <FormLabel className="text-slate-900 font-bold">{t('auth.signup.email')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder={t('auth.signup.emailPlaceholder')}
                         className="h-14 bg-white border-slate-200 rounded-xl"
                       />
                     </FormControl>
@@ -237,11 +240,11 @@ export default function SignupPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-900 font-bold">Phone (Optional)</FormLabel>
+                  <FormLabel className="text-slate-900 font-bold">{t('auth.signup.phone')}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="+1 234 567 890"
+                      placeholder={t('auth.signup.phonePlaceholder')}
                       className="h-14 bg-white border-slate-200 rounded-xl"
                     />
                   </FormControl>
@@ -257,7 +260,7 @@ export default function SignupPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-900 font-bold">Password *</FormLabel>
+                    <FormLabel className="text-slate-900 font-bold">{t('auth.signup.password')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -276,7 +279,7 @@ export default function SignupPage() {
                       </div>
                     </FormControl>
                     <FormDescription className="text-xs text-slate-400">
-                      Must be at least 8 characters
+                      {t('auth.signup.passwordHint')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -289,7 +292,7 @@ export default function SignupPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-900 font-bold">Confirm Password *</FormLabel>
+                    <FormLabel className="text-slate-900 font-bold">{t('auth.signup.confirmPassword')}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -319,17 +322,17 @@ export default function SignupPage() {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-900 font-bold">Role * (for your personal workspace)</FormLabel>
+                  <FormLabel className="text-slate-900 font-bold">{t('auth.signup.role')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="h-14 bg-white border-slate-200 rounded-xl">
-                        <SelectValue placeholder="Select your role" />
+                        <SelectValue placeholder={t('auth.signup.rolePlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="STUDENT">Student</SelectItem>
-                      <SelectItem value="TEACHER">Teacher</SelectItem>
-                      <SelectItem value="OWNER">School Owner</SelectItem>
+                      <SelectItem value="STUDENT">{t('auth.signup.student')}</SelectItem>
+                      <SelectItem value="TEACHER">{t('auth.signup.teacher')}</SelectItem>
+                      <SelectItem value="OWNER">{t('auth.signup.owner')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -341,7 +344,7 @@ export default function SignupPage() {
               {isSubmitting && (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               )}
-              Create Account
+              {t('auth.signup.button')}
             </Button>
           </form>
         </Form>
@@ -350,7 +353,7 @@ export default function SignupPage() {
           <div className="flex items-center gap-4">
             <span className="h-px flex-1 bg-slate-100" />
             <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              OR CONTINUE WITH
+              {t('auth.signup.orContinue')}
             </span>
             <span className="h-px flex-1 bg-slate-100" />
           </div>
@@ -362,16 +365,16 @@ export default function SignupPage() {
             onClick={handleGoogleSignUp}
           >
             <FcGoogle className="mr-3 h-6 w-6" />
-            Sign up with Google
+            {t('auth.signup.google')}
           </Button>
 
           <p className="text-center text-sm font-medium text-slate-500">
-            Already have an account?{" "}
+            {t('auth.signup.alreadyHave')}{" "}
             <Link
               href="/signin"
               className="font-bold text-slate-950 hover:underline underline-offset-4"
             >
-              Sign in
+              {t('auth.signup.signin')}
             </Link>
           </p>
         </div>

@@ -109,6 +109,7 @@ export { default as X } from "lucide-react/dist/esm/icons/x";
 export { default as XCircle } from "lucide-react/dist/esm/icons/circle-x";
 export { default as XIcon } from "lucide-react/dist/esm/icons/x";
 export { default as Link } from "lucide-react/dist/esm/icons/link";
+export { default as RotateCw } from "lucide-react/dist/esm/icons/rotate-cw";
 export { default as Zap } from "lucide-react/dist/esm/icons/zap";
 
 // Re-export the type

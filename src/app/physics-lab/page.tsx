@@ -12,49 +12,52 @@ import { usePhysicsLab } from '@/context/PhysicsLabContext';
 import type { SavedSession } from '@/context/PhysicsLabContext';
 import { GamificationPanel } from '@/components/physics-lab/GamificationPanel';
 import { PhysicsLabProvider } from '@/context/PhysicsLabContext';
+import { useLanguage } from '@/context/LanguageContext';
 
-const experiments = [
+const getExperiments = (t: any) => [
     {
         id: 'ohm-law',
-        title: "Ohm's Law Verification",
-        description: "Study the relationship between voltage, current, and resistance in a conductor.",
-        difficulty: "Beginner",
+        title: t('experiments.ohm-law.title'),
+        description: t('experiments.ohm-law.description'),
+        difficulty: t('experiments.ohm-law.difficulty'),
         icon: Zap,
         color: "blue",
-        category: "Electricity"
+        category: t('experiments.ohm-law.category')
     },
     {
         id: 'wheatstone-bridge',
-        title: "Wheatstone Bridge",
-        description: "Learn to determine an unknown resistance using the bridge balance principle.",
-        difficulty: "Intermediate",
+        title: t('experiments.wheatstone-bridge.title'),
+        description: t('experiments.wheatstone-bridge.description'),
+        difficulty: t('experiments.wheatstone-bridge.difficulty'),
         icon: Beaker,
         color: "purple",
-        category: "Electricity"
+        category: t('experiments.wheatstone-bridge.category')
     },
     {
         id: 'reflection-refraction',
-        title: "Reflection & Refraction",
-        description: "Explore the laws of light as it interacts with mirrors and lenses.",
-        difficulty: "Intermediate",
+        title: t('experiments.reflection-refraction.title'),
+        description: t('experiments.reflection-refraction.description'),
+        difficulty: t('experiments.reflection-refraction.difficulty'),
         icon: Search,
         color: "blue",
-        category: "Optics"
+        category: t('experiments.reflection-refraction.category')
     },
     {
         id: 'newton-second-law',
-        title: "Newton's Second Law",
-        description: "Study force, mass, and acceleration using blocks and pulleys.",
-        difficulty: "Intermediate",
+        title: t('experiments.newton-second-law.title'),
+        description: t('experiments.newton-second-law.description'),
+        difficulty: t('experiments.newton-second-law.difficulty'),
         icon: TrendingUp,
         color: "red",
-        category: "Mechanics"
+        category: t('experiments.newton-second-law.category')
     }
 ];
 
 function PhysicsLabDashboardContent() {
     const { data: session, status } = useSession();
     const { masteredExperiments } = usePhysicsLab();
+    const { t } = useLanguage();
+    const experiments = getExperiments(t);
     const [activeCategory, setActiveCategory] = React.useState('All');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [history, setHistory] = React.useState<string[]>([]);
@@ -121,22 +124,27 @@ function PhysicsLabDashboardContent() {
                     >
                         <div className="flex items-center gap-3 mb-4">
                             <div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest rounded-full">
-                                Virtual Laboratory
+                                {t('dashboard.hero.tag')}
                             </div>
                             <div className="h-px w-12 bg-slate-800"></div>
                         </div>
                         <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6" style={{ color: 'var(--lab-text)' }}>
-                            Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Physics</span> via Experimentation
+                            {t('dashboard.hero.title').split('Physics').map((part, i, arr) => (
+                                <React.Fragment key={i}>
+                                    {part}
+                                    {i < arr.length - 1 && <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Physics</span>}
+                                </React.Fragment>
+                            ))}
                         </h1>
                         <p className="text-xl max-w-2xl leading-relaxed mb-8" style={{ color: 'var(--lab-text-secondary)' }}>
-                            Master complex concepts through immersive, hands-on simulations. Build circuits, collect real-time data, and visualize the laws of nature.
+                            {t('dashboard.hero.subtitle')}
                         </p>
 
                         {session?.user?.role === "OWNER" && (
                              <Link href="/dashboard/teachers/invite">
                                 <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-12 px-6 rounded-xl shadow-lg shadow-blue-500/20">
                                     <UserPlus className="w-5 h-5" />
-                                    Invite Teacher
+                                    {t('common.inviteTeacher')}
                                 </Button>
                              </Link>
                         )}
@@ -153,7 +161,7 @@ function PhysicsLabDashboardContent() {
                     <div className="mb-16 animate-in fade-in slide-in-from-left-4 duration-700">
                         <div className="flex items-center gap-2 mb-6" style={{ color: 'var(--lab-text-secondary)' }}>
                             <Star className="w-4 h-4 text-yellow-500" />
-                            <h2 className="text-sm font-bold uppercase tracking-widest italic">Pick up where you left off</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest italic">{t('dashboard.sections.recent')}</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {recentExps.map((exp) => (
@@ -169,7 +177,7 @@ function PhysicsLabDashboardContent() {
                                                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
                                                 )}
                                             </h4>
-                                            <p className="text-[10px] font-medium" style={{ color: 'var(--lab-text-muted)' }}>Last active section</p>
+                                            <p className="text-[10px] font-medium" style={{ color: 'var(--lab-text-muted)' }}>{t('common.lastActive')}</p>
                                         </div>
                                         <ArrowRight className="w-4 h-4 ml-auto text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                     </div>
@@ -184,9 +192,9 @@ function PhysicsLabDashboardContent() {
                     <div className="mb-16 animate-in fade-in slide-in-from-left-4 duration-700">
                         <div className="flex items-center gap-2 mb-6 text-slate-400">
                             <Database className="w-4 h-4 text-blue-500" />
-                            <h2 className="text-sm font-bold uppercase tracking-widest italic">Saved Experiments</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest italic">{t('dashboard.sections.saved')}</h2>
                             <span className="ml-2 text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
-                                {savedSessions.length} saved
+                                {savedSessions.length} {t('common.saved')}
                             </span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -214,7 +222,7 @@ function PhysicsLabDashboardContent() {
                                                         </div>
                                                         {obsCount > 0 && (
                                                             <span className="text-[10px] text-emerald-500 font-medium">
-                                                                {obsCount} observation{obsCount !== 1 ? 's' : ''}
+                                                                {obsCount} {obsCount !== 1 ? t('experiments.observations') ?? 'observations' : t('experiments.observation') ?? 'observation'}
                                                             </span>
                                                         )}
                                                     </div>
@@ -228,7 +236,7 @@ function PhysicsLabDashboardContent() {
                                                 className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-red-400 transition-colors"
                                             >
                                                 <Trash2 className="w-3 h-3" />
-                                                Delete
+                                                {t('common.delete') ?? 'Delete'}
                                             </button>
                                         </div>
                                     </div>
@@ -244,7 +252,7 @@ function PhysicsLabDashboardContent() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                         <input
                             type="text"
-                            placeholder="Search experiments..."
+                            placeholder={t('common.search')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
@@ -263,7 +271,7 @@ function PhysicsLabDashboardContent() {
                                 style={activeCategory === cat ? {} : { backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
                             >
                                 {cat === 'All' && <Filter className="w-4 h-4" />}
-                                <span className="font-semibold text-sm">{cat}</span>
+                                <span className="font-semibold text-sm">{cat === 'All' ? t('common.all') : cat}</span>
                             </button>
                         ))}
                     </div>
@@ -299,7 +307,7 @@ function PhysicsLabDashboardContent() {
                                         {masteredExperiments.includes(exp.id) && (
                                             <div className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center gap-1">
                                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Mastered</span>
+                                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">{t('common.completed')}</span>
                                             </div>
                                         )}
                                     </h3>
@@ -315,11 +323,11 @@ function PhysicsLabDashboardContent() {
                                         </div>
                                         <div className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-wide">
                                             {status === 'authenticated' ? (
-                                                <>START LAB <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                                <>{t('common.startLab')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                                             ) : status === 'loading' ? (
-                                                <span className="opacity-50">SYNCING LAB...</span>
+                                                <span className="opacity-50">{t('common.syncing')}</span>
                                             ) : (
-                                                <>SIGN UP TO START <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
+                                                <>{t('common.signupToStart')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                                             )}
                                         </div>
                                     </div>
@@ -333,8 +341,8 @@ function PhysicsLabDashboardContent() {
                         <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--lab-card-bg)' }}>
                             <BookOpen className="w-7 h-7 text-slate-400" />
                         </div>
-                        <h3 className="text-lg font-bold" style={{ color: 'var(--lab-text-muted)' }}>More Experiments Coming Soon</h3>
-                        <p className="text-xs mt-2" style={{ color: 'var(--lab-text-muted)' }}>Optics, Mechanics, and Thermodynamics are in development.</p>
+                        <h3 className="text-lg font-bold" style={{ color: 'var(--lab-text-muted)' }}>{t('common.moreComingSoon')}</h3>
+                        <p className="text-xs mt-2" style={{ color: 'var(--lab-text-muted)' }}>{t('common.comingSoonDesc')}</p>
                     </div>
                 </div>
             </main>

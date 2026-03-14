@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Loader2, MailCheck, MailWarning } from "@/lib/icons";
+import { useLanguage } from "@/context/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,7 @@ type VerifyStatus = "idle" | "verifying" | "success" | "error";
 type ResendStatus = "idle" | "submitting" | "success" | "error";
 
 export function VerifyEmailClient() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const urlToken = searchParams.get("token");
 
@@ -60,13 +62,13 @@ export function VerifyEmailClient() {
 
         if (!response.ok) {
           setVerifyStatus("error");
-          setVerifyMessage(data.error ?? "Verification link is invalid.");
+          setVerifyMessage(data.error ?? t('verifyEmail.invalid'));
           return;
         }
 
         setVerifyStatus("success");
         setVerifyMessage(
-          data.message ?? "Email verified successfully. You can sign in now."
+          data.message ?? t('verifyEmail.success')
         );
       } catch (error) {
         if (aborted) {
@@ -74,7 +76,7 @@ export function VerifyEmailClient() {
         }
         console.error(error);
         setVerifyStatus("error");
-        setVerifyMessage("Something went wrong while verifying the token.");
+        setVerifyMessage(t('verifyEmail.genericError'));
       }
     };
 
@@ -88,7 +90,7 @@ export function VerifyEmailClient() {
   const handleResend = async () => {
     if (!resendEmail.trim()) {
       setResendStatus("error");
-      setResendMessage("Please enter the email you signed up with.");
+      setResendMessage(t('auth.signin.errors.invalidEmail')); // Reuse invalid email if appropriate, or add new one
       return;
     }
 
@@ -106,7 +108,7 @@ export function VerifyEmailClient() {
       if (!response.ok) {
         setResendStatus("error");
         setResendMessage(
-          data.error ?? "Unable to resend verification email right now."
+          data.error ?? t('verifyEmail.resendError')
         );
         return;
       }
@@ -114,12 +116,12 @@ export function VerifyEmailClient() {
       setResendStatus("success");
       setResendMessage(
         data.message ??
-          "If that account exists, a new verification email is on the way."
+          t('verifyEmail.resendSuccess')
       );
     } catch (error) {
       console.error(error);
       setResendStatus("error");
-      setResendMessage("Something went wrong. Please try again.");
+      setResendMessage(t('verifyEmail.resendGeneric'));
     }
   };
 
@@ -136,25 +138,24 @@ export function VerifyEmailClient() {
             ) : showErrorIcon ? (
               <MailWarning className="h-6 w-6 text-rose-400" />
             ) : null}
-            <CardTitle className="text-2xl">Verify your email</CardTitle>
+            <CardTitle className="text-2xl">{t('verifyEmail.title')}</CardTitle>
           </div>
           <CardDescription className="text-slate-400">
-            Paste the link from your inbox in this browser, or request another
-            email if the original link expired.
+            {t('verifyEmail.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           <section className="space-y-2">
             <p className="text-sm text-slate-400">
               {sanitizedToken
-                ? "Hang tight, we’re confirming your verification link."
-                : "Open the verification email we sent and click on the included link."}
+                ? t('verifyEmail.verifying')
+                : t('verifyEmail.idle')}
             </p>
             <div className="rounded-md border border-slate-800 bg-slate-900/40 p-3 text-sm text-slate-300">
               {verifyStatus === "verifying" && (
                 <span className="flex items-center gap-2 text-amber-300">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Checking your verification token...
+                  {t('verifyEmail.loading')}
                 </span>
               )}
               {verifyStatus === "success" && (
@@ -162,19 +163,18 @@ export function VerifyEmailClient() {
               )}
               {verifyStatus === "error" && (
                 <span className="text-rose-400">
-                  {verifyMessage ?? "Verification failed."}
+                  {verifyMessage ?? t('auth.signup.errors.signupFail')}
                 </span>
               )}
               {verifyStatus === "idle" && (
                 <span className="text-slate-400">
-                  Provide a token by opening the email link, or request a new
-                  email below.
+                  {t('verifyEmail.instructionIdle')}
                 </span>
               )}
             </div>
             {verifyStatus === "success" && (
               <Button asChild className="w-full">
-                <Link href="/signin">Continue to sign in</Link>
+                <Link href="/signin">{t('verifyEmail.continue')}</Link>
               </Button>
             )}
           </section>
@@ -182,16 +182,16 @@ export function VerifyEmailClient() {
           <section className="space-y-4">
             <div className="space-y-1">
               <h3 className="text-lg font-medium text-white">
-                Need a fresh email?
+                {t('verifyEmail.resendTitle')}
               </h3>
               <p className="text-sm text-slate-400">
-                Enter your email address and we&apos;ll send another link.
+                {t('verifyEmail.resendSubtitle')}
               </p>
             </div>
             <div className="space-y-3">
               <Input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('verifyEmail.resendPlaceholder')}
                 className="bg-slate-900/60"
                 value={resendEmail}
                 onChange={(event) => setResendEmail(event.target.value)}
@@ -205,7 +205,7 @@ export function VerifyEmailClient() {
                 {resendStatus === "submitting" && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Resend verification email
+                {t('verifyEmail.resendButton')}
               </Button>
             </div>
             {resendMessage && (

@@ -24,20 +24,23 @@ import { ExperimentChecklist } from './ExperimentChecklist';
 import { YouTubeVideos } from './YouTubeVideos';
 import { GamificationPanel, useGamification } from './GamificationPanel';
 import { CircuitFeedback } from './CircuitFeedback';
+import { useLanguage } from '@/context/LanguageContext';
 
 export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experimentId }) => {
     const [activeTab, setActiveTab] = useState<'theory' | 'procedure' | 'observation' | 'graph' | 'checklist' | 'videos' | 'progress'>('theory');
     const [isPopup, setIsPopup] = useState(false);
     const { simulationResults, validationErrors, validationSuggestions, circuitIsValid, instruments } = usePhysicsLab();
 
+    const { t } = useLanguage();
+
     const tabs = [
-        { id: 'theory', icon: BookOpen, label: 'Theory' },
-        { id: 'procedure', icon: ListOrdered, label: 'Steps' },
-        { id: 'checklist', icon: ListChecks, label: 'Checklist' },
-        { id: 'observation', icon: Table, label: 'Data' },
-        { id: 'graph', icon: LineChart, label: 'Graph' },
-        { id: 'videos', icon: PlayCircle, label: 'Videos' },
-        { id: 'progress', icon: Trophy, label: 'XP' },
+        { id: 'theory', icon: BookOpen, label: t('guide.tabs.theory') },
+        { id: 'procedure', icon: ListOrdered, label: t('guide.tabs.procedure') },
+        { id: 'checklist', icon: ListChecks, label: t('guide.tabs.checklist') },
+        { id: 'observation', icon: Table, label: t('guide.tabs.observation') },
+        { id: 'graph', icon: LineChart, label: t('guide.tabs.graph') },
+        { id: 'videos', icon: PlayCircle, label: t('guide.tabs.videos') },
+        { id: 'progress', icon: Trophy, label: t('guide.tabs.progress') },
     ];
 
     const GuideContent = ({ isInsidePopup = false }) => (
@@ -68,7 +71,7 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
                 <button
                     onClick={() => setIsPopup(!isInsidePopup)}
                     className="ml-1 p-2 self-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all"
-                    title={isInsidePopup ? "Exit Fullscreen" : "Fullscreen Guide"}
+                    title={isInsidePopup ? t('common.exitFullscreen') : t('common.fullscreen')}
                 >
                     {isInsidePopup ? <X size={18} /> : <Maximize size={18} />}
                 </button>
@@ -98,7 +101,7 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
                         experimentId === 'ohm-law' ? <Graph experimentId={experimentId} /> :
                             <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-3">
                                 <Info size={32} className="opacity-20" />
-                                <p className="text-xs font-medium italic">Graphing is specific to Ohm's Law.</p>
+                                <p className="text-xs font-medium italic">{t('guide.graph.ohmLawOnly')}</p>
                             </div>
                     )}
                     {activeTab === 'videos' && <YouTubeVideos experimentId={experimentId} />}
@@ -143,7 +146,7 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
                                 className="absolute top-4 right-6 p-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all z-[10001] shadow-2xl flex items-center gap-2 group"
                             >
                                 <X size={24} />
-                                <span className="text-sm font-black uppercase tracking-widest px-2">Close Fullscreen</span>
+                                <span className="text-sm font-black uppercase tracking-widest px-2">{t('common.close')}</span>
                             </button>
                             
                             <div className="w-full h-full overflow-hidden">
@@ -159,213 +162,214 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
 };
 
 // Ohm's Law Components
-const OhmTheory = () => (
-    <div className="space-y-4 animate-in fade-in duration-500">
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                Aim of Experiment
-            </h3>
-            <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
-                To verify Ohm’s law by measuring the current flowing through a resistor for various potential differences across it and to plot a graph between V and I.
-            </p>
-        </section>
-
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                Basic Concept
-            </h3>
-            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
-                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
-                    "At a constant temperature, the current (I) flowing through a conductor is directly proportional to the potential difference (V) across its ends."
+const OhmTheory = () => {
+    const { t } = useLanguage();
+    return (
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    {t('guide.ohm.aim')}
+                </h3>
+                <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
+                    {t('guide.ohm.aimDesc')}
                 </p>
-                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
-                    <code className="text-blue-400 font-bold text-lg">V = I × R</code>
-                </div>
-            </div>
-        </section>
-    </div>
-);
+            </section>
 
-const OhmProcedure = () => (
-    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
-        <ul className="space-y-3">
-            {[
-                "Drag the required instruments to the workspace.",
-                "Connect the Battery positive terminal to the Ammeter positive.",
-                "Connect the Ammeter negative to the Resistor terminal 1.",
-                "Connect the Resistor terminal 2 to the Rheostat.",
-                "Complete the circuit via the Switch back to the Battery negative.",
-                "Connect the Voltmeter in parallel with the Resistor.",
-                "Close the switch and adjust the rheostat to get different readings.",
-                "Go to 'DATA' tab (Table Icon) and click 'RECORD READING' for each position."
-            ].map((step, i) => (
-                <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
-                        {i + 1}
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    {t('guide.ohm.concept')}
+                </h3>
+                <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                    <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
+                        {t('guide.ohm.conceptDesc')}
+                    </p>
+                    <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
+                        <code className="text-blue-400 font-bold text-lg">V = I × R</code>
                     </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
+                </div>
+            </section>
+        </div>
+    );
+};
 
-const WheatstoneTheory = () => (
-    <div className="space-y-4 animate-in fade-in duration-500">
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                Aim of Experiment
-            </h3>
-            <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
-                To determine the unknown resistance (S) using a Wheatstone Bridge by achieving a null deflection in the galvanometer.
-            </p>
-        </section>
+const OhmProcedure = () => {
+    const { t } = useLanguage();
+    const steps = t('guide.ohm.steps') as unknown as string[];
+    return (
+        <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+            <ul className="space-y-3">
+                {Array.isArray(steps) && steps.map((step, i) => (
+                    <li key={i} className="flex gap-4">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
+                            {i + 1}
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
 
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                Bridge Principle
-            </h3>
-            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
-                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
-                    "When the bridge is balanced, no current flows through the galvanometer. This happens when the ratio of adjacent resistances is equal."
+const WheatstoneTheory = () => {
+    const { t } = useLanguage();
+    return (
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                    {t('guide.wheatstone.aim')}
+                </h3>
+                <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
+                    {t('guide.wheatstone.aimDesc')}
                 </p>
-                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
-                    <code className="text-purple-400 font-bold text-lg">P / Q = R / S</code>
-                </div>
-            </div>
-        </section>
-    </div>
-);
+            </section>
 
-const WheatstoneProcedure = () => (
-    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
-        <ul className="space-y-3">
-            {[
-                "Place resistors P, Q, R, and S in a bridge configuration.",
-                "Connect the Galvanometer across the horizontal opposite junctions.",
-                "Connect the Battery and Switch across the vertical opposite junctions.",
-                "Close the switch and observe the Galvanometer deflection.",
-                "Adjust variable resistor R until the Galvanometer reading is 0 (Null Point).",
-                "Calculate S = (Q * R) / P."
-            ].map((step, i) => (
-                <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
-                        {i + 1}
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                    {t('guide.wheatstone.principle')}
+                </h3>
+                <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                    <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
+                        {t('guide.wheatstone.principleDesc')}
+                    </p>
+                    <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
+                        <code className="text-purple-400 font-bold text-lg">P / Q = R / S</code>
                     </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
+                </div>
+            </section>
+        </div>
+    );
+};
 
-const OpticsTheory = () => (
-    <div className="space-y-4 animate-in fade-in duration-500">
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                Reflection & Refraction
-            </h3>
-            <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
-                Study the behavior of light rays as they interact with different optical media and surfaces.
-            </p>
-        </section>
+const WheatstoneProcedure = () => {
+    const { t } = useLanguage();
+    const steps = t('guide.wheatstone.steps') as unknown as string[];
+    return (
+        <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+            <ul className="space-y-3">
+                {Array.isArray(steps) && steps.map((step, i) => (
+                    <li key={i} className="flex gap-4">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
+                            {i + 1}
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
 
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                Lens Formula
-            </h3>
-            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
-                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
-                    "The relationship between object distance (u), image distance (v), and focal length (f) of a lens."
+const OpticsTheory = () => {
+    const { t } = useLanguage();
+    return (
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    {t('guide.optics.aim')}
+                </h3>
+                <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
+                    {t('guide.optics.aimDesc')}
                 </p>
-                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
-                    <code className="text-blue-400 font-bold text-lg">1/f = 1/v - 1/u</code>
-                </div>
-            </div>
-        </section>
-    </div>
-);
+            </section>
 
-const OpticsProcedure = () => (
-    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
-        <ul className="space-y-3">
-            {[
-                "Place a Light Source (Object) on the left side of the workspace.",
-                "Place a Convex or Concave lens at the center.",
-                "Adjust the object position and observe the ray paths.",
-                "Measure the image distance (v) for various object distances (u).",
-                "Verify the lens formula using the measured values."
-            ].map((step, i) => (
-                <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
-                        {i + 1}
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    {t('guide.optics.lensFormula')}
+                </h3>
+                <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                    <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
+                        {t('guide.optics.lensFormulaDesc')}
+                    </p>
+                    <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
+                        <code className="text-blue-400 font-bold text-lg">1/f = 1/v - 1/u</code>
                     </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
+                </div>
+            </section>
+        </div>
+    );
+};
 
-const MechanicsTheory = () => (
-    <div className="space-y-4 animate-in fade-in duration-500">
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></div>
-                Newton's Second Law
-            </h3>
-            <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
-                Study the relationship between an object's mass, its acceleration, and the applied force.
-            </p>
-        </section>
+const OpticsProcedure = () => {
+    const { t } = useLanguage();
+    const steps = t('guide.optics.steps') as unknown as string[];
+    return (
+        <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+            <ul className="space-y-3">
+                {Array.isArray(steps) && steps.map((step, i) => (
+                    <li key={i} className="flex gap-4">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
+                            {i + 1}
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
 
-        <section className="space-y-2">
-            <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                Force Equation
-            </h3>
-            <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
-                <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
-                    "The acceleration of an object as produced by a net force is directly proportional to the magnitude of the net force and inversely proportional to the mass of the object."
+const MechanicsTheory = () => {
+    const { t } = useLanguage();
+    return (
+        <div className="space-y-4 animate-in fade-in duration-500">
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></div>
+                    {t('guide.mechanics.aim')}
+                </h3>
+                <p className="font-medium leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>
+                    {t('guide.mechanics.aimDesc')}
                 </p>
-                <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
-                    <code className="text-red-400 font-bold text-lg">F = m × a</code>
-                </div>
-            </div>
-        </section>
-    </div>
-);
+            </section>
 
-const MechanicsProcedure = () => (
-    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
-        <ul className="space-y-3">
-            {[
-                "Setup a pulley at the edge or center of the workspace.",
-                "Connect two blocks (M1 and M2) to the pulley system.",
-                "Vary the masses of the blocks.",
-                "Observe the acceleration and tension in the system.",
-                "Analyze the results using Newton's laws of motion."
-            ].map((step, i) => (
-                <li key={i} className="flex gap-4">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
-                        {i + 1}
+            <section className="space-y-2">
+                <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                    {t('guide.mechanics.forceEquation')}
+                </h3>
+                <div className="p-4 rounded-xl space-y-3" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)' }}>
+                    <p className="text-sm italic" style={{ color: 'var(--lab-text-secondary)' }}>
+                        {t('guide.mechanics.forceEquationDesc')}
+                    </p>
+                    <div className="p-3 rounded text-center" style={{ backgroundColor: 'var(--lab-bg-secondary)', border: '1px solid var(--lab-border)' }}>
+                        <code className="text-red-400 font-bold text-lg">F = m × a</code>
                     </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
+                </div>
+            </section>
+        </div>
+    );
+};
+
+const MechanicsProcedure = () => {
+    const { t } = useLanguage();
+    const steps = t('guide.mechanics.steps') as unknown as string[];
+    return (
+        <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
+            <ul className="space-y-3">
+                {Array.isArray(steps) && steps.map((step, i) => (
+                    <li key={i} className="flex gap-4">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}>
+                            {i + 1}
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--lab-text-secondary)' }}>{step}</p>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
 
 const Observation = ({ experimentId, isModal = false }: { experimentId: string; isModal?: boolean }) => {
     const { observations, recordObservation, clearObservations } = usePhysicsLab();
     const { recordObservationXP } = useGamification();
+    const { t } = useLanguage();
 
     const handleRecord = () => {
         recordObservation();
@@ -404,12 +408,12 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
     return (
         <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex justify-between items-center bg-blue-500/10 p-3 rounded-xl border border-blue-500/20">
-                <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Auto-Recording System</div>
+                <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{t('guide.observation.system')}</div>
                 <div className="flex gap-2">
                     <button
                         onClick={clearObservations}
                         className="px-2 py-1 bg-slate-800 text-slate-400 text-[10px] font-bold rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors"
-                        title="Clear all readings"
+                        title={t('guide.observation.clear')}
                     >
                         <Trash2 size={14} />
                     </button>
@@ -417,7 +421,7 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
                         onClick={handleRecord}
                         className="px-3 py-1 bg-blue-500 text-white text-[10px] font-bold rounded-lg hover:bg-blue-600 transition-colors uppercase tracking-widest"
                     >
-                        Record Reading
+                        {t('guide.observation.record')}
                     </button>
                 </div>
             </div>
@@ -447,7 +451,7 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
                             <tr>
                                 <td colSpan={experimentId === 'ohm-law' ? 5 : 4} className="p-16 text-center text-slate-400 font-bold italic uppercase tracking-widest opacity-30">
                                     <Table className="mx-auto mb-4 opacity-50" size={48} />
-                                    No readings recorded yet.
+                                    {t('guide.observation.noData')}
                                 </td>
                             </tr>
                         )}
@@ -481,7 +485,7 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
                 className="w-full p-3 bg-blue-500/5 text-slate-400 border border-slate-800 rounded-xl hover:bg-blue-500/10 transition-all font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <Download size={14} />
-                Export Data (CSV)
+                {t('guide.observation.export')}
             </button>
         </div>
     );
@@ -490,6 +494,7 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
 const Graph = ({ experimentId }: { experimentId: string }) => {
     const { observations } = usePhysicsLab();
     const [isFull, setIsFull] = useState(false);
+    const { t } = useLanguage();
 
     if (experimentId !== 'ohm-law') {
         return (
@@ -497,7 +502,7 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
                 <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-2">
                     <TrendingUp className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Graph Not Applicable</h4>
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('guide.graph.notApplicable')}</h4>
             </div>
         );
     }
@@ -517,11 +522,11 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
             <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                     <div className="w-1.5 h-4 bg-purple-500 rounded-full"></div>
-                    V-I Characteristic
+                    {t('guide.graph.title')}
                 </h3>
                 <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#fbbf24]"></div>
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Readings</span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{t('guide.graph.readings')}</span>
                 </div>
             </div>
 
@@ -550,12 +555,12 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
             <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm text-center">
                 <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider leading-relaxed">
                     {observations.length < 2
-                        ? "Graph will appear after recording at least 2 readings."
-                        : "The linear slope (Straight Line) passing through origin verifies V ∝ I."
+                        ? t('guide.graph.minReadings')
+                        : t('guide.graph.verification')
                     }
                 </p>
                 <div className="mt-2 text-[9px] italic text-[#ec4899] font-bold">
-                    Slope (m) = ΔV / ΔI = Resistance (R)
+                    {t('guide.graph.slopeFormula')}
                 </div>
             </div>
 
@@ -580,15 +585,15 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
                                 className="absolute top-6 right-8 p-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all z-[10001] shadow-2xl flex items-center gap-2"
                             >
                                 <X size={24} />
-                                <span className="text-sm font-black uppercase tracking-widest px-2 font-sans">Close Analysis</span>
+                                <span className="text-sm font-black uppercase tracking-widest px-2 font-sans">{t('guide.graph.closeAnalysis')}</span>
                             </button>
 
                             <div className="mb-6 mt-4 px-4">
                                 <h1 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-5">
                                     <div className="w-4 h-14 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-                                    Ohm's Law: V-I Analysis
+                                    {t('guide.graph.fullTitle')}
                                 </h1>
-                                <p className="text-lg text-slate-500 dark:text-slate-400 font-bold ml-9 mt-2 uppercase tracking-tight">Proving V ∝ I (Constant Temperature)</p>
+                                <p className="text-lg text-slate-500 dark:text-slate-400 font-bold ml-9 mt-2 uppercase tracking-tight">{t('guide.graph.subTitle')}</p>
                             </div>
 
                             <div className="flex-1 relative bg-white dark:bg-slate-900 border-y-2 border-slate-100 dark:border-slate-800 shadow-inner">
@@ -612,7 +617,7 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
                                     onClick={() => setIsFull(false)}
                                     className="px-12 py-4 bg-slate-900 dark:bg-blue-600 text-white font-black rounded-2xl uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all text-sm shadow-[0_10px_30px_rgba(37,99,235,0.3)]"
                                 >
-                                    Return to Lab
+                                    {t('guide.graph.return')}
                                 </button>
                             </div>
                         </motion.div>
@@ -626,145 +631,148 @@ const Graph = ({ experimentId }: { experimentId: string }) => {
 };
 
 // Extracted core graph content for reuse in modal
-const GraphContent = ({ observations, maxV, maxI, isModal = false }: { observations: any[], maxV: number, maxI: number, isModal?: boolean }) => (
-    <>
-        {/* Reference Grid Paper Effect */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.15]">
-            <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#06b6d4 0.5px, transparent 0.5px)', backgroundSize: isModal ? '15px 15px' : '10px 10px' }}></div>
-            <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, #06b6d4 0.5px, transparent 0.5px), linear-gradient(to bottom, #06b6d4 0.5px, transparent 0.5px)', backgroundSize: isModal ? '75px 75px' : '50px 50px' }}></div>
-        </div>
+const GraphContent = ({ observations, maxV, maxI, isModal = false }: { observations: any[], maxV: number, maxI: number, isModal?: boolean }) => {
+    const { t } = useLanguage();
+    return (
+        <>
+            {/* Reference Grid Paper Effect */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.15]">
+                <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#06b6d4 0.5px, transparent 0.5px)', backgroundSize: isModal ? '15px 15px' : '10px 10px' }}></div>
+                <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, #06b6d4 0.5px, transparent 0.5px), linear-gradient(to bottom, #06b6d4 0.5px, transparent 0.5px)', backgroundSize: isModal ? '75px 75px' : '50px 50px' }}></div>
+            </div>
 
-        <div className={`absolute inset-6 bottom-16 left-24 sm:left-28 flex flex-col items-center justify-center`}>
-            <svg className="w-full h-full overflow-visible" viewBox="0 0 200 150" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id={`${isModal ? 'modal-' : ''}lineGrad`} x1="0" y1="1" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#ec4899" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
-                    </linearGradient>
-                    <filter id={`${isModal ? 'modal-' : ''}glow`}>
-                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
-                </defs>
+            <div className={`absolute inset-6 bottom-16 left-24 sm:left-28 flex flex-col items-center justify-center`}>
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 200 150" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id={`${isModal ? 'modal-' : ''}lineGrad`} x1="0" y1="1" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#ec4899" />
+                            <stop offset="100%" stopColor="#8b5cf6" />
+                        </linearGradient>
+                        <filter id={`${isModal ? 'modal-' : ''}glow`}>
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
 
-                {/* Axes */}
-                <g className="stroke-slate-800 dark:stroke-slate-400" strokeWidth="2" fill="none">
-                    {/* Y-Axis */}
-                    <line x1="0" y1="0" x2="0" y2="150" />
-                    <path d="M -4,6 L 0,0 L 4,6" />
-                    {/* X-Axis */}
-                    <line x1="0" y1="150" x2="200" y2="150" />
-                    <path d="M 194,146 L 200,150 L 194,154" />
-                    
-                    {/* Origin & Tips */}
-                    <text x="-12" y="162" fontSize="8" fill="currentColor" fontWeight="bold">O</text>
-                    <text x="-10" y="8" fontSize="8" fill="currentColor" fontWeight="bold">Y</text>
-                    <text x="210" y="152" fontSize="8" fill="currentColor" fontWeight="bold">X</text>
-                </g>
+                    {/* Axes */}
+                    <g className="stroke-slate-800 dark:stroke-slate-400" strokeWidth="2" fill="none">
+                        {/* Y-Axis */}
+                        <line x1="0" y1="0" x2="0" y2="150" />
+                        <path d="M -4,6 L 0,0 L 4,6" />
+                        {/* X-Axis */}
+                        <line x1="0" y1="150" x2="200" y2="150" />
+                        <path d="M 194,146 L 200,150 L 194,154" />
+                        
+                        {/* Origin & Tips */}
+                        <text x="-12" y="162" fontSize="8" fill="currentColor" fontWeight="bold">O</text>
+                        <text x="-10" y="8" fontSize="8" fill="currentColor" fontWeight="bold">Y</text>
+                        <text x="210" y="152" fontSize="8" fill="currentColor" fontWeight="bold">X</text>
+                    </g>
 
-                {/* Tick Marks & Text */}
-                {Array.from({ length: 6 }).map((_, i) => {
-                    const v = (i / 5) * maxV;
-                    const cur = (i / 5) * maxI;
-                    const x = (i / 5) * 200;
-                    const y = 150 - (i / 5) * 150;
+                    {/* Tick Marks & Text */}
+                    {Array.from({ length: 6 }).map((_, i) => {
+                        const v = (i / 5) * maxV;
+                        const cur = (i / 5) * maxI;
+                        const x = (i / 5) * 200;
+                        const y = 150 - (i / 5) * 150;
 
-                    return (
-                        <g key={i}>
-                            <line x1={x} y1="150" x2={x} y2="155" stroke="#64748b" strokeWidth="1" />
-                            <text x={x} y="168" fontSize={isModal ? "5" : "6"} fill="#64748b" textAnchor="middle" fontWeight="black">{v.toFixed(1)}</text>
-                            <line x1="-5" y1={y} x2="0" y2={y} stroke="#64748b" strokeWidth="1" />
-                            <text x="-8" y={y} fontSize={isModal ? "5" : "6"} fill="#64748b" textAnchor="end" dominantBaseline="middle" fontWeight="black">{cur.toFixed(2)}</text>
-                        </g>
-                    );
-                })}
-
-                {/* Projections */}
-                <g>
-                    {observations.map((obs: any, i) => {
-                        const px = (obs.i / maxI) * 200;
-                        const py = 150 - (obs.v / maxV) * 150;
-                        if (isNaN(px) || isNaN(py)) return null;
                         return (
-                            <g key={`proj-${i}`} stroke="#64748b" strokeWidth="0.5" strokeDasharray="2,2" opacity="0.4">
-                                <line x1={px} y1={py} x2={px} y2="150" />
-                                <line x1={px} y1={py} x2="0" y2={py} />
+                            <g key={i}>
+                                <line x1={x} y1="150" x2={x} y2="155" stroke="#64748b" strokeWidth="1" />
+                                <text x={x} y="168" fontSize={isModal ? "5" : "6"} fill="#64748b" textAnchor="middle" fontWeight="black">{v.toFixed(1)}</text>
+                                <line x1="-5" y1={y} x2="0" y2={y} stroke="#64748b" strokeWidth="1" />
+                                <text x="-8" y={y} fontSize={isModal ? "5" : "6"} fill="#64748b" textAnchor="end" dominantBaseline="middle" fontWeight="black">{cur.toFixed(2)}</text>
                             </g>
                         );
                     })}
-                </g>
 
-                {/* Slope Triangle */}
-                {observations.length >= 2 && (
-                    <g opacity="0.8">
-                        {(() => {
-                            const sorted = [...observations]
-                                .filter((o: any) => o.v !== undefined && o.i !== undefined)
-                                .sort((a: any, b: any) => a.i - b.i);
-                            const p1 = sorted[sorted.length - 2];
-                            const p2 = sorted[sorted.length - 1];
-                            const x1 = (p1.i / maxI) * 200;
-                            const y1 = 150 - (p1.v / maxV) * 150;
-                            const x2 = (p2.i / maxI) * 200;
-                            const y2 = 150 - (p2.v / maxV) * 150;
+                    {/* Projections */}
+                    <g>
+                        {observations.map((obs: any, i) => {
+                            const px = (obs.i / maxI) * 200;
+                            const py = 150 - (obs.v / maxV) * 150;
+                            if (isNaN(px) || isNaN(py)) return null;
                             return (
-                                <>
-                                    <line x1={x1} y1={y2} x2={x2} y2={y2} stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,1" />
-                                    <line x1={x1} y1={y1} x2={x1} y2={y2} stroke="#ec4899" strokeWidth="1" strokeDasharray="3,1" />
-                                    <text x={(x1 + x2) / 2} y={y2 - 4} fontSize="5" fill="#8b5cf6" textAnchor="middle" fontWeight="bold">ΔI</text>
-                                    <text x={x1 - 4} y={(y1 + y2) / 2} fontSize="5" fill="#ec4899" textAnchor="end" fontWeight="bold" transform={`rotate(-90, ${x1 - 4}, ${(y1 + y2) / 2})`}>ΔV</text>
-                                </>
+                                <g key={`proj-${i}`} stroke="#64748b" strokeWidth="0.5" strokeDasharray="2,2" opacity="0.4">
+                                    <line x1={px} y1={py} x2={px} y2="150" />
+                                    <line x1={px} y1={py} x2="0" y2={py} />
+                                </g>
                             );
-                        })()}
+                        })}
                     </g>
-                )}
 
-                {/* Characteristic Line - Solid Red like reference */}
-                {observations.length > 1 && (
-                    <motion.polyline
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 1.5, ease: "easeInOut" }}
-                        fill="none"
-                        stroke="#ef4444"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        points={observations
-                            .filter((o: any) => o.v !== undefined && o.i !== undefined)
-                            .sort((a: any, b: any) => a.i - b.i)
-                            .map((o: any) => `${(o.i / maxI) * 200},${150 - (o.v / maxV) * 150}`)
-                            .join(' ')}
-                    />
-                )}
+                    {/* Slope Triangle */}
+                    {observations.length >= 2 && (
+                        <g opacity="0.8">
+                            {(() => {
+                                const sorted = [...observations]
+                                    .filter((o: any) => o.v !== undefined && o.i !== undefined)
+                                    .sort((a: any, b: any) => a.i - b.i);
+                                const p1 = sorted[sorted.length - 2];
+                                const p2 = sorted[sorted.length - 1];
+                                const x1 = (p1.i / maxI) * 200;
+                                const y1 = 150 - (p1.v / maxV) * 150;
+                                const x2 = (p2.i / maxI) * 200;
+                                const y2 = 150 - (p2.v / maxV) * 150;
+                                return (
+                                    <>
+                                        <line x1={x1} y1={y2} x2={x2} y2={y2} stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,1" />
+                                        <line x1={x1} y1={y1} x2={x1} y2={y2} stroke="#ec4899" strokeWidth="1" strokeDasharray="3,1" />
+                                        <text x={(x1 + x2) / 2} y={y2 - 4} fontSize="5" fill="#8b5cf6" textAnchor="middle" fontWeight="bold">ΔI</text>
+                                        <text x={x1 - 4} y={(y1 + y2) / 2} fontSize="5" fill="#ec4899" textAnchor="end" fontWeight="bold" transform={`rotate(-90, ${x1 - 4}, ${(y1 + y2) / 2})`}>ΔV</text>
+                                    </>
+                                );
+                            })()}
+                        </g>
+                    )}
 
-                {/* Data Points */}
-                {observations
-                    .filter((obs: any) => typeof obs.i === 'number' && typeof obs.v === 'number')
-                    .map((obs: any, i) => (
-                        <motion.g key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.1 }}>
-                            <circle
-                                cx={(obs.i / maxI) * 200}
-                                cy={150 - (obs.v / maxV) * 150}
-                                r={isModal ? "2.5" : "3.5"}
-                                fill="#fbbf24"
-                                stroke="#ffffff"
-                                strokeWidth="1.5"
-                                className="drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]"
-                            />
-                        </motion.g>
-                    ))}
-            </svg>
-        </div>
-        
-        {/* Axis Labels - Match reference style */}
-        <div className={`absolute top-[48%] left-1 sm:left-2 -rotate-90 -translate-y-1/2 whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#8b5cf6] ${isModal ? 'text-3xl' : 'text-[10px]'}`}>
-            I (Ampere) ———›
-        </div>
-        <div className={`absolute bottom-2 sm:bottom-4 left-[55%] -translate-x-1/2 whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#ec4899] ${isModal ? 'text-3xl' : 'text-[10px]'}`}>
-            V (Volt) ———›
-        </div>
-    </>
-);
+                    {/* Characteristic Line - Solid Red like reference */}
+                    {observations.length > 1 && (
+                        <motion.polyline
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            transition={{ duration: 1.5, ease: "easeInOut" }}
+                            fill="none"
+                            stroke="#ef4444"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            points={observations
+                                .filter((o: any) => o.v !== undefined && o.i !== undefined)
+                                .sort((a: any, b: any) => a.i - b.i)
+                                .map((o: any) => `${(o.i / maxI) * 200},${150 - (o.v / maxV) * 150}`)
+                                .join(' ')}
+                        />
+                    )}
+
+                    {/* Data Points */}
+                    {observations
+                        .filter((obs: any) => typeof obs.i === 'number' && typeof obs.v === 'number')
+                        .map((obs: any, i) => (
+                            <motion.g key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.1 }}>
+                                <circle
+                                    cx={(obs.i / maxI) * 200}
+                                    cy={150 - (obs.v / maxV) * 150}
+                                    r={isModal ? "2.5" : "3.5"}
+                                    fill="#fbbf24"
+                                    stroke="#ffffff"
+                                    strokeWidth="1.5"
+                                    className="drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]"
+                                />
+                            </motion.g>
+                        ))}
+                </svg>
+            </div>
+            
+            {/* Axis Labels - Match reference style */}
+            <div className={`absolute top-[48%] left-1 sm:left-2 -rotate-90 -translate-y-1/2 whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#8b5cf6] ${isModal ? 'text-3xl' : 'text-[10px]'}`}>
+                {t('guide.graph.axisI') ?? 'I (Ampere)'} ———›
+            </div>
+            <div className={`absolute bottom-2 sm:bottom-4 left-[55%] -translate-x-1/2 whitespace-nowrap font-black uppercase tracking-[0.2em] text-[#ec4899] ${isModal ? 'text-3xl' : 'text-[10px]'}`}>
+                {t('guide.graph.axisV') ?? 'V (Volt)'} ———›
+            </div>
+        </>
+    );
+};

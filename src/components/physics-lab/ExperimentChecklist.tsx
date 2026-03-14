@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Circle, ListChecks } from '@/lib/icons';
 import { useGamification } from './GamificationPanel';
 import { usePhysicsLab } from '@/context/PhysicsLabContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ChecklistItem {
   id: string;
@@ -12,40 +13,40 @@ interface ChecklistItem {
 
 const checklistsByExperiment: Record<string, ChecklistItem[]> = {
   'ohm-law': [
-    { id: 'place-battery', label: 'Place the Battery on the workspace' },
-    { id: 'place-resistor', label: 'Place a Resistor' },
-    { id: 'place-ammeter', label: 'Place an Ammeter (series)' },
-    { id: 'place-voltmeter', label: 'Place a Voltmeter (parallel)' },
-    { id: 'place-rheostat', label: 'Place a Rheostat' },
-    { id: 'place-switch', label: 'Place the Plug Key (Switch)' },
-    { id: 'connect-all', label: 'Connect all terminals to form a circuit' },
-    { id: 'close-switch', label: 'Close the switch' },
-    { id: 'record-reading', label: 'Record at least 1 observation' },
-    { id: 'vary-rheostat', label: 'Adjust rheostat for different readings' },
+    { id: 'place-battery', label: 'guide.checklist.items.place-battery' },
+    { id: 'place-resistor', label: 'guide.checklist.items.place-resistor' },
+    { id: 'place-ammeter', label: 'guide.checklist.items.place-ammeter' },
+    { id: 'place-voltmeter', label: 'guide.checklist.items.place-voltmeter' },
+    { id: 'place-rheostat', label: 'guide.checklist.items.place-rheostat' },
+    { id: 'place-switch', label: 'guide.checklist.items.place-switch' },
+    { id: 'connect-all', label: 'guide.checklist.items.connect-all' },
+    { id: 'close-switch', label: 'guide.checklist.items.close-switch' },
+    { id: 'record-reading', label: 'guide.checklist.items.record-reading' },
+    { id: 'vary-rheostat', label: 'guide.checklist.items.vary-rheostat' },
   ],
   'wheatstone-bridge': [
-    { id: 'place-battery', label: 'Place the Battery' },
-    { id: 'place-resistors', label: 'Place all 4 resistors (P, Q, R, S)' },
-    { id: 'place-galvanometer', label: 'Place the Galvanometer' },
-    { id: 'place-switches', label: 'Place the switches' },
-    { id: 'connect-bridge', label: 'Wire up the bridge configuration' },
-    { id: 'close-switches', label: 'Close both switches' },
-    { id: 'balance-bridge', label: 'Adjust R until galvanometer reads 0' },
-    { id: 'record-reading', label: 'Record the balanced resistance values' },
+    { id: 'place-battery', label: 'guide.checklist.items.place-battery' },
+    { id: 'place-resistors', label: 'guide.checklist.items.place-resistors' },
+    { id: 'place-galvanometer', label: 'guide.checklist.items.place-galvanometer' },
+    { id: 'place-switches', label: 'guide.checklist.items.place-switches' },
+    { id: 'connect-bridge', label: 'guide.checklist.items.connect-bridge' },
+    { id: 'close-switches', label: 'guide.checklist.items.close-switches' },
+    { id: 'balance-bridge', label: 'guide.checklist.items.balance-bridge' },
+    { id: 'record-reading', label: 'guide.checklist.items.record-reading' },
   ],
   'reflection-refraction': [
-    { id: 'place-source', label: 'Place a light source (Object)' },
-    { id: 'place-lens', label: 'Place a convex or concave lens' },
-    { id: 'observe-rays', label: 'Observe the ray tracing paths' },
-    { id: 'vary-position', label: 'Move the object to different positions' },
-    { id: 'record-reading', label: 'Record image distances' },
+    { id: 'place-source', label: 'guide.checklist.items.place-source' },
+    { id: 'place-lens', label: 'guide.checklist.items.place-lens' },
+    { id: 'observe-rays', label: 'guide.checklist.items.observe-rays' },
+    { id: 'vary-position', label: 'guide.checklist.items.vary-position' },
+    { id: 'record-reading', label: 'guide.checklist.items.record-reading' },
   ],
   'newton-second-law': [
-    { id: 'place-pulley', label: 'Place the fixed pulley' },
-    { id: 'place-m1', label: 'Place mass block M1' },
-    { id: 'place-m2', label: 'Place mass block M2' },
-    { id: 'observe-vectors', label: 'Observe force and acceleration vectors' },
-    { id: 'record-reading', label: 'Record acceleration and tension values' },
+    { id: 'place-pulley', label: 'guide.checklist.items.place-pulley' },
+    { id: 'place-m1', label: 'guide.checklist.items.place-m1' },
+    { id: 'place-m2', label: 'guide.checklist.items.place-m2' },
+    { id: 'observe-vectors', label: 'guide.checklist.items.observe-vectors' },
+    { id: 'record-reading', label: 'guide.checklist.items.record-reading' },
   ],
 };
 
@@ -142,13 +143,16 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
   }, [items, instruments, connections, simulationResults, observations, experimentId, addXP, completeExperiment]);
 
   const progress = items.length > 0 ? Math.round((checked.size / items.length) * 100) : 0;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
       {/* Progress */}
       <div className="flex items-center gap-3">
         <ListChecks className="w-4 h-4" style={{ color: 'var(--lab-tab-active)' }} />
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--lab-text-secondary)' }}>Guided Checklist</span>
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--lab-text-secondary)' }}>
+          {t('guide.checklist.title')}
+        </span>
         <span className="ml-auto text-xs font-mono" style={{ color: 'var(--lab-tab-active)' }}>{progress}%</span>
       </div>
 
@@ -163,6 +167,8 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
       <div className="space-y-2">
         {items.map((item) => {
           const done = checked.has(item.id);
+          const displayLabel = t(item.label);
+
           return (
             <div
               key={item.id}
@@ -178,7 +184,7 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
                 <Circle className="w-4 h-4 shrink-0" style={{ color: 'var(--lab-text-muted)' }} />
               )}
               <span className={`text-xs leading-relaxed ${done ? 'text-emerald-600 dark:text-emerald-300 line-through opacity-70' : ''}`} style={done ? {} : { color: 'var(--lab-text-secondary)' }}>
-                {item.label}
+                {displayLabel}
               </span>
             </div>
           );
@@ -188,7 +194,7 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
       {progress === 100 && (
         <div className="text-center p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
           <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-            🎉 All steps completed!
+            {t('guide.checklist.completed')}
           </span>
         </div>
       )}

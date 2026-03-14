@@ -4,9 +4,11 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loader2, UserCheck } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function OnboardingContent() {
+  const { t } = useLanguage();
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,7 +40,7 @@ function OnboardingContent() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to update role");
+          throw new Error(t('onboarding.error'));
         }
 
         // Force session update to reflect new role
@@ -46,7 +48,7 @@ function OnboardingContent() {
         setProcessed(true);
         router.push("/dashboard");
       } catch (err) {
-        setError("Something went wrong during onboarding.");
+        setError(t('onboarding.error'));
         console.error(err);
       }
     };
@@ -65,22 +67,23 @@ function OnboardingContent() {
   return (
     <div className="flex flex-col items-center justify-center space-y-4 py-8">
       <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-      <p className="text-slate-400 font-medium">Finalizing your account setup...</p>
+      <p className="text-slate-400 font-medium">{t('onboarding.finalizing')}</p>
     </div>
   );
 }
 
 export default function OnboardingPage() {
+  const { t } = useLanguage();
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
       <Card className="w-full max-w-md border-slate-800 bg-slate-900 text-slate-100">
         <CardHeader>
           <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
             <UserCheck className="w-6 h-6 text-blue-500" />
-            Onboarding
+            {t('onboarding.title')}
           </CardTitle>
           <CardDescription className="text-center text-slate-400">
-            Setting up your profile role.
+            {t('onboarding.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>

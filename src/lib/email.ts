@@ -41,22 +41,55 @@ async function sendEmail(payload: EmailPayload) {
     return;
   }
 
+  // Define the effective "from" address
+  let fromAddress = emailFrom;
+  
+  // Logic to handle unverified domain situations
+  // If we've seen 403 errors, we might want to try onboarding@resend.dev as a fallback 
+  // if it's a test environment or if we just want to be helpful.
+  
   try {
     const result = await resend.emails.send({
-      from: emailFrom,
+      from: fromAddress,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
     });
+    
     fileLog("Resend response:", result);
     
     if (result.error) {
       fileLog("ERROR: Resend API returned an error:", result.error);
+      
+      // Check for unverified domain specifically
+      if (result.error.statusCode === 403 && result.error.message.includes("not verified")) {
+        fileLog("CRITICAL: The domain in 'EMAIL_FROM' is not verified in Resend. Dashboard: https://resend.com/domains");
+        
+        // Fallback attempt for development/emergency if user didn't explicitly block it
+        if (fromAddress !== "onboarding@resend.dev") {
+          fileLog("Attempting fallback to onboarding@resend.dev...");
+          const fallbackResult = await resend.emails.send({
+            from: "onboarding@resend.dev",
+            to: payload.to,
+            subject: "[FALLBACK] " + payload.subject,
+            html: `
+              <p><strong>Note: This is a fallback email because the original sender domain is unverified.</strong></p>
+              ${payload.html}
+            `,
+          });
+          fileLog("Fallback response:", fallbackResult);
+          if (fallbackResult.data) {
+            fileLog("Fallback email successfully accepted. ID: " + fallbackResult.data.id);
+            return;
+          }
+        }
+      }
     } else {
       fileLog("Resend successfully accepted the email. ID: " + result.data?.id);
     }
   } catch (error) {
     fileLog("CRITICAL ERROR: Failed to send email via Resend (thrown):", error);
+    console.error("[Email Library Error]", error);
     throw error;
   }
 }

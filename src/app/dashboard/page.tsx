@@ -15,6 +15,7 @@ import {
   Clock,
   Link as LinkIcon,
 } from "@/lib/icons";
+import { useLanguage } from "@/context/LanguageContext";
 
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
@@ -63,6 +64,7 @@ interface DashboardData {
 }
 
 export default function TeacherDashboard() {
+  const { t } = useLanguage();
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -98,11 +100,11 @@ export default function TeacherDashboard() {
     setLoading(true);
     try {
       const res = await fetch("/api/dashboard");
-      if (!res.ok) throw new Error("Failed to load dashboard");
+      if (!res.ok) throw new Error(t('dashboard.error.load'));
       const json = await res.json();
       setData(json);
     } catch (err) {
-      setError("Unable to load dashboard data.");
+      setError(t('dashboard.error.load'));
     } finally {
       setLoading(false);
     }
@@ -174,13 +176,13 @@ export default function TeacherDashboard() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-            {session?.user?.role === "OWNER" ? "Owner" : "Teacher"}{" "}
+            {session?.user?.role === "OWNER" ? t('dashboard.owner') : t('dashboard.teacher')}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-              Dashboard
+              {t('dashboard.title')}
             </span>
           </h1>
           <p className="text-lg text-slate-400">
-            Monitor student progress, manage your organization, and review lab reports.
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -196,23 +198,23 @@ export default function TeacherDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-blue-400" />
-                Create Your School Organization
+                {t('dashboard.org.createTitle')}
               </CardTitle>
               <CardDescription className="text-slate-400">
-                Set up an organization to manage classes and track student progress.
+                {t('dashboard.org.createDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {showCreateOrg ? (
                 <div className="space-y-4">
                   <Input
-                    placeholder="Organization name (e.g., Springfield High School)"
+                    placeholder={t('dashboard.org.namePlaceholder')}
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     className="bg-slate-900/60"
                   />
                   <Input
-                    placeholder="Description (optional)"
+                    placeholder={t('dashboard.org.descPlaceholder')}
                     value={orgDesc}
                     onChange={(e) => setOrgDesc(e.target.value)}
                     className="bg-slate-900/60"
@@ -220,21 +222,21 @@ export default function TeacherDashboard() {
                   <div className="flex gap-3">
                     <Button onClick={handleCreateOrg} disabled={creatingOrg}>
                       {creatingOrg && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Create Organization
+                      {t('dashboard.org.createButton')}
                     </Button>
                     <Button
                       variant="outline"
                       className="border-slate-700 text-white hover:bg-slate-900"
                       onClick={() => setShowCreateOrg(false)}
                     >
-                      Cancel
+                      {t('dashboard.org.cancel')}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <Button onClick={() => setShowCreateOrg(true)}>
                   <Plus className="mr-2 w-4 h-4" />
-                  Create Organization
+                  {t('dashboard.org.createButton')}
                 </Button>
               )}
             </CardContent>
@@ -251,7 +253,7 @@ export default function TeacherDashboard() {
                     </div>
                     <div>
                       <p className="text-3xl font-bold">{data.stats.totalStudents}</p>
-                      <p className="text-sm text-slate-400">Students</p>
+                      <p className="text-sm text-slate-400">{t('dashboard.stats.students')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -265,7 +267,7 @@ export default function TeacherDashboard() {
                     </div>
                     <div>
                       <p className="text-3xl font-bold">{data.stats.totalReports}</p>
-                      <p className="text-sm text-slate-400">Lab Reports</p>
+                      <p className="text-sm text-slate-400">{t('dashboard.stats.reports')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -279,7 +281,7 @@ export default function TeacherDashboard() {
                     </div>
                     <div>
                       <p className="text-3xl font-bold">{data.stats.activeExperiments}</p>
-                      <p className="text-sm text-slate-400">Active Experiments</p>
+                      <p className="text-sm text-slate-400">{t('dashboard.stats.activeExps')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -294,7 +296,7 @@ export default function TeacherDashboard() {
                   {data.organization.name}
                 </CardTitle>
                 <CardDescription className="text-slate-400">
-                  Add students and teachers to your organization by email.
+                  {t('dashboard.orgInfo.addDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -323,12 +325,12 @@ export default function TeacherDashboard() {
                     ) : (
                       <Plus className="mr-2 w-4 h-4" />
                     )}
-                    Add
+                    {t('dashboard.orgInfo.add')}
                   </Button>
                   <Link href="/dashboard/teachers/invite">
                     <Button variant="outline" className="border-slate-700 text-white hover:bg-slate-800">
                       <LinkIcon className="mr-2 w-4 h-4" />
-                      Invite Link
+                      {t('dashboard.orgInfo.inviteLink')}
                     </Button>
                   </Link>
                 </div>
@@ -343,13 +345,13 @@ export default function TeacherDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-blue-400" />
-                  Students
+                  {t('dashboard.students.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {data.students.length === 0 ? (
                   <p className="text-slate-500 text-sm">
-                    No students yet. Add members above to get started.
+                    {t('dashboard.students.none')}
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -360,7 +362,7 @@ export default function TeacherDashboard() {
                       >
                         <div>
                           <p className="font-semibold text-white">
-                            {student.name ?? "Unnamed Student"}
+                            {student.name ?? t('dashboard.students.unnamed')}
                           </p>
                           <p className="text-sm text-slate-400">{student.email}</p>
                         </div>
@@ -370,7 +372,7 @@ export default function TeacherDashboard() {
                               {student.reportCount}
                             </p>
                             <p className="text-[10px] uppercase tracking-widest text-slate-500">
-                              Reports
+                              {t('dashboard.stats.reports')}
                             </p>
                           </div>
                           <Link href={`/dashboard/student/${student.id}`}>
@@ -379,7 +381,7 @@ export default function TeacherDashboard() {
                               size="sm"
                               className="border-slate-700 text-white hover:bg-slate-800"
                             >
-                              View <ArrowRight className="ml-1 w-3 h-3" />
+                              {t('dashboard.students.view')} <ArrowRight className="ml-1 w-3 h-3" />
                             </Button>
                           </Link>
                         </div>
@@ -395,13 +397,13 @@ export default function TeacherDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-purple-400" />
-                  Recent Lab Reports
+                  {t('dashboard.reports.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {data.recentReports.length === 0 ? (
                   <p className="text-slate-500 text-sm">
-                    No reports submitted yet.
+                    {t('dashboard.reports.none')}
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -413,7 +415,7 @@ export default function TeacherDashboard() {
                         <div>
                           <p className="font-semibold text-white">{report.title}</p>
                           <p className="text-sm text-slate-400">
-                            by {report.user.name ?? report.user.email}
+                            {t('dashboard.reports.by')} {report.user.name ?? report.user.email}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500">
