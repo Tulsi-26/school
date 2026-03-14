@@ -563,6 +563,95 @@ export const en = {
       joinFree: "Join for Free"
     }
   },
+  poster: {
+    badge: "The Future of STEM Education",
+    headline1: "Master Physics",
+    headline2: "Through Discovery.",
+    subheadline: "An interactive virtual laboratory where students build circuits, trace light rays, and explore the laws of nature — no physical equipment needed.",
+    ctaPrimary: "Get Started Free",
+    ctaSecondary: "Try the Lab",
+    stats: {
+      domains: "Physics Domains",
+      curriculum: "Curriculum Aligned",
+      access: "Available Anywhere",
+      cost: "Setup Cost"
+    },
+    features: {
+      title1: "Explore Every",
+      title2: "Physics Domain",
+      subtitle: "From electrical circuits to ray optics and classical mechanics — all in one powerful virtual laboratory.",
+      electricity: {
+        title: "Electricity & Magnetism",
+        desc: "Build and test circuits with batteries, resistors, ammeters, and voltmeters. Verify Ohm's Law, balance Wheatstone bridges, and more."
+      },
+      optics: {
+        title: "Optics & Light",
+        desc: "Trace laser rays through convex lenses, concave mirrors, and prisms. Visualize refraction and image formation in real time."
+      },
+      mechanics: {
+        title: "Classical Mechanics",
+        desc: "Study Newton's Laws with pulleys and blocks. Measure forces, acceleration, and verify fundamental mechanics principles."
+      }
+    },
+    why: {
+      title1: "Why Schools Choose",
+      title2: "PhysicsLab",
+      safe: {
+        title: "100% Risk-Free",
+        desc: "No broken equipment, no safety hazards. Students can experiment freely and repeat experiments infinitely."
+      },
+      feedback: {
+        title: "Smart Feedback",
+        desc: "Real-time circuit validation, error detection, and step-by-step hints guide students like a private tutor."
+      },
+      curriculum: {
+        title: "Curriculum Aligned",
+        desc: "Covers CBSE, GSEB, and ICSE syllabi. Every experiment maps directly to textbook chapters and board exam patterns."
+      },
+      accessible: {
+        title: "Works Everywhere",
+        desc: "Runs on any device with a browser — laptops, tablets, or phones. No downloads, no installations required."
+      }
+    },
+    visual: {
+      labTitle: "PhysicsLab Dashboard",
+      labSubtitle: "Interactive Simulation Engine",
+      circuits: "Circuit Builder",
+      rayTracing: "Ray Tracing",
+      gamified: "Gamified Learning",
+      realtime: "Real-time Data",
+      progress: "Curriculum Progress"
+    },
+    audience: {
+      title1: "Built For",
+      title2: "Everyone",
+      students: {
+        title: "Students",
+        desc: "Learn by doing. Build circuits, trace rays, and discover physics through hands-on virtual experiments."
+      },
+      teachers: {
+        title: "Teachers",
+        desc: "Assign labs, track student progress, and generate automated reports. Save time and enhance classroom learning."
+      },
+      schools: {
+        title: "Schools & Institutes",
+        desc: "Replace expensive lab equipment with a scalable digital solution. Onboard your entire school in minutes."
+      }
+    },
+    cta: {
+      title1: "Ready to Transform",
+      title2: "Physics Education?",
+      description: "Join hundreds of schools already using PhysicsLab to make STEM learning interactive, accessible, and fun.",
+      getStarted: "Start Free Today",
+      bookDemo: "Book a Demo"
+    },
+    trust: {
+      secure: "Secure & Private",
+      setup: "5 Min Setup",
+      free: "Free to Start"
+    },
+    footer: "Built for students & teachers."
+  },
   footer: {
     experiments: "Experiments",
     reports: "Lab Reports",
