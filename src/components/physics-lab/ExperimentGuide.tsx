@@ -78,7 +78,7 @@ export const ExperimentGuide: React.FC<{ experimentId: string }> = ({ experiment
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 relative">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 relative">
                 {/* Background Decor */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl pointer-events-none rounded-full"></div>
                 

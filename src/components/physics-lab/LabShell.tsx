@@ -8,7 +8,7 @@ import { ExperimentGuide } from '@/components/physics-lab/ExperimentGuide';
 import { GamificationPanel, useGamification } from '@/components/physics-lab/GamificationPanel';
 import {
     ChevronRight, Home, Beaker, RotateCcw, ShieldCheck,
-    Maximize, Minimize, Sun, Moon, PanelLeft, BookOpen, X, Smartphone, Save, Loader2, Check, Globe
+    Maximize, Minimize, Sun, Moon, PanelLeft, PanelRight, BookOpen, X, Smartphone, Save, Loader2, Check, Globe
 } from '@/lib/icons';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -46,11 +46,11 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
     const isMastered = masteredExperiments.includes(experimentId);
     const { theme, setTheme } = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [showInstruments, setShowInstruments] = useState(false);
-    const [showGuide, setShowGuide] = useState(false);
+    const [showInstruments, setShowInstruments] = useState(true);
+    const [showGuide, setShowGuide] = useState(true);
     const [showRotateOverlay, setShowRotateOverlay] = useState(false);
     const [guideWidth, setGuideWidth] = useState(384);
-    const [instrumentWidth, setInstrumentWidth] = useState(320);
+    const [instrumentWidth, setInstrumentWidth] = useState(220);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -183,29 +183,39 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
             className="flex h-[100dvh] w-full overflow-hidden font-sans"
             style={{ backgroundColor: 'var(--lab-bg)', color: 'var(--lab-text)' }}
         >
-            {/* Left Sidebar - Instruments (desktop only) */}
-            <aside 
-                className="hidden xl:flex flex-col shrink-0 relative" 
-                style={{ 
-                    width: instrumentWidth,
-                    backgroundColor: 'var(--lab-sidebar)', 
-                    borderRight: '1px solid var(--lab-border)' 
-                }}
-            >
-                {/* Resizer Handle */}
-                <div
-                    className="absolute right-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
-                    onMouseDown={startLeftResize}
-                />
+            {showInstruments && (
+                <aside 
+                    className="hidden lg:flex landscape:flex flex-col shrink-0 relative" 
+                    style={{ 
+                        width: instrumentWidth,
+                        backgroundColor: 'var(--lab-sidebar)', 
+                        borderRight: '1px solid var(--lab-border)' 
+                    }}
+                >
+                    {/* Resizer Handle */}
+                    <div
+                        className="absolute right-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
+                        onMouseDown={startLeftResize}
+                    />
 
-                <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
-                    <h2 className="font-bold text-lg tracking-tight">{t('common.instruments')}</h2>
-                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full uppercase font-medium tracking-wider">
-                        {t('common.labName')}
-                    </span>
-                </div>
-                <InstrumentPanel experimentId={experimentId} />
-            </aside>
+                    <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
+                        <h2 className="font-bold text-lg tracking-tight">{t('common.instruments')}</h2>
+                        <div className="flex items-center gap-2">
+                            <span className="hidden xl:inline-block text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase font-medium tracking-wider">
+                                {t('common.labName')}
+                            </span>
+                            <button
+                                onClick={() => setShowInstruments(false)}
+                                className="p-1 hover:bg-slate-800 rounded-md transition-colors text-slate-400 hover:text-white"
+                                title="Close Panel"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                    </div>
+                    <InstrumentPanel experimentId={experimentId} />
+                </aside>
+            )}
 
             {/* Center - Workspace */}
             <main className="flex-1 relative overflow-hidden flex flex-col min-w-0" style={{ background: 'var(--lab-workspace)' }}>
@@ -213,14 +223,16 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 {/* Header / Breadcrumbs */}
                 <div className="min-h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3 z-30 flex-wrap py-2 backdrop-blur-sm" style={{ borderBottom: '1px solid var(--lab-border)', backgroundColor: 'var(--lab-header)' }}>
 
-                    <button
-                        onClick={() => setShowInstruments(true)}
-                        className="xl:hidden inline-flex items-center justify-center p-2 rounded-lg transition-all"
-                        style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
-                        title="Open Instruments"
-                    >
-                        <PanelLeft className="w-4 h-4" />
-                    </button>
+                    {!showInstruments && (
+                        <button
+                            onClick={() => setShowInstruments(true)}
+                            className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg transition-all gap-2 hover:bg-blue-500/20 bg-blue-500/10 border border-blue-500/30 text-blue-400"
+                            title="Open Instruments"
+                        >
+                            <PanelLeft className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-tight">{t('common.instruments')}</span>
+                        </button>
+                    )}
 
                     <Link
                         href="/physics-lab"
@@ -236,7 +248,7 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                         <span className="truncate">{experimentName}</span>
                     </div>
 
-                    <div className="ml-auto flex items-center gap-2 lg:gap-4 shrink-0">
+                    <div className="ml-auto flex items-center gap-2 lg:gap-3 shrink-0">
                         {/* Gamification compact display */}
                         <div className="hidden md:block">
                             <GamificationPanel compact />
@@ -275,22 +287,12 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-200">
                                 <DropdownMenuRadioGroup value={language} onValueChange={(v) => setLanguage(v as any)}>
-                                    <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="gu">ગુજરાતી</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="en" className="text-xs">English</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="gu" className="text-xs">ગુજરાતી</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {/* Open guide drawer (tablet/mobile) */}
-                        <button
-                            onClick={() => setShowGuide(true)}
-                            className="xl:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
-                            style={{ backgroundColor: 'var(--lab-card-bg)', border: '1px solid var(--lab-border)', color: 'var(--lab-text-secondary)' }}
-                            title={t('common.guide')}
-                        >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            {t('common.guide')}
-                        </button>
 
                         {/* Mark as completed */}
                         <button
@@ -343,6 +345,17 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                             <span className="hidden sm:inline">{t('common.reset')}</span>
                         </button>
                     </div>
+
+                    {!showGuide && (
+                        <button
+                            onClick={() => setShowGuide(true)}
+                            className="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg transition-all gap-2 hover:bg-blue-500/20 bg-blue-500/10 border border-blue-500/30 text-blue-400 lg:ml-2"
+                            title="Open Guide"
+                        >
+                            <span className="text-[10px] font-bold uppercase tracking-tight">{t('common.guide')}</span>
+                            <BookOpen className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Experiment canvas */}
@@ -352,28 +365,36 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
                 </div>
             </main>
 
-            {/* Right Sidebar - Guide (desktop only) */}
-            <aside
-                className="hidden xl:flex border-l border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col shrink-0 relative z-40"
-                style={{ width: guideWidth }}
-            >
-                {/* Resizer Handle */}
-                <div
-                    className="absolute left-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
-                    onMouseDown={startRightResize}
-                />
+            {showGuide && (
+                <aside
+                    className="hidden lg:flex border-l landscape:flex border-slate-800 bg-slate-900/50 backdrop-blur-xl flex-col shrink-0 relative z-40"
+                    style={{ width: guideWidth }}
+                >
+                    {/* Resizer Handle */}
+                    <div
+                        className="absolute left-[-4px] top-0 bottom-0 w-3 cursor-col-resize hover:bg-blue-500/50 active:bg-blue-500/80 z-[60] transition-colors"
+                        onMouseDown={startRightResize}
+                    />
 
-                <div className="p-4 border-b border-slate-800">
-                    <h2 className="font-bold text-lg tracking-tight">{t('common.guide')}</h2>
-                </div>
-                <ExperimentGuide experimentId={experimentId} />
-            </aside>
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                        <h2 className="font-bold text-lg tracking-tight">{t('common.guide')}</h2>
+                        <button
+                            onClick={() => setShowGuide(false)}
+                            className="p-1 hover:bg-slate-800 rounded-md transition-colors text-slate-400 hover:text-white"
+                            title="Close Guide"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
+                    <ExperimentGuide experimentId={experimentId} />
+                </aside>
+            )}
 
             {/* Mobile/Tablet Drawer: Instruments */}
             {showInstruments && (
-                <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px]">
+                <div className="lg:hidden landscape:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px]">
                     <aside className="h-full w-[min(24rem,88vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderRight: '1px solid var(--lab-border)' }}>
-                        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
+                        <div className="p-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                             <h2 className="font-bold text-lg tracking-tight">{t('common.instruments')}</h2>
                             <button
                                 onClick={() => setShowInstruments(false)}
@@ -389,9 +410,9 @@ export const LabShell: React.FC<LabShellProps> = ({ experimentId }) => {
 
             {/* Mobile/Tablet Drawer: Guide */}
             {showGuide && (
-                <div className="xl:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px] flex justify-end">
+                <div className="lg:hidden landscape:hidden absolute inset-0 z-[70] bg-black/60 backdrop-blur-[2px] flex justify-end">
                     <aside className="h-full w-[min(30rem,92vw)] flex flex-col" style={{ backgroundColor: 'var(--lab-bg-secondary)', borderLeft: '1px solid var(--lab-border)' }}>
-                        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
+                        <div className="p-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--lab-border)' }}>
                             <h2 className="font-bold text-lg tracking-tight">{t('common.guide')}</h2>
                             <button
                                 onClick={() => setShowGuide(false)}

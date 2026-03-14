@@ -21,6 +21,12 @@ export const gu = {
     all: "બધા",
     startLab: "પ્રયોગ શરૂ કરો",
     syncing: "સિંક થઈ રહ્યું છે...",
+    instruments: "સાધનો",
+    guide: "પ્રયોગ માર્ગદર્શિકા",
+    labName: "ભૌતિક વિજ્ઞાન લેબ",
+    fullscreen: "ફુલ સ્ક્રીન",
+    exitFullscreen: "ફુલ સ્ક્રીનમાંથી બહાર નીકળો",
+    markCompleted: "પૂર્ણ તરીકે માર્ક કરો",
     signupToStart: "શરૂ કરવા માટે સાઇન અપ કરો",
     moreComingSoon: "વધુ ટૂંક સમયમાં આવી રહ્યું છે",
     comingSoonDesc: "અમે તમારા માટે વધુ ઇન્ટરેક્ટિવ લેબ્સ બનાવી રહ્યા છીએ.",
@@ -36,12 +42,17 @@ export const gu = {
   nav: {
     home: "હોમ",
     experiments: "પ્રયોગો",
-    about: "અમારા વિશે",
-    contact: "સંપર્ક",
-    signin: "સાઇન ઇન",
-    signup: "સાઇન અપ",
+    labReports: "લેબ અહેવાલો",
     dashboard: "ડેશબોર્ડ",
-    logout: "લોગ આઉટ"
+    docs: "દસ્તાવેજો",
+    openLab: "લેબ શરૂ કરો",
+    profile: "પ્રોફાઇલ",
+    logOut: "લોગ આઉટ",
+    signIn: "સાઇન ઇન",
+    signUp: "સાઇન અપ",
+    language: "ભાષા",
+    about: "અમારા વિશે",
+    contact: "સંપર્ક"
   },
   auth: {
     signin: {

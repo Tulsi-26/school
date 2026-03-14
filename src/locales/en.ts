@@ -21,6 +21,12 @@ export const en = {
     all: "All",
     startLab: "Start Experiment",
     syncing: "Syncing...",
+    instruments: "Instruments",
+    guide: "Experiment Guide",
+    labName: "Physics Lab",
+    fullscreen: "Fullscreen",
+    exitFullscreen: "Exit Fullscreen",
+    markCompleted: "Mark as Completed",
     signupToStart: "Sign up to start",
     moreComingSoon: "More coming soon",
     comingSoonDesc: "We're building more interactive labs for you.",
@@ -36,12 +42,17 @@ export const en = {
   nav: {
     home: "Home",
     experiments: "Experiments",
-    about: "About",
-    contact: "Contact",
-    signin: "Sign In",
-    signup: "Sign Up",
+    labReports: "Lab Reports",
     dashboard: "Dashboard",
-    logout: "Logout"
+    docs: "Docs",
+    openLab: "Open Lab",
+    profile: "Profile",
+    logOut: "Logout",
+    signIn: "Sign In",
+    signUp: "Sign Up",
+    language: "Language",
+    about: "About",
+    contact: "Contact"
   },
   auth: {
     signin: {

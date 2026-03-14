@@ -69,6 +69,7 @@ export { default as Minimize } from "lucide-react/dist/esm/icons/minimize";
 export { default as Moon } from "lucide-react/dist/esm/icons/moon";
 export { default as OctagonXIcon } from "lucide-react/dist/esm/icons/octagon-x";
 export { default as PanelLeft } from "lucide-react/dist/esm/icons/panel-left";
+export { default as PanelRight } from "lucide-react/dist/esm/icons/panel-right";
 export { default as Paperclip } from "lucide-react/dist/esm/icons/paperclip";
 export { default as Pencil } from "lucide-react/dist/esm/icons/pencil";
 export { default as PenTool } from "lucide-react/dist/esm/icons/pen-tool";
