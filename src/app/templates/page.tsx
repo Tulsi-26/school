@@ -90,10 +90,10 @@ const templates = [
     },
 ]
 
-const difficultyConfig: Record<string, { label: string; color: string }> = {
-    beginner: { label: "Beginner", color: "bg-green-100 text-green-700" },
-    intermediate: { label: "Intermediate", color: "bg-blue-100 text-blue-700" },
-    advanced: { label: "Advanced", color: "bg-purple-100 text-purple-700" },
+const difficultyColors: Record<string, string> = {
+    beginner: "bg-green-100 text-green-700",
+    intermediate: "bg-blue-100 text-blue-700",
+    advanced: "bg-purple-100 text-purple-700",
 }
 
 export default function TemplatesPage() {
@@ -205,7 +205,7 @@ export default function TemplatesPage() {
                                                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${template.bgColor} ${template.textColor}`}>
                                                     {t(`templates.categories.${template.category}`)}
                                                 </span>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${difficultyConfig[template.difficulty]?.color ?? ""}`}>
+                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${difficultyColors[template.difficulty]}`}>
                                                     {t(`templates.difficulty.${template.difficulty}`)}
                                                 </span>
                                             </div>
