@@ -44,6 +44,7 @@ export const en = {
     experiments: "Experiments",
     labReports: "Lab Reports",
     dashboard: "Dashboard",
+    templates: "Templates",
     docs: "Docs",
     openLab: "Open Lab",
     profile: "Profile",
@@ -502,10 +503,71 @@ export const en = {
       exploreGuide: "Explore the Guide"
     }
   },
+  templates: {
+    badge: "Lab Templates",
+    title1: "Ready-Made",
+    title2: "Experiment Templates",
+    description: "Browse our curated collection of pre-built lab experiments. Each template is curriculum-aligned and ready to use — just open and start experimenting.",
+    featured: "Featured",
+    minutes: "min",
+    students: "students",
+    tryTemplate: "Try This Template",
+    categories: {
+      all: "All Templates",
+      electricity: "Electricity",
+      optics: "Optics",
+      mechanics: "Mechanics"
+    },
+    difficulty: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced"
+    },
+    gradeLevel: {
+      beginner: "Grade 9-10",
+      intermediate: "Grade 11-12",
+      advanced: "Undergraduate"
+    },
+    items: {
+      "ohm-law": {
+        title: "Ohm's Law Verification",
+        desc: "Build a circuit with a battery, resistor, ammeter, and voltmeter to verify the linear relationship between voltage and current."
+      },
+      "wheatstone-bridge": {
+        title: "Wheatstone Bridge",
+        desc: "Determine an unknown resistance by balancing a four-resistor bridge network and observing galvanometer deflection."
+      },
+      "reflection-refraction": {
+        title: "Reflection & Refraction",
+        desc: "Trace light rays through lenses and mirrors. Observe how light bends at boundaries between different media."
+      },
+      "newton-second-law": {
+        title: "Newton's Second Law",
+        desc: "Connect masses via a pulley system to study the relationship between net force, mass, and acceleration."
+      },
+      "series-parallel": {
+        title: "Series & Parallel Circuits",
+        desc: "Compare current and voltage distribution in series vs parallel resistor configurations."
+      },
+      "pendulum": {
+        title: "Simple Pendulum",
+        desc: "Measure the time period of a pendulum for different lengths to verify the relationship between period and length."
+      }
+    },
+    cta: {
+      badge: "For Educators & Students",
+      title1: "Build Your Own",
+      title2: "Custom Templates",
+      description: "Need a specific experiment setup? Create your own templates or customize existing ones to match your curriculum and classroom needs.",
+      exploreLab: "Explore the Lab",
+      joinFree: "Join for Free"
+    }
+  },
   footer: {
     experiments: "Experiments",
     reports: "Lab Reports",
     dashboard: "Dashboard",
+    templates: "Templates",
     docs: "Docs",
     copyright: "PhysicsLab. Built for students & teachers."
   }

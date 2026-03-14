@@ -45,7 +45,9 @@ export { default as FlaskConical } from "lucide-react/dist/esm/icons/flask-conic
 export { default as Folder } from "lucide-react/dist/esm/icons/folder";
 export { default as FolderCode } from "lucide-react/dist/esm/icons/folder-code";
 export { default as Globe } from "lucide-react/dist/esm/icons/globe";
+export { default as GraduationCap } from "lucide-react/dist/esm/icons/graduation-cap";
 export { default as Grid3X3 } from "lucide-react/dist/esm/icons/grid-3x3";
+export { default as LayoutTemplate } from "lucide-react/dist/esm/icons/layout-template";
 export { default as HeartHandshakeIcon } from "lucide-react/dist/esm/icons/heart-handshake";
 export { default as Home } from "lucide-react/dist/esm/icons/house";
 export { default as Info } from "lucide-react/dist/esm/icons/info";
