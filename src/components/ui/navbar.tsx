@@ -51,6 +51,9 @@ export function Navbar() {
                             <Link href="/docs" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
                                 {t('nav.docs')}
                             </Link>
+                            <Link href="/templates" className="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">
+                                {t('nav.templates')}
+                            </Link>
                         </div>
                     </div>
                     <div className="hidden md:flex items-center space-x-3">
@@ -155,6 +158,9 @@ export function Navbar() {
                         </Link>
                         <Link href="/docs" className="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50">
                             {t('nav.docs')}
+                        </Link>
+                        <Link href="/templates" className="block px-3 py-2.5 rounded-lg text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50">
+                            {t('nav.templates')}
                         </Link>
                         <div className="flex items-center gap-4 px-3 py-2 border-y border-slate-100 my-2">
                              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('nav.language')}</span>

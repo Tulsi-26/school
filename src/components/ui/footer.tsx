@@ -18,6 +18,9 @@ export function Footer() {
                     <Link href="/dashboard" className="text-slate-400 hover:text-blue-600 text-sm transition-colors">
                         {t('footer.dashboard')}
                     </Link>
+                    <Link href="/templates" className="text-slate-400 hover:text-blue-600 text-sm transition-colors">
+                        {t('footer.templates')}
+                    </Link>
                     <Link href="/docs" className="text-slate-400 hover:text-blue-600 text-sm transition-colors">
                         {t('footer.docs')}
                     </Link>

@@ -44,6 +44,7 @@ export const en = {
     experiments: "Experiments",
     labReports: "Lab Reports",
     dashboard: "Dashboard",
+    templates: "Templates",
     docs: "Docs",
     openLab: "Open Lab",
     profile: "Profile",
@@ -502,10 +503,160 @@ export const en = {
       exploreGuide: "Explore the Guide"
     }
   },
+  templates: {
+    badge: "Lab Templates",
+    title1: "Ready-Made",
+    title2: "Experiment Templates",
+    description: "Browse our curated collection of pre-built lab experiments. Each template is curriculum-aligned and ready to use — just open and start experimenting.",
+    featured: "Featured",
+    minutes: "min",
+    students: "students",
+    tryTemplate: "Try This Template",
+    categories: {
+      all: "All Templates",
+      electricity: "Electricity",
+      optics: "Optics",
+      mechanics: "Mechanics"
+    },
+    difficulty: {
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced"
+    },
+    gradeLevel: {
+      beginner: "Grade 9-10",
+      intermediate: "Grade 11-12",
+      advanced: "Undergraduate"
+    },
+    items: {
+      "ohm-law": {
+        title: "Ohm's Law Verification",
+        desc: "Build a circuit with a battery, resistor, ammeter, and voltmeter to verify the linear relationship between voltage and current."
+      },
+      "wheatstone-bridge": {
+        title: "Wheatstone Bridge",
+        desc: "Determine an unknown resistance by balancing a four-resistor bridge network and observing galvanometer deflection."
+      },
+      "reflection-refraction": {
+        title: "Reflection & Refraction",
+        desc: "Trace light rays through lenses and mirrors. Observe how light bends at boundaries between different media."
+      },
+      "newton-second-law": {
+        title: "Newton's Second Law",
+        desc: "Connect masses via a pulley system to study the relationship between net force, mass, and acceleration."
+      },
+      "series-parallel": {
+        title: "Series & Parallel Circuits",
+        desc: "Compare current and voltage distribution in series vs parallel resistor configurations."
+      },
+      "pendulum": {
+        title: "Simple Pendulum",
+        desc: "Measure the time period of a pendulum for different lengths to verify the relationship between period and length."
+      }
+    },
+    cta: {
+      badge: "For Educators & Students",
+      title1: "Build Your Own",
+      title2: "Custom Templates",
+      description: "Need a specific experiment setup? Create your own templates or customize existing ones to match your curriculum and classroom needs.",
+      exploreLab: "Explore the Lab",
+      joinFree: "Join for Free"
+    }
+  },
+  poster: {
+    badge: "The Future of STEM Education",
+    headline1: "Master Physics",
+    headline2: "Through Discovery.",
+    subheadline: "An interactive virtual laboratory where students build circuits, trace light rays, and explore the laws of nature — no physical equipment needed.",
+    ctaPrimary: "Get Started Free",
+    ctaSecondary: "Try the Lab",
+    stats: {
+      domains: "Physics Domains",
+      curriculum: "Curriculum Aligned",
+      access: "Available Anywhere",
+      cost: "Setup Cost"
+    },
+    features: {
+      title1: "Explore Every",
+      title2: "Physics Domain",
+      subtitle: "From electrical circuits to ray optics and classical mechanics — all in one powerful virtual laboratory.",
+      electricity: {
+        title: "Electricity & Magnetism",
+        desc: "Build and test circuits with batteries, resistors, ammeters, and voltmeters. Verify Ohm's Law, balance Wheatstone bridges, and more."
+      },
+      optics: {
+        title: "Optics & Light",
+        desc: "Trace laser rays through convex lenses, concave mirrors, and prisms. Visualize refraction and image formation in real time."
+      },
+      mechanics: {
+        title: "Classical Mechanics",
+        desc: "Study Newton's Laws with pulleys and blocks. Measure forces, acceleration, and verify fundamental mechanics principles."
+      }
+    },
+    why: {
+      title1: "Why Schools Choose",
+      title2: "PhysicsLab",
+      safe: {
+        title: "100% Risk-Free",
+        desc: "No broken equipment, no safety hazards. Students can experiment freely and repeat experiments infinitely."
+      },
+      feedback: {
+        title: "Smart Feedback",
+        desc: "Real-time circuit validation, error detection, and step-by-step hints guide students like a private tutor."
+      },
+      curriculum: {
+        title: "Curriculum Aligned",
+        desc: "Covers CBSE, GSEB, and ICSE syllabi. Every experiment maps directly to textbook chapters and board exam patterns."
+      },
+      accessible: {
+        title: "Works Everywhere",
+        desc: "Runs on any device with a browser — laptops, tablets, or phones. No downloads, no installations required."
+      }
+    },
+    visual: {
+      labTitle: "PhysicsLab Dashboard",
+      labSubtitle: "Interactive Simulation Engine",
+      circuits: "Circuit Builder",
+      rayTracing: "Ray Tracing",
+      gamified: "Gamified Learning",
+      realtime: "Real-time Data",
+      progress: "Curriculum Progress"
+    },
+    audience: {
+      title1: "Built For",
+      title2: "Everyone",
+      students: {
+        title: "Students",
+        desc: "Learn by doing. Build circuits, trace rays, and discover physics through hands-on virtual experiments."
+      },
+      teachers: {
+        title: "Teachers",
+        desc: "Assign labs, track student progress, and generate automated reports. Save time and enhance classroom learning."
+      },
+      schools: {
+        title: "Schools & Institutes",
+        desc: "Replace expensive lab equipment with a scalable digital solution. Onboard your entire school in minutes."
+      }
+    },
+    cta: {
+      title1: "Ready to Transform",
+      title2: "Physics Education?",
+      description: "Join hundreds of schools already using PhysicsLab to make STEM learning interactive, accessible, and fun.",
+      getStarted: "Start Free Today",
+      bookDemo: "Book a Demo"
+    },
+    trust: {
+      secure: "Secure & Private",
+      setup: "5 Min Setup",
+      free: "Free to Start"
+    },
+    footer: "Built for students & teachers."
+  },
   footer: {
     experiments: "Experiments",
     reports: "Lab Reports",
     dashboard: "Dashboard",
+    templates: "Templates",
     docs: "Docs",
     copyright: "PhysicsLab. Built for students & teachers."
   }
