@@ -101,7 +101,7 @@ export const ExperimentChecklist: React.FC<{ experimentId: string }> = ({ experi
           // Wheatstone Bridge
           case 'place-resistors': isMet = instCount('resistor') >= 4; break;
           case 'place-galvanometer': isMet = hasInst('galvanometer'); break;
-          case 'place-switches': isMet = instCount('switch') >= 1; break;
+          case 'place-switches': isMet = instCount('switch') >= 2; break;
           case 'connect-bridge': isMet = connections.length >= 8; break;
           case 'close-switches': isMet = simulationResults?.isClosed === true; break;
           case 'balance-bridge': isMet = simulationResults?.isValid === true && simulationResults?.galvanometerReading === 0; break;

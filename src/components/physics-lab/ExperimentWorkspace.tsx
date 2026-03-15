@@ -11,7 +11,7 @@ import { calculateMechanicsSimulation } from '@/lib/physics/experiments/mechanic
 import { RayCanvas } from '@/components/physics-lab/RayCanvas';
 import { VectorCanvas } from '@/components/physics-lab/VectorCanvas';
 import { CircuitFeedback } from '@/components/physics-lab/CircuitFeedback';
-import { validateOhmLawCircuit, validateWheatstoneBridge, getWheatstoneMapping } from '@/lib/physics/core/circuitValidator';
+import { validateOhmLawCircuit, validateWheatstoneBridge } from '@/lib/physics/core/circuitValidator';
 import { traceRayThroughComponents } from '@/lib/physics/core/optics';
 
 const SNAP_SIZE = 40;
@@ -228,15 +228,7 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         if (e.button === 1 || (e.button === 0 && e.altKey)) {
             if (e.button === 1) e.preventDefault();
             setIsPanning(true);
-            // Non-recursive setPointerCapture
-            const target = e.currentTarget as HTMLElement;
-            if (target && typeof target.setPointerCapture === 'function') {
-                try {
-                    target.setPointerCapture(e.pointerId);
-                } catch (err) {
-                    console.warn("Failed to set pointer capture", err);
-                }
-            }
+            e.currentTarget.setPointerCapture(e.pointerId);
         }
     };
 
@@ -311,20 +303,14 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
 
     // Circuit validation
     useEffect(() => {
-        let validation;
         if (experimentId === 'ohm-law') {
-            validation = validateOhmLawCircuit(instruments, connections);
-        } else if (experimentId === 'wheatstone-bridge') {
-            validation = validateWheatstoneBridge(instruments, connections);
-        } else {
-            validation = { errors: [], suggestions: [], isValid: true };
-        }
-
-        // Only update if state actually changed to avoid infinite re-renders
-        const stateKey = JSON.stringify({ e: validation.errors, s: validation.suggestions, v: validation.isValid });
-        if (lastReadingsRef.current['last-validation'] !== stateKey) {
-            lastReadingsRef.current['last-validation'] = stateKey;
+            const validation = validateOhmLawCircuit(instruments, connections);
             setValidationState(validation.errors, validation.suggestions, validation.isValid);
+        } else if (experimentId === 'wheatstone-bridge') {
+            const validation = validateWheatstoneBridge(instruments, connections);
+            setValidationState(validation.errors, validation.suggestions, validation.isValid);
+        } else {
+            setValidationState([], [], true);
         }
     }, [instruments, connections, experimentId, setValidationState]);
 
@@ -333,21 +319,11 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         const resistor = instruments.find(i => i.type === 'resistor');
         const rheostat = instruments.find(i => i.type === 'rheostat');
         const sw = instruments.find(i => i.type === 'switch');
+        const p = instruments.find(i => i.id === 'p');
+        const q = instruments.find(i => i.id === 'q');
+        const r = instruments.find(i => i.id === 'r');
+        const s = instruments.find(i => i.id === 's');
         const galvanometer = instruments.find(i => i.type === 'galvanometer');
-        
-        let pR = 100, qR = 100, rR = 100, sR = 100;
-        let isWheatstoneTopologyValid = false;
-        if (experimentId === 'wheatstone-bridge') {
-            const mapping = getWheatstoneMapping(instruments, connections);
-            if (mapping.isCorrect) {
-                isWheatstoneTopologyValid = true;
-                pR = mapping.p?.properties.resistance || 100;
-                qR = mapping.q?.properties.resistance || 100;
-                rR = mapping.r?.properties.resistance || 100;
-                sR = mapping.s?.properties.resistance || 100;
-            }
-        }
-        
         const meterIds = instruments.filter(i => i.type === 'ammeter' || i.type === 'voltmeter').map(i => ({ id: i.id, type: i.type }));
         const object = instruments.find(i => i.type === 'block');
         const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));
@@ -359,11 +335,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
             resistance: resistor?.properties.resistance || 100,
             rheostatR: rheostat?.properties.resistance || 50,
             switchClosed: sw?.properties.closed || false,
-            pR,
-            qR,
-            rR,
-            sR,
-            isWheatstoneTopologyValid,
+            pR: p?.properties.resistance || 100,
+            qR: q?.properties.resistance || 100,
+            rR: r?.properties.resistance || 100,
+            sR: s?.properties.resistance || 100,
             galvanometerId: galvanometer?.id || null,
             meterIds,
             object: object ? { posX: object.position.x, posY: object.position.y } : null,
@@ -389,16 +364,10 @@ export const ExperimentWorkspace: React.FC<{ experimentId: string }> = ({ experi
         } else if (experimentId === 'wheatstone-bridge') {
             const battery = instruments.find(i => i.type === 'battery');
             const sw = instruments.find(i => i.type === 'switch');
-            const result = calculateWheatstoneBridge(simInputs.pR, simInputs.qR, simInputs.rR, simInputs.sR, battery?.properties.voltage || 9, sw?.properties.closed || false, simInputs.isWheatstoneTopologyValid);
+            const result = calculateWheatstoneBridge(simInputs.pR, simInputs.qR, simInputs.rR, simInputs.sR, battery?.properties.voltage || 9, sw?.properties.closed || false, connections);
             setSimulationResults(result);
             const galvanometer = instruments.find(i => i.type === 'galvanometer');
-            if (galvanometer) {
-                const reading = result.isClosed && result.isValid ? result.galvanometerReading : 0;
-                if (lastReadingsRef.current[`${galvanometer.id}-reading`] !== reading) {
-                    lastReadingsRef.current[`${galvanometer.id}-reading`] = reading;
-                    updateInstrumentProperties(galvanometer.id, { reading });
-                }
-            }
+            if (galvanometer) updateInstrumentProperties(galvanometer.id, { reading: result.isClosed && result.isValid ? result.galvanometerReading : 0 });
         } else if (experimentId === 'reflection-refraction') {
             const object = instruments.find(i => i.type === 'block');
             const lenses = instruments.filter(i => i.type === 'lens').map(l => ({ position: l.position, focalLength: l.properties.focalLength, type: l.properties.type }));

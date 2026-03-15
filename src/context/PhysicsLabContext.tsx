@@ -84,18 +84,9 @@ export const PhysicsLabProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
     const setValidationState = useCallback((errors: any[], suggestions: string[], isValid: boolean) => {
-        setValidationErrors(prev => {
-            if (JSON.stringify(prev) === JSON.stringify(errors)) return prev;
-            return errors;
-        });
-        setValidationSuggestions(prev => {
-            if (JSON.stringify(prev) === JSON.stringify(suggestions)) return prev;
-            return suggestions;
-        });
-        setCircuitIsValid(prev => {
-            if (prev === isValid) return prev;
-            return isValid;
-        });
+        setValidationErrors(errors);
+        setValidationSuggestions(suggestions);
+        setCircuitIsValid(isValid);
     }, []);
 
     // Persistence logic

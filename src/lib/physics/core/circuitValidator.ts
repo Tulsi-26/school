@@ -1,23 +1,37 @@
-import { Instrument, Connection, ValidationError, CircuitValidation } from '@/context/PhysicsLabContext';
+/**
+ * Circuit Validator – Validates circuits using electrical rules
+ * Implements Ohm's Law (V=IR) and Kirchhoff's Laws (KCL/KVL)
+ */
+
+import type { Instrument, Connection } from '@/context/PhysicsLabContext';
+
+export interface ValidationError {
+  type: 'error' | 'warning' | 'info';
+  code: string;
+  message: string;
+  instrumentId?: string;
+}
+
+export interface CircuitValidation {
+  isValid: boolean;
+  isClosed: boolean;
+  errors: ValidationError[];
+  suggestions: string[];
+}
 
 /**
- * Helper to build an adjacency list representing the circuit graph.
- * Nodes are terminal IDs.
+ * Build an adjacency list from instruments and connections.
+ * Each terminal is a node; connections form edges.
  */
-function buildAdjacencyList(instruments: Instrument[], connections: Connection[]) {
+function buildAdjacencyList(
+  instruments: Instrument[],
+  connections: Connection[]
+): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>();
 
   const ensureNode = (id: string) => {
     if (!adj.has(id)) adj.set(id, new Set());
   };
-
-  // Add connections as edges in the graph
-  for (const conn of connections) {
-    ensureNode(conn.from);
-    ensureNode(conn.to);
-    adj.get(conn.from)!.add(conn.to);
-    adj.get(conn.to)!.add(conn.from);
-  }
 
   for (const inst of instruments) {
     for (const t of inst.terminals) {
@@ -25,7 +39,7 @@ function buildAdjacencyList(instruments: Instrument[], connections: Connection[]
     }
 
     // Add internal paths for components that conduct
-    if (['resistor', 'rheostat', 'ammeter', 'voltmeter', 'galvanometer', 'switch', 'battery'].includes(inst.type)) {
+    if (['resistor', 'rheostat', 'ammeter', 'switch', 'battery'].includes(inst.type)) {
       if (inst.terminals.length >= 2) {
         const t1 = inst.terminals[0].id;
         const t2 = inst.terminals[1].id;
@@ -34,22 +48,18 @@ function buildAdjacencyList(instruments: Instrument[], connections: Connection[]
 
         // Switches only conduct when closed
         if (inst.type !== 'switch' || inst.properties.closed) {
-          // Standard components connect terminal 1 and 2
           adj.get(t1)!.add(t2);
           adj.get(t2)!.add(t1);
-
-          // Rheostat specific: 3 terminals. Terminal 3 (slider) connects to Terminal 1 or 2 depending on usage.
-          if (inst.type === 'rheostat' && inst.terminals.length >= 3) {
-            const t3 = inst.terminals[2].id;
-            ensureNode(t3);
-            adj.get(t1)!.add(t3);
-            adj.get(t3)!.add(t1);
-            adj.get(t2)!.add(t3);
-            adj.get(t3)!.add(t2);
-          }
         }
       }
     }
+  }
+
+  for (const conn of connections) {
+    ensureNode(conn.from);
+    ensureNode(conn.to);
+    adj.get(conn.from)!.add(conn.to);
+    adj.get(conn.to)!.add(conn.from);
   }
 
   return adj;
@@ -93,11 +103,14 @@ function hasClosedLoop(
 }
 
 /**
- * KCL check – identify unconnected terminals
+ * KCL check – at every node, current in must equal current out.
+ * In a simple series circuit with one battery this is always satisfied
+ * when the loop is closed. For parallel branches we check connectivity.
  */
 function checkKCL(instruments: Instrument[], connections: Connection[]): ValidationError[] {
   const errors: ValidationError[] = [];
 
+  // Identify nodes with only one connection (dead-end / open node)
   const terminalConnectionCount = new Map<string, number>();
   for (const conn of connections) {
     terminalConnectionCount.set(conn.from, (terminalConnectionCount.get(conn.from) || 0) + 1);
@@ -123,6 +136,7 @@ function checkKCL(instruments: Instrument[], connections: Connection[]): Validat
 
 /**
  * KVL check – sum of voltages around a loop should be zero.
+ * For a simple Ohm's law circuit: V_battery - I*R_total = 0
  */
 function checkKVL(
   batteryVoltage: number,
@@ -130,10 +144,22 @@ function checkKVL(
   current: number
 ): ValidationError[] {
   const errors: ValidationError[] = [];
-  // For basic simulation, we assume perfect satisfaction if connected correctly.
+  const voltageSum = batteryVoltage - current * totalResistance;
+
+  if (Math.abs(voltageSum) > 0.01) {
+    errors.push({
+      type: 'error',
+      code: 'KVL_VIOLATION',
+      message: `Kirchhoff's voltage law violated: voltage loop sum is ${voltageSum.toFixed(3)}V (expected 0)`,
+    });
+  }
+
   return errors;
 }
 
+/**
+ * Validate an Ohm's Law experiment circuit.
+ */
 export function validateOhmLawCircuit(
   instruments: Instrument[],
   connections: Connection[]
@@ -142,30 +168,55 @@ export function validateOhmLawCircuit(
   const suggestions: string[] = [];
 
   const battery = instruments.find((i) => i.type === 'battery');
-  const resistor = instruments.find((i) => (i.type === 'resistor' || i.type === 'rheostat'));
-  const sw = instruments.find((i) => i.type === 'switch');
+  const resistor = instruments.find((i) => i.type === 'resistor');
   const ammeter = instruments.find((i) => i.type === 'ammeter');
   const voltmeter = instruments.find((i) => i.type === 'voltmeter');
+  const sw = instruments.find((i) => i.type === 'switch');
 
+  // Check required components
   if (!battery) {
-    errors.push({ type: 'error', code: 'MISSING_BATTERY', message: 'Battery is required' });
-    suggestions.push('Drag a Battery from the panel');
+    errors.push({ type: 'error', code: 'MISSING_BATTERY', message: 'Battery is required to complete the circuit' });
+    suggestions.push('Drag a Battery from the instrument panel to the workspace');
   }
   if (!resistor) {
-    errors.push({ type: 'error', code: 'MISSING_RESISTOR', message: 'Resistor is required' });
-    suggestions.push('Add a Resistor to the circuit');
+    errors.push({ type: 'error', code: 'MISSING_RESISTOR', message: 'Resistor is required for Ohm\'s Law verification' });
+    suggestions.push('Add a Resistor to measure V=IR relationship');
+  }
+  if (!ammeter) {
+    suggestions.push('Add an Ammeter in series to measure current');
+  }
+  if (!voltmeter) {
+    suggestions.push('Add a Voltmeter in parallel to measure potential difference');
+  }
+  if (!sw) {
+    suggestions.push('Add a Switch (Plug Key) to control the circuit');
   }
 
+  // Check switch state
   if (sw && !sw.properties.closed) {
-    errors.push({ type: 'info', code: 'SWITCH_OPEN', message: 'Switch is open' });
+    errors.push({ type: 'info', code: 'SWITCH_OPEN', message: 'Circuit switch is open — close it to allow current flow' });
   }
 
+  // KCL checks
   const kclErrors = checkKCL(instruments, connections);
   errors.push(...kclErrors);
 
+  // Check closed loop
   const isClosed = hasClosedLoop(instruments, connections);
   if (!isClosed && connections.length > 0) {
-    errors.push({ type: 'error', code: 'OPEN_CIRCUIT', message: 'Circuit is not closed' });
+    errors.push({ type: 'error', code: 'OPEN_CIRCUIT', message: 'Circuit is not closed — ensure all components are connected in a loop' });
+    suggestions.push('Connect the remaining terminals to form a complete circuit path');
+  }
+
+  // KVL check when circuit is complete
+  if (isClosed && battery && resistor) {
+    const V = battery.properties.voltage || 9;
+    const R = resistor.properties.resistance || 100;
+    const rheostat = instruments.find((i) => i.type === 'rheostat');
+    const totalR = R + (rheostat?.properties.resistance || 0);
+    const I = V / totalR;
+    const kvlErrors = checkKVL(V, totalR, I);
+    errors.push(...kvlErrors);
   }
 
   const hasBlockingErrors = errors.some((e) => e.type === 'error');
@@ -178,61 +229,9 @@ export function validateOhmLawCircuit(
   };
 }
 
-export function getWheatstoneMapping(instruments: Instrument[], connections: Connection[]) {
-  const parent = new Map<string, string>();
-  const find = (id: string) => {
-    if (!parent.has(id)) parent.set(id, id);
-    if (parent.get(id) !== id) parent.set(id, find(parent.get(id)!));
-    return parent.get(id)!;
-  };
-  const union = (id1: string, id2: string) => {
-    parent.set(find(id1), find(id2));
-  };
-
-  for (const conn of connections) {
-    union(conn.from, conn.to);
-  }
-  for (const inst of instruments) {
-    if (inst.type === 'switch' && inst.properties.closed && inst.terminals.length >= 2) {
-      union(inst.terminals[0].id, inst.terminals[1].id);
-    }
-  }
-
-  const battery = instruments.find(i => i.type === 'battery');
-  const galvanometer = instruments.find(i => i.type === 'galvanometer');
-  const resistors = instruments.filter(i => i.type === 'resistor' || i.type === 'rheostat');
-
-  if (!battery || !galvanometer || resistors.length < 4) return { isCorrect: false };
-
-  const nA = find(battery.terminals[0].id);
-  const nC = find(battery.terminals[1].id);
-  const nB = find(galvanometer.terminals[0].id);
-  const nD = find(galvanometer.terminals[1].id);
-
-  const distinctNets = new Set([nA, nB, nC, nD]);
-  if (distinctNets.size !== 4) return { isCorrect: false };
-
-  const connects = (inst: Instrument, net1: string, net2: string) => {
-     if (inst.terminals.length < 2) return false;
-     const tIds = inst.terminals.map(t => find(t.id));
-     return (tIds.includes(net1) && tIds.includes(net2));
-  };
-
-  let R_AB = null, R_AD = null, R_CB = null, R_CD = null;
-
-  for (const r of resistors) {
-    if (!R_AB && connects(r, nA, nB)) R_AB = r;
-    else if (!R_AD && connects(r, nA, nD)) R_AD = r;
-    else if (!R_CB && connects(r, nC, nB)) R_CB = r;
-    else if (!R_CD && connects(r, nC, nD)) R_CD = r;
-  }
-
-  if (R_AB && R_AD && R_CB && R_CD) {
-    return { isCorrect: true, p: R_AB, q: R_AD, r: R_CB, s: R_CD };
-  }
-  return { isCorrect: false };
-}
-
+/**
+ * Validate a Wheatstone Bridge circuit.
+ */
 export function validateWheatstoneBridge(
   instruments: Instrument[],
   connections: Connection[]
@@ -241,43 +240,42 @@ export function validateWheatstoneBridge(
   const suggestions: string[] = [];
 
   const battery = instruments.find((i) => i.type === 'battery');
-  const resistors = instruments.filter((i) => i.type === 'resistor' || i.type === 'rheostat');
+  const resistors = instruments.filter((i) => i.type === 'resistor');
   const galvanometer = instruments.find((i) => i.type === 'galvanometer');
   const switches = instruments.filter((i) => i.type === 'switch');
 
   if (!battery) {
-    errors.push({ type: 'error', code: 'MISSING_BATTERY', message: 'Battery is required' });
+    errors.push({ type: 'error', code: 'MISSING_BATTERY', message: 'Battery is required for the bridge circuit' });
+    suggestions.push('Drag a Battery to the workspace');
   }
   if (resistors.length < 4) {
-    errors.push({ type: 'error', code: 'MISSING_RESISTORS', message: `Need 4 resistors — found ${resistors.length}` });
+    errors.push({ type: 'error', code: 'MISSING_RESISTORS', message: `Need 4 resistors for bridge (P, Q, R, S) — found ${resistors.length}` });
+    suggestions.push('Add all four resistors: P, Q, R, and S');
+  }
+  if (!galvanometer) {
+    suggestions.push('Add a Galvanometer to detect bridge balance');
+  }
+  if (switches.length < 1) {
+    suggestions.push('Add at least one switch to control the circuit');
   }
 
   const allSwitchesClosed = switches.every((s) => s.properties.closed);
   if (switches.length > 0 && !allSwitchesClosed) {
-    errors.push({ type: 'info', code: 'SWITCH_OPEN', message: 'Close all switches' });
+    errors.push({ type: 'info', code: 'SWITCH_OPEN', message: 'Close all switches to activate the bridge' });
   }
 
   const kclErrors = checkKCL(instruments, connections);
   errors.push(...kclErrors);
 
   const isClosed = hasClosedLoop(instruments, connections);
-  const topology = getWheatstoneMapping(instruments, connections);
-
-  if (battery && galvanometer && resistors.length >= 4) {
-    if (!topology.isCorrect) {
-      if (connections.length > 0) {
-        errors.push({ type: 'warning', code: 'WRONG_TOPOLOGY', message: 'Incomplete bridge structure' });
-        suggestions.push('Connect resistors in a diamond: A-B, A-D, C-B, C-D');
-      }
-    } else if (!isClosed) {
-      errors.push({ type: 'info', code: 'OPEN_LOOP', message: 'Bridge structure detected - ensure battery loop is closed' });
-    }
+  if (!isClosed && connections.length > 0) {
+    errors.push({ type: 'error', code: 'OPEN_CIRCUIT', message: 'Bridge circuit is not complete' });
   }
 
   const hasBlockingErrors = errors.some((e) => e.type === 'error');
 
   return {
-    isValid: !hasBlockingErrors && topology.isCorrect,
+    isValid: !hasBlockingErrors,
     isClosed,
     errors,
     suggestions,

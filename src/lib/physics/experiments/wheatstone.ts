@@ -3,10 +3,6 @@ export interface WheatstoneBridgeState {
     galvanometerReading: number;
     isValid: boolean;
     isClosed: boolean;
-    p?: number;
-    q?: number;
-    r?: number;
-    s?: number;
 }
 
 export const calculateWheatstoneBridge = (
@@ -16,26 +12,24 @@ export const calculateWheatstoneBridge = (
     s: number,
     voltage: number,
     isSwitchClosed: boolean,
-    isValidTopology: boolean
+    connections: any[]
 ): WheatstoneBridgeState => {
-    if (!isSwitchClosed || !isValidTopology) {
-        return { isBalanced: false, galvanometerReading: 0, isValid: isValidTopology, isClosed: isSwitchClosed, p, q, r, s };
+    const isValid = connections.length >= 8; // Bridge needs more connections
+
+    if (!isSwitchClosed || !isValid) {
+        return { isBalanced: false, galvanometerReading: 0, isValid, isClosed: isSwitchClosed };
     }
 
     // Ig = V * (PS - RQ) / [G(P+Q)(R+S) + RS(P+Q) + PQ(R+S)]
     // Simple check for balance: P/Q = R/S
     const balanceError = (p * s) - (r * q);
     const isBalanced = Math.abs(balanceError) < 0.01;
-    const galvanometerReading = isBalanced ? 0 : (balanceError / 100); // Simplified scale
+    const galvanometerReading = balanceError / 100; // Simplified scale
 
     return {
         isBalanced,
         galvanometerReading,
-        isValid: isValidTopology,
+        isValid,
         isClosed: true,
-        p,
-        q,
-        r,
-        s,
     };
 };
