@@ -317,7 +317,7 @@ const InstrumentComponent: React.FC<InstrumentProps> = ({
                                         ? 'bg-red-500 border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
                                         : 'bg-black border-slate-700 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
                                 } 
-                                ${onTerminalHover && 'hover:scale-125 cursor-pointer'} 
+                                ${onTerminalHover ? 'hover:scale-125 cursor-pointer' : ''} 
                                 ${connectedState.connectedTerminalIds.has(t.id) ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900' : ''}
                                 ${isSource ? 'animate-pulse scale-110 ring-4 ring-blue-500/50' : ''}
                                 ${isTarget ? 'scale-150 ring-4 ring-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.8)]' : ''}

@@ -387,7 +387,7 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
             rows = observations.map((o, i) => [i + 1, o.v, o.i, o.r, o.rheostatR]);
         } else {
             headers = ["Serial No.", "P/Q Ratio", "R (Ohm)", "Deflection"];
-            rows = observations.map((o, i) => [i + 1, (o.p / o.q), o.r, o.reading]);
+            rows = observations.map((o, i) => [i + 1, (o.p / o.q), o.r, o.galvanometerReading]);
         }
 
         const csvContent = [
@@ -469,8 +469,8 @@ const Observation = ({ experimentId, isModal = false }: { experimentId: string; 
                                     <>
                                         <td className={`font-black text-center border-r border-slate-100 dark:border-slate-800 ${isModal ? 'p-6 text-xl sm:text-2xl lg:text-3xl' : 'p-2 text-[10px]'} text-purple-600 dark:text-purple-400 truncate`}>{(obs.p / obs.q).toFixed(2)}</td>
                                         <td className={`font-black text-center border-r border-slate-100 dark:border-slate-800 ${isModal ? 'p-6 text-xl sm:text-2xl lg:text-3xl' : 'p-2 text-[10px]'} text-blue-600 dark:text-blue-400 truncate`}>{obs.r?.toFixed(0)}</td>
-                                        <td className={`font-black text-center ${isModal ? 'p-6 text-xl sm:text-2xl lg:text-3xl' : 'p-2 text-[10px]'} ${obs.reading > 0 ? 'text-amber-500' : obs.reading < 0 ? 'text-rose-500' : 'text-emerald-500'} truncate`}>
-                                            {obs.reading > 0 ? 'R' : obs.reading < 0 ? 'L' : '0'}
+                                        <td className={`font-black text-center ${isModal ? 'p-6 text-xl sm:text-2xl lg:text-3xl' : 'p-2 text-[10px]'} ${obs.galvanometerReading > 0 ? 'text-amber-500' : obs.galvanometerReading < 0 ? 'text-rose-500' : 'text-emerald-500'} truncate`}>
+                                            {obs.galvanometerReading > 0 ? 'R' : obs.galvanometerReading < 0 ? 'L' : '0'}
                                         </td>
                                     </>
                                 )}
